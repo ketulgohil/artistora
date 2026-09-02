@@ -79,6 +79,7 @@ export interface Config {
     artists: Artist;
     leads: Lead;
     quotes: Quote;
+    bookings: Booking;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,6 +99,7 @@ export interface Config {
     artists: ArtistsSelect<false> | ArtistsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
     quotes: QuotesSelect<false> | QuotesSelect<true>;
+    bookings: BookingsSelect<false> | BookingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -387,6 +389,7 @@ export interface Lead {
   designStyle?: string | null;
   additionalNotes?: string | null;
   matchedArtists?: (number | Artist)[] | null;
+  acceptedQuote?: (number | null) | Quote;
   status?: ('new' | 'quotes-sent' | 'accepted' | 'booked' | 'closed') | null;
   updatedAt: string;
   createdAt: string;
@@ -399,12 +402,33 @@ export interface Quote {
   id: number;
   lead: number | Lead;
   artist: number | Artist;
-  /**
-   * Quote amount in INR
-   */
-  priceQuote: number;
-  notes?: string | null;
-  status?: ('pending' | 'accepted' | 'declined' | 'expired') | null;
+  amount: number;
+  message?: string | null;
+  estimatedHours?: number | null;
+  travelFee?: number | null;
+  numberOfArtists?: number | null;
+  validUntil?: string | null;
+  status?: ('pending' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired' | 'withdrawn') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bookings".
+ */
+export interface Booking {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string | null;
+  eventType: 'bridal' | 'engagement' | 'baby-shower' | 'family-function' | 'festival' | 'other';
+  eventDate: string;
+  location: string;
+  guestCount?: number | null;
+  designStyle?: string | null;
+  message?: string | null;
+  artist?: (number | null) | Artist;
+  status?: ('new' | 'contacted' | 'confirmed' | 'completed' | 'cancelled') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -479,6 +503,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'quotes';
         value: number | Quote;
+      } | null)
+    | ({
+        relationTo: 'bookings';
+        value: number | Booking;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -714,6 +742,7 @@ export interface LeadsSelect<T extends boolean = true> {
   designStyle?: T;
   additionalNotes?: T;
   matchedArtists?: T;
+  acceptedQuote?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -725,8 +754,31 @@ export interface LeadsSelect<T extends boolean = true> {
 export interface QuotesSelect<T extends boolean = true> {
   lead?: T;
   artist?: T;
-  priceQuote?: T;
-  notes?: T;
+  amount?: T;
+  message?: T;
+  estimatedHours?: T;
+  travelFee?: T;
+  numberOfArtists?: T;
+  validUntil?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bookings_select".
+ */
+export interface BookingsSelect<T extends boolean = true> {
+  name?: T;
+  phone?: T;
+  email?: T;
+  eventType?: T;
+  eventDate?: T;
+  location?: T;
+  guestCount?: T;
+  designStyle?: T;
+  message?: T;
+  artist?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;

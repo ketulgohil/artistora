@@ -84,7 +84,7 @@ export default async function BridalMehndiPage() {
     getServices(),
   ])
 
-  const bookingUrl = (settings as any).bookingFormUrl || ''
+  const bookingUrl = '/book'
   const whatsappNumber = ((settings as any).whatsappNumber || '918469662012').replace(/[^0-9]/g, '')
   const whatsappUrl = `https://wa.me/${whatsappNumber}`
 

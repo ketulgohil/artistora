@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { sendArtistBookingEmail } from '../lib/email'
 
 export const Leads: CollectionConfig = {
   slug: 'leads',
@@ -6,6 +7,112 @@ export const Leads: CollectionConfig = {
     useAsTitle: 'customerName',
     defaultColumns: ['customerName', 'customerPhone', 'eventType', 'eventDate', 'status', 'createdAt'],
     group: 'Marketplace',
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req, previousDoc }) => {
+        // Only trigger when status changes TO 'booked'
+        if (operation !== 'update') return
+        if (doc.status !== 'booked') return
+        if (previousDoc?.status === 'booked') return // already converted
+
+        const {
+          customerName, customerPhone, customerEmail,
+          eventType, eventDate, eventLocation,
+          guestCount, designStyle, matchedArtists,
+        } = doc
+
+        // 1. Create a booking from the lead data
+        try {
+          await req.payload.create({
+            collection: 'bookings',
+            data: {
+              name: customerName,
+              phone: customerPhone,
+              email: customerEmail || undefined,
+              eventType,
+              eventDate,
+              location: eventLocation,
+              guestCount: guestCount || undefined,
+              designStyle: designStyle || undefined,
+              message: `Converted from lead #${doc.id}`,
+              status: 'confirmed',
+            },
+          })
+          req.payload.logger.info(`Lead #${doc.id} converted to booking`)
+        } catch (err) {
+          req.payload.logger.error(`Failed to create booking from lead #${doc.id}: ${err}`)
+        }
+
+        // 2. Email matched artists with booking details
+        if (matchedArtists && matchedArtists.length > 0) {
+          const artistIds = Array.isArray(matchedArtists)
+            ? matchedArtists.map((a: any) => (typeof a === 'object' ? a.id : a))
+            : [typeof matchedArtists === 'object' ? (matchedArtists as any).id : matchedArtists]
+
+          for (const artistId of artistIds) {
+            try {
+              const artist = await req.payload.findByID({
+                collection: 'artists',
+                id: artistId,
+              })
+
+              // Get the user's email from the artist's linked user
+              if (artist.user) {
+                const user = await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof artist.user === 'object' ? artist.user.id : artist.user,
+                })
+
+                if (user.email) {
+                  await sendArtistBookingEmail(user.email, {
+                    artistName: artist.displayName || customerName,
+                    customerName,
+                    customerPhone,
+                    eventType,
+                    eventDate,
+                    eventLocation,
+                    guestCount: guestCount || undefined,
+                    designStyle: designStyle || undefined,
+                  })
+                }
+              }
+            } catch (err) {
+              req.payload.logger.error(`Failed to email artist ${artistId}: ${err}`)
+            }
+          }
+        }
+      },
+    ],
+  },
+  access: {
+    read: ({ req }) => {
+      // Admins can read all
+      if (req.user?.role === 'admin') return true
+
+      // Artists can read leads where they are matched
+      if (req.user?.role === 'artist') {
+        return {
+          matchedArtists: { contains: req.user.id },
+        }
+      }
+
+      // Customers and unauthenticated: no direct read via REST
+      // (use /api/my-bookings endpoint with phone lookup instead)
+      return false
+    },
+    create: () => true, // Anyone can create a lead (guest or logged in)
+    update: ({ req }) => {
+      // Admins can update all
+      if (req.user?.role === 'admin') return true
+
+      // Artists cannot update leads directly
+      return false
+    },
+    delete: ({ req }) => {
+      // Only admins can delete
+      return req.user?.role === 'admin'
+    },
   },
   fields: [
     {
@@ -84,6 +191,12 @@ export const Leads: CollectionConfig = {
       type: 'relationship',
       relationTo: 'artists',
       hasMany: true,
+    },
+    {
+      name: 'acceptedQuote',
+      type: 'relationship',
+      relationTo: 'quotes',
+      label: 'Accepted Quote',
     },
     {
       name: 'status',

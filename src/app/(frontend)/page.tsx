@@ -94,7 +94,7 @@ export default async function HomePage() {
     getYouTubeVideos() as Promise<YoutubeVideo[]>,
   ])
 
-  const bookingUrl = settings.bookingFormUrl || ''
+  const bookingUrl = '/book'
   const mapUrl = settings.googleMapUrl || ''
   const businessName = settings.businessName || 'Shiva Mehndi Art'
   const phone = settings.phone || '+91 8469662012'

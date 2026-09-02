@@ -196,7 +196,7 @@ export default async function ServicesPage() {
     getFAQs(),
   ])
 
-  const bookingUrl = (settings as any).bookingFormUrl || ''
+  const bookingUrl = '/book'
 
   return (
     <>

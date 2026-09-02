@@ -59,7 +59,7 @@ export default async function ArtistPage() {
   const settings = (await getSiteSettings()) as any
   const businessName = settings.businessName || 'Shiva Mehndi Art'
   const founderName = settings.founderName || 'Bhumi Chanpura'
-  const bookingUrl = settings.bookingFormUrl || ''
+  const bookingUrl = '/book'
 
   const highlights = [
     {

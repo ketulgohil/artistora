@@ -85,7 +85,7 @@ export default async function ContactPage() {
   const phone = settings.phone || '+91 8469662012'
   const email = settings.email || ''
   const address = settings.address || ''
-  const bookingUrl = settings.bookingFormUrl || ''
+  const bookingUrl = '/book'
   const whatsappNumber = settings.whatsappNumber || '918469662012'
   const googleMapUrl = settings.googleMapUrl || ''
 
@@ -225,12 +225,15 @@ export default async function ContactPage() {
             </p>
           </div>
           <div className="mt-10! rounded-[2rem] border border-line bg-white p-2.5! shadow-lift">
-            <iframe
-              title="Shiva Mehndi Art booking form"
-              src={bookingUrl}
-              loading="lazy"
-              className="h-full min-h-[48rem] w-full rounded-[1.6rem] border-0"
-            />
+            <a href="/book" className="flex min-h-[20rem] items-center justify-center rounded-[1.6rem] bg-cream/60 transition-colors hover:bg-cream">
+              <div className="text-center">
+                <p className="font-display text-xl! font-semibold text-ink">Ready to Book?</p>
+                <p className="mt-2! text-sm text-ink-soft">Fill in your details and we&apos;ll confirm availability.</p>
+                <span className="mt-4! inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift">
+                  Open Booking Form
+                </span>
+              </div>
+            </a>
           </div>
           <div className="mx-auto mt-8! max-w-2xl! text-center">
             <p className="text-sm leading-relaxed text-ink-soft">

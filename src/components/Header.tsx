@@ -5,8 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { mediaFileUrl } from '@/lib/media-url'
 
-const BOOKING_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSeE8i0kMqjmb8jjVLc_YgNGR8q413ZdgEXQbzNZdULpf9r8MA/viewform'
+const BOOKING_URL = '/book'
 
 const navItems = [
   { to: '/', label: 'Home' },
@@ -14,6 +13,7 @@ const navItems = [
   { to: '/artists', label: 'Artists' },
   { to: '/portfolio', label: 'Portfolio' },
   { to: '/classes', label: 'Classes' },
+  { to: '/my-bookings', label: 'My Bookings' },
   { to: '/contact', label: 'Contact' },
 ]
 

@@ -17,6 +17,7 @@ import { StaticPages } from './collections/StaticPages'
 import { Artists } from './collections/Artists'
 import { Leads } from './collections/Leads'
 import { Quotes } from './collections/Quotes'
+import { Bookings } from './collections/Bookings'
 import { SiteSettings } from './globals/SiteSettings'
 import { HeaderFooter } from './globals/HeaderFooter'
 
@@ -86,6 +87,7 @@ export default buildConfig({
     Artists,
     Leads,
     Quotes,
+    Bookings,
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),

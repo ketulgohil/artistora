@@ -139,7 +139,7 @@ export default async function ClassesPage() {
     getFAQs() as Promise<Faq[]>,
   ])
 
-  const bookingUrl = settings.bookingFormUrl || ''
+  const bookingUrl = '/book'
   const whatsappNumber = settings.whatsappNumber || '918469662012'
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`
   const youtubeUrl = settings.youtubeUrl || 'https://www.youtube.com/@ShivaMehndiArtAndClasses'

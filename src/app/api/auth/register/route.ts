@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { sendCustomerWelcome, sendArtistWelcome } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,6 +57,12 @@ export async function POST(request: NextRequest) {
         } as any,
       })
     }
+
+    // Send welcome email (non-blocking)
+    const emailFn = role === 'artist' ? sendArtistWelcome : sendCustomerWelcome
+    emailFn(email, name).catch((err) => {
+      console.error(`Failed to send welcome email to ${email}:`, err)
+    })
 
     // Log the user in by creating a session cookie
     const loginResult = await payload.login({

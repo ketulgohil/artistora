@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { sendQuoteConfirmation, sendQuoteNotification } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +30,34 @@ export async function POST(request: NextRequest) {
         additionalNotes: additionalNotes || undefined,
         status: 'new',
       },
+    })
+
+    // Send confirmation email to customer (non-blocking)
+    if (customerEmail) {
+      sendQuoteConfirmation(customerEmail, {
+        customerName,
+        eventType,
+        eventDate,
+        eventLocation,
+      }).catch((err) => {
+        console.error(`Failed to send quote confirmation to ${customerEmail}:`, err)
+      })
+    }
+
+    // Send notification to Bhumi (non-blocking)
+    sendQuoteNotification({
+      customerName,
+      customerPhone,
+      customerEmail,
+      eventType,
+      eventDate,
+      eventLocation,
+      guestCount: guestCount ? Number(guestCount) : undefined,
+      budgetRange,
+      designStyle,
+      additionalNotes,
+    }).catch((err) => {
+      console.error('Failed to send quote notification:', err)
     })
 
     return NextResponse.json({ success: true, leadId: lead.id })

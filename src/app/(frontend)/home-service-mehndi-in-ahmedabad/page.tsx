@@ -27,7 +27,7 @@ export default async function HomeServiceMehndiPage() {
   const settings = (await getSiteSettings()) as any
 
   const businessName = settings.businessName || 'Shiva Mehndi Art'
-  const bookingUrl = settings.bookingFormUrl || ''
+  const bookingUrl = '/book'
   const phone = settings.phone || '+91 8469662012'
   const whatsappNumber = settings.whatsappNumber || '918469662012'
 

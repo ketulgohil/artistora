@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { mediaFileUrl } from '@/lib/media-url'
 
-const BOOKING_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSeE8i0kMqjmb8jjVLc_YgNGR8q413ZdgEXQbzNZdULpf9r8MA/viewform'
+const BOOKING_URL = '/book'
 
 const popularBookings = [
   { label: 'Bridal Mehndi Artist', to: '/bridal-mehndi' },
@@ -60,10 +59,8 @@ export default function Footer() {
               <a
                 className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-cream px-7! py-3! text-sm font-bold text-brand-deep shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
                 href={BOOKING_URL}
-                target="_blank"
-                rel="noreferrer"
               >
-                Fill Booking Form
+                Book Session
               </a>
               <a
                 className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-cream/40 px-7! py-3! text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream/70 hover:bg-white/10"
