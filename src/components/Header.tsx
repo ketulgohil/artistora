@@ -3,14 +3,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { mediaFileUrl } from '@/lib/media-url'
+
+const BOOKING_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSeE8i0kMqjmb8jjVLc_YgNGR8q413ZdgEXQbzNZdULpf9r8MA/viewform'
 
 const navItems = [
   { to: '/', label: 'Home' },
   { to: '/services', label: 'Services' },
-  { to: '/bridal-mehndi', label: 'Bridal' },
-  { to: '/classes', label: 'Classes' },
-  { to: '/artist', label: 'Artist' },
+  { to: '/artists', label: 'Artists' },
   { to: '/portfolio', label: 'Portfolio' },
+  { to: '/classes', label: 'Classes' },
   { to: '/contact', label: 'Contact' },
 ]
 
@@ -18,6 +21,14 @@ export default function Header() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isHiddenOnScroll, setIsHiddenOnScroll] = useState(false)
+  const [user, setUser] = useState<{ id: number; name: string; role: string } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => { if (d.user) setUser(d.user) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -58,64 +69,169 @@ export default function Header() {
   }
 
   return (
-    <header className="site-header fixed top-0 left-0 right-0 z-50">
-      <div className={`navbar-inner${isHiddenOnScroll ? ' mobile-nav-hidden' : ''}`}>
-        <nav className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+    <header className="fixed top-0 right-0 left-0 z-50">
+      <div
+        className={`bg-[rgba(255,251,247,0.86)] shadow-[0_10px_30px_rgba(100,52,26,0.07)] backdrop-blur-xl transition-transform duration-300 ${
+          isHiddenOnScroll ? '-translate-y-full' : ''
+        }`}
+      >
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4! py-2! md:px-6!">
           {/* Brand */}
-          <Link href="/" className="header-brand" onClick={() => setIsOpen(false)}>
+          <Link
+            href="/"
+            className="flex min-w-0 items-center gap-3!"
+            onClick={() => setIsOpen(false)}
+          >
             <img
-              src="/api/media/file/shivu-large.webp"
+              src={mediaFileUrl('shivu-large.webp')}
               alt="Shiva Mehndi Art"
               width={1890}
               height={1224}
+              className="h-auto w-20! shrink-0 rounded-xl object-contain md:w-24!"
             />
-            <span className="header-brand-copy">
-              <strong>Shiva Mehndi Art</strong>
-              <small>Professional Mehndi Artist and Classes</small>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <strong className="font-display text-lg! font-bold text-brand-deep md:text-xl!">
+                Shiva Mehndi Art
+              </strong>
+              <small className="text-[0.6rem] font-semibold tracking-[0.18em] text-ink-muted uppercase md:text-[0.66rem]">
+                Mehndi Artist &amp; Classes
+              </small>
             </span>
           </Link>
 
-          {/* Hamburger */}
+          {/* Hamburger (mobile / tablet) */}
           <button
-            className="header-toggler"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-brand/15 bg-white/70 transition-colors hover:bg-white lg:hidden"
             type="button"
             aria-expanded={isOpen}
-            aria-label="Toggle navigation"
+            aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
             onClick={() => setIsOpen((o) => !o)}
           >
-            <span className="header-toggler-icon" />
+            <span className="relative block h-3.5 w-5">
+              <span
+                className={`absolute left-0 block h-0.5 w-5 rounded-full bg-brand-deep transition-all duration-300 ${
+                  isOpen ? 'top-1.5 rotate-45' : 'top-0'
+                }`}
+              />
+              <span
+                className={`absolute top-1.5 left-0 block h-0.5 w-5 rounded-full bg-brand-deep transition-all duration-300 ${
+                  isOpen ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+              <span
+                className={`absolute left-0 block h-0.5 w-5 rounded-full bg-brand-deep transition-all duration-300 ${
+                  isOpen ? 'top-1.5 -rotate-45' : 'top-3'
+                }`}
+              />
+            </span>
           </button>
 
-          {/* Desktop Nav + CTA */}
-          <div className={`header-panel${isOpen ? ' show' : ''}`}>
-            <div className="header-nav-wrap">
-              <ul className="header-nav">
-                {navItems.map((item) => (
+          {/* Desktop nav + CTA */}
+          <div className="hidden items-center lg:flex">
+            <ul className="flex items-center gap-1!">
+              {navItems.map((item) => {
+                const active = isActive(item)
+                return (
                   <li key={item.to}>
                     <Link
                       href={item.to}
-                      className={`header-nav-link${isActive(item) ? ' active' : ''}`}
-                      onClick={() => setIsOpen(false)}
+                      className={`relative block rounded-full px-3.5! py-2! text-[0.95rem] font-semibold transition-colors duration-200 ${
+                        active
+                          ? 'bg-brand/10 text-brand-deep'
+                          : 'text-ink-soft hover:bg-brand/5 hover:text-brand'
+                      }`}
                     >
                       {item.label}
                     </Link>
                   </li>
-                ))}
-              </ul>
-            </div>
-            <div className="header-cta-wrap">
-              <a
-                className="btn-brand header-cta"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSeE8i0kMqjmb8jjVLc_YgNGR8q413ZdgEXQbzNZdULpf9r8MA/viewform"
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => setIsOpen(false)}
-              >
-                Book Now
-              </a>
+                )
+              })}
+            </ul>
+            <div className="ml-4!">
+              {user ? (
+                user.role === 'artist' ? (
+                  <Link
+                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(179,115,67,0.45)]"
+                    href="/dashboard"
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link
+                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(179,115,67,0.45)]"
+                    href="/get-quote"
+                  >
+                    Get Quote
+                  </Link>
+                )
+              ) : (
+                <Link
+                  className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(179,115,67,0.45)]"
+                  href="/login"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </div>
         </nav>
+
+        {/* Mobile / tablet panel */}
+        {isOpen && (
+          <div className="border-t border-line/80 bg-[rgba(255,252,248,0.98)] backdrop-blur-xl lg:hidden">
+            <div className="mx-auto max-w-6xl px-4! py-4! md:px-6!">
+              <ul className="flex flex-col gap-1!">
+                {navItems.map((item) => {
+                  const active = isActive(item)
+                  return (
+                    <li key={item.to}>
+                      <Link
+                        href={item.to}
+                        onClick={() => setIsOpen(false)}
+                        className={`block rounded-xl px-4! py-3! text-[0.98rem] font-semibold transition-colors ${
+                          active
+                            ? 'bg-brand/10 text-brand-deep'
+                            : 'text-ink-soft hover:bg-brand/5 hover:text-brand'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div className="mt-4! border-t border-line/80 pt-4!">
+                {user ? (
+                  user.role === 'artist' ? (
+                    <Link
+                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
+                      href="/dashboard"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  ) : (
+                    <Link
+                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
+                      href="/get-quote"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Get Quote
+                    </Link>
+                  )
+                ) : (
+                  <Link
+                    className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Login
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )

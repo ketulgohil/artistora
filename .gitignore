@@ -39,3 +39,13 @@ media/
 
 # payload CMS temp
 .temp/
+
+# payload auto-generated
+src/payload-types.ts
+src/app/(payload)/admin/importMap.js
+
+# AI tools
+.gemini/
+
+# supabase local temp
+supabase/.temp/

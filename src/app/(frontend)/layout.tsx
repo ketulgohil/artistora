@@ -19,17 +19,20 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
           rel="stylesheet"
         />
       </head>
       <body>
-        <a href="#main-content" className="skip-link">
+        <a
+          href="#main-content"
+          className="skip-link absolute left-4 top-3 z-[1000] -translate-y-48 rounded-full bg-white px-5 py-2.5 text-sm text-ink shadow-soft ring-1 ring-line transition-transform duration-200 focus:translate-y-0"
+        >
           Skip to main content
         </a>
-        <div className="site-shell min-h-screen flex flex-col">
+        <div className="flex min-h-screen flex-col">
           <Header />
-          <main id="main-content" className="page-shell flex-1">
+          <main id="main-content" className="flex-1 pt-[84px]">
             {children}
           </main>
           <Footer />

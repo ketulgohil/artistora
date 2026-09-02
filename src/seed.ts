@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const OLD_SITE_PUBLIC = '/var/www/html/shivamehndiart/public'
+const OLD_SITE_PUBLIC = '/Users/admin/Developer/shivamehndiart/public'
 
 // ── Portfolio category mapping (matches old site's portfolioImages.js) ──
 const CATEGORIES = [

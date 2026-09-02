@@ -43,11 +43,13 @@ function lexicalText(text: string) {
 }
 
 // ── Services ──
+// `image` is resolved at runtime by the media `alt` text (set in seed.ts) so
+// lookups stay correct even when filenames get dedupe suffixes like -1/-2.
 const SERVICES = [
   {
     title: 'Bridal Mehndi',
     slug: 'bridal-mehndi',
-    image: 73, // Bridal.webp
+    imageAlt: 'Bridal Mehndi Service',
     description:
       'Intricate bridal storytelling with detailed motifs, balanced composition, and a premium finish designed for your wedding photographs and close-up moments.',
     points: ['Full bridal styling', 'Detailed custom patterns', 'Premium occasion focus'],
@@ -56,7 +58,7 @@ const SERVICES = [
   {
     title: 'Engagement Mehndi',
     slug: 'engagement-mehndi',
-    image: 75, // engagement.webp
+    imageAlt: 'Engagement Mehndi Service',
     description:
       'Modern, elegant engagement mehndi that feels romantic, stylish, and polished without losing the warmth of traditional design language.',
     points: ['Contemporary styling', 'Camera-friendly finish', 'Ideal for ring ceremonies'],
@@ -65,13 +67,25 @@ const SERVICES = [
   {
     title: 'Baby Shower Mehndi',
     slug: 'baby-shower-mehndi',
-    image: 74, // Baby_shower.webp
+    imageAlt: 'Baby Shower Mehndi',
     description:
       'Soft, graceful mehndi for baby showers and intimate family occasions, with patterns that feel celebratory, neat, and beautifully balanced.',
     points: ['Gentle festive patterns', 'Family event ready', 'Comfort-first experience'],
     order: 3,
   },
 ]
+
+async function resolveMediaId(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  alt: string,
+): Promise<number | undefined> {
+  const { docs } = await payload.find({
+    collection: 'media',
+    where: { alt: { equals: alt } },
+    limit: 1,
+  })
+  return docs.length > 0 ? docs[0].id : undefined
+}
 
 // ── Testimonials ──
 const TESTIMONIALS = [
@@ -167,12 +181,13 @@ async function main() {
       console.log(`  ⏭  "${svc.title}" already exists`)
       continue
     }
+    const image = await resolveMediaId(payload, svc.imageAlt)
     await payload.create({
       collection: 'services',
       data: {
         title: svc.title,
         slug: svc.slug,
-        image: svc.image,
+        ...(image ? { image } : {}),
         description: svc.description,
         points: svc.points.map((p) => ({ point: p })),
         order: svc.order,

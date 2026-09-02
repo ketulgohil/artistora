@@ -76,6 +76,9 @@ export interface Config {
     faq: Faq;
     'youtube-videos': YoutubeVideo;
     'static-pages': StaticPage;
+    artists: Artist;
+    leads: Lead;
+    quotes: Quote;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +95,9 @@ export interface Config {
     faq: FaqSelect<false> | FaqSelect<true>;
     'youtube-videos': YoutubeVideosSelect<false> | YoutubeVideosSelect<true>;
     'static-pages': StaticPagesSelect<false> | StaticPagesSelect<true>;
+    artists: ArtistsSelect<false> | ArtistsSelect<true>;
+    leads: LeadsSelect<false> | LeadsSelect<true>;
+    quotes: QuotesSelect<false> | QuotesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -143,6 +149,8 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  name: string;
+  role: 'customer' | 'artist' | 'admin';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -189,7 +197,7 @@ export interface Service {
   id: number;
   title: string;
   slug?: string | null;
-  image: number | Media;
+  image?: (number | null) | Media;
   description: string;
   points?:
     | {
@@ -319,6 +327,89 @@ export interface StaticPage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artists".
+ */
+export interface Artist {
+  id: number;
+  displayName: string;
+  slug?: string | null;
+  user?: (number | null) | User;
+  profilePhoto?: (number | null) | Media;
+  phone: string;
+  whatsappNumber?: string | null;
+  email?: string | null;
+  bio: string;
+  city: string;
+  area?: string | null;
+  yearsOfExperience?: number | null;
+  /**
+   * Starting price in INR (e.g. 2000)
+   */
+  startingPrice?: number | null;
+  services?: (number | Service)[] | null;
+  styles?:
+    | {
+        style: string;
+        id?: string | null;
+      }[]
+    | null;
+  portfolioImages?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  verified?: boolean | null;
+  rating?: number | null;
+  reviewCount?: number | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
+  eventType: 'bridal' | 'engagement' | 'baby-shower' | 'family-function' | 'festival' | 'other';
+  eventDate: string;
+  eventLocation: string;
+  guestCount?: number | null;
+  budgetRange?:
+    | ('under-2000' | '2000-5000' | '5000-10000' | '10000-20000' | '20000-50000' | 'above-50000' | 'unsure')
+    | null;
+  serviceType?: (number | null) | Service;
+  designStyle?: string | null;
+  additionalNotes?: string | null;
+  matchedArtists?: (number | Artist)[] | null;
+  status?: ('new' | 'quotes-sent' | 'accepted' | 'booked' | 'closed') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes".
+ */
+export interface Quote {
+  id: number;
+  lead: number | Lead;
+  artist: number | Artist;
+  /**
+   * Quote amount in INR
+   */
+  priceQuote: number;
+  notes?: string | null;
+  status?: ('pending' | 'accepted' | 'declined' | 'expired') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -376,6 +467,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'static-pages';
         value: number | StaticPage;
+      } | null)
+    | ({
+        relationTo: 'artists';
+        value: number | Artist;
+      } | null)
+    | ({
+        relationTo: 'leads';
+        value: number | Lead;
+      } | null)
+    | ({
+        relationTo: 'quotes';
+        value: number | Quote;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -424,6 +527,8 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -551,6 +656,78 @@ export interface StaticPagesSelect<T extends boolean = true> {
   metaTitle?: T;
   metaDescription?: T;
   ogImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artists_select".
+ */
+export interface ArtistsSelect<T extends boolean = true> {
+  displayName?: T;
+  slug?: T;
+  user?: T;
+  profilePhoto?: T;
+  phone?: T;
+  whatsappNumber?: T;
+  email?: T;
+  bio?: T;
+  city?: T;
+  area?: T;
+  yearsOfExperience?: T;
+  startingPrice?: T;
+  services?: T;
+  styles?:
+    | T
+    | {
+        style?: T;
+        id?: T;
+      };
+  portfolioImages?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  verified?: T;
+  rating?: T;
+  reviewCount?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads_select".
+ */
+export interface LeadsSelect<T extends boolean = true> {
+  customerName?: T;
+  customerPhone?: T;
+  customerEmail?: T;
+  eventType?: T;
+  eventDate?: T;
+  eventLocation?: T;
+  guestCount?: T;
+  budgetRange?: T;
+  serviceType?: T;
+  designStyle?: T;
+  additionalNotes?: T;
+  matchedArtists?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes_select".
+ */
+export interface QuotesSelect<T extends boolean = true> {
+  lead?: T;
+  artist?: T;
+  priceQuote?: T;
+  notes?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

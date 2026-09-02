@@ -7,6 +7,9 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Next's dev client may resolve localhost to 127.0.0.1 for the HMR socket.
+  // Allow both loopback hostnames during local development.
+  allowedDevOrigins: ['localhost', '127.0.0.1'],
   images: {
     localPatterns: [
       {

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import SectionHeading from '@/components/SectionHeading'
+import { mediaFileUrl } from '@/lib/media-url'
 
 interface PortfolioItem {
   id: string
@@ -26,6 +27,8 @@ interface Category {
   title: string
   slug: string
 }
+
+const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([])
@@ -75,13 +78,15 @@ export default function PortfolioPage() {
     }
   }, [fullImage])
 
+  const closeModal = useCallback(() => setFullImage(null), [])
+
   const filteredItems =
     activeCategory === 'all'
       ? items
       : items.filter((item) => item.category?.slug === activeCategory)
 
   function imgUrl(item: PortfolioItem): string {
-    return `/api/media/file/${item.image?.filename || (item.image as any)}`
+    return item.image?.url || mediaFileUrl(item.image?.filename || (item.image as any))
   }
 
   function imgWidth(item: PortfolioItem): number {
@@ -92,126 +97,106 @@ export default function PortfolioPage() {
     return typeof item.image === 'number' ? 1 : item.image?.height || 1
   }
 
-  if (loading) {
-    return (
-      <section className="section-space" style={{ backgroundColor: 'var(--color-surface)' }}>
-        <div className="max-w-7xl mx-auto px-4!">
-          <SectionHeading title="Portfolio Gallery" subtitle="Designs In Focus" />
-          <div className="flex justify-center py-20!">
+  return (
+    <section className="py-16! md:py-24!">
+      <div className={CONTAINER}>
+        <SectionHeading title="Portfolio Gallery" subtitle="Designs In Focus" />
+
+        {loading ? (
+          <div className="flex justify-center py-24!">
             <div
-              className="w-10 h-10 rounded-full border-2 border-transparent animate-spin"
+              className="h-10 w-10 animate-spin rounded-full border-2 border-transparent"
               style={{
                 borderTopColor: 'var(--color-brand)',
                 borderRightColor: 'var(--color-brand)',
               }}
             />
           </div>
-        </div>
-      </section>
-    )
-  }
-
-  return (
-    <section className="section-space" style={{ backgroundColor: 'var(--color-surface)' }}>
-      <div className="max-w-7xl mx-auto px-4!">
-        <SectionHeading title="Portfolio Gallery" subtitle="Designs In Focus" />
-
-        <div className="max-w-2xl mx-auto text-center mb-10!" style={{ color: 'var(--color-text-secondary)' }}>
-          <p>
-            Explore bridal, festive, and event mehndi designs crafted with detail,
-            balance, and a refined finishing touch.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3! mb-10!">
-          <button
-            onClick={() => setActiveCategory('all')}
-            style={{
-              backgroundColor: activeCategory === 'all' ? 'var(--color-brand)' : 'transparent',
-              color: activeCategory === 'all' ? '#fff' : 'var(--color-text-secondary)',
-              borderColor: activeCategory === 'all' ? 'var(--color-brand)' : 'var(--color-border)',
-            }}
-            className="px-5! py-2.5! rounded-full border text-sm font-semibold transition-all duration-200 cursor-pointer"
-          >
-            All Designs
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.slug)}
-              style={{
-                backgroundColor: activeCategory === cat.slug ? 'var(--color-brand)' : 'transparent',
-                color: activeCategory === cat.slug ? '#fff' : 'var(--color-text-secondary)',
-                borderColor: activeCategory === cat.slug ? 'var(--color-brand)' : 'var(--color-border)',
-              }}
-              className="px-5! py-2.5! rounded-full border text-sm font-semibold transition-all duration-200 cursor-pointer"
-            >
-              {cat.title}
-            </button>
-          ))}
-        </div>
-
-        {filteredItems.length === 0 ? (
-          <p className="text-center py-16!" style={{ color: 'var(--color-text-muted)' }}>
-            No designs found in this category.
-          </p>
         ) : (
-          <div className="portfolio-grid">
-            {filteredItems.map((item) => (
+          <>
+            <p className="mx-auto mb-10! max-w-2xl! text-center text-sm leading-relaxed text-ink-soft">
+              Explore bridal, festive, and event mehndi designs crafted with detail,
+              balance, and a refined finishing touch.
+            </p>
+
+            {/* Category filter */}
+            <div className="mb-10! flex flex-wrap justify-center gap-2.5!">
               <button
-                key={item.id}
-                className="portfolio-item group border-none p-0"
-                onClick={() =>
-                  setFullImage({
-                    src: imgUrl(item),
-                    width: imgWidth(item),
-                    height: imgHeight(item),
-                    alt: item.altText || 'Mehndi design by Shiva Mehndi Art',
-                  })
-                }
-                type="button"
-                aria-label={`Open ${item.altText || 'mehndi design'} in full view`}
+                onClick={() => setActiveCategory('all')}
+                className={`cursor-pointer rounded-full border px-5! py-2.5! text-sm font-semibold transition-all duration-200 ${
+                  activeCategory === 'all'
+                    ? 'border-brand bg-gradient-to-r from-brand to-brand-dark text-white shadow-soft'
+                    : 'border-line bg-white text-ink-soft hover:border-brand/50 hover:text-brand-deep'
+                }`}
               >
-                <img
-                  src={imgUrl(item)}
-                  alt={item.altText || 'Mehndi design by Shiva Mehndi Art'}
-                  width={imgWidth(item)}
-                  height={imgHeight(item)}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                All Designs
               </button>
-            ))}
-          </div>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.slug)}
+                  className={`cursor-pointer rounded-full border px-5! py-2.5! text-sm font-semibold transition-all duration-200 ${
+                    activeCategory === cat.slug
+                      ? 'border-brand bg-gradient-to-r from-brand to-brand-dark text-white shadow-soft'
+                      : 'border-line bg-white text-ink-soft hover:border-brand/50 hover:text-brand-deep'
+                  }`}
+                >
+                  {cat.title}
+                </button>
+              ))}
+            </div>
+
+            {filteredItems.length === 0 ? (
+              <p className="py-16! text-center text-ink-muted">No designs found in this category.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3! md:grid-cols-3 md:gap-4! lg:grid-cols-4">
+                {filteredItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() =>
+                      setFullImage({
+                        src: imgUrl(item),
+                        width: imgWidth(item),
+                        height: imgHeight(item),
+                        alt: item.altText || 'Mehndi design by Shiva Mehndi Art',
+                      })
+                    }
+                    type="button"
+                    aria-label={`Open ${item.altText || 'mehndi design'} in full view`}
+                    className="group relative cursor-zoom-in overflow-hidden rounded-2xl border border-line/70 bg-white p-0 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+                  >
+                    <img
+                      src={imgUrl(item)}
+                      alt={item.altText || 'Mehndi design by Shiva Mehndi Art'}
+                      width={imgWidth(item)}
+                      height={imgHeight(item)}
+                      className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-coal/70 to-transparent px-3! pt-8! pb-2! text-left text-[0.72rem] font-medium text-white/0 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:text-white/90 group-hover:opacity-100">
+                      {item.category?.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
+      {/* Fullscreen modal */}
       {fullImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4!"
-          onClick={() => setFullImage(null)}
-          style={{
-            backgroundColor: 'rgba(18, 12, 8, 0.92)',
-            backdropFilter: 'blur(16px)',
-          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-coal/92 p-4!"
+          onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+          aria-label={fullImage.alt}
         >
           <button
-            onClick={() => setFullImage(null)}
-            className="absolute top-5! right-5! z-10 flex items-center justify-center w-10 h-10 rounded-full text-white text-2xl leading-none transition-all duration-200 cursor-pointer"
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(4px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(199, 123, 68, 0.8)'
-              e.currentTarget.style.borderColor = 'transparent'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-            }}
-            aria-label="Close fullscreen"
+            onClick={closeModal}
+            className="absolute top-5 right-5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-white/10 text-2xl leading-none text-white backdrop-blur transition-all duration-200 hover:rotate-90 hover:bg-brand"
+            aria-label="Close fullscreen view"
           >
             &times;
           </button>
@@ -220,8 +205,7 @@ export default function PortfolioPage() {
             alt={fullImage.alt}
             width={fullImage.width}
             height={fullImage.height}
-            className="max-w-full max-h-[88vh] object-contain rounded-lg"
-            style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
+            className="max-h-[88vh] w-auto max-w-full rounded-xl object-contain shadow-lift"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

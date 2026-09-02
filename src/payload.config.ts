@@ -14,11 +14,57 @@ import { Testimonials } from './collections/Testimonials'
 import { FAQ } from './collections/FAQ'
 import { YouTubeVideos } from './collections/YouTubeVideos'
 import { StaticPages } from './collections/StaticPages'
+import { Artists } from './collections/Artists'
+import { Leads } from './collections/Leads'
+import { Quotes } from './collections/Quotes'
 import { SiteSettings } from './globals/SiteSettings'
 import { HeaderFooter } from './globals/HeaderFooter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+// S3 is opt-in. Payload disables local media when this plugin is enabled, so
+// an existing local media directory would otherwise return 500 for files that
+// have not been uploaded to the remote bucket yet.
+const useS3 = process.env.PAYLOAD_S3_ENABLED === 'true'
+const s3Plugin = useS3
+  ? (await import('@payloadcms/storage-s3')).s3Storage({
+      bucket: process.env.PAYLOAD_S3_BUCKET || '',
+      config: {
+        endpoint: process.env.PAYLOAD_S3_ENDPOINT || '',
+        region: process.env.PAYLOAD_S3_REGION || 'us-east-1',
+        forcePathStyle: true,
+        credentials: {
+          accessKeyId: process.env.PAYLOAD_S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.PAYLOAD_S3_SECRET_ACCESS_KEY || '',
+        },
+      },
+      collections: { media: {} },
+    })
+  : null
+
+const dbUrl = process.env.DATABASE_URL || ''
+const isRemoteDb =
+  dbUrl.includes('sslmode=') ||
+  dbUrl.includes('supabase.com') ||
+  dbUrl.includes('neon.tech') ||
+  dbUrl.includes('pooler') ||
+  dbUrl.includes('amazonaws.com')
+
+// node-postgres lets connection-string options override the explicit `ssl`
+// object. Remove sslmode so the remote-db TLS settings below are authoritative
+// (Supabase's pooler certificate is not trusted by the local Node CA bundle).
+const connectionString = (() => {
+  if (!isRemoteDb || !dbUrl) return dbUrl
+
+  try {
+    const url = new URL(dbUrl)
+    url.searchParams.delete('sslmode')
+    return url.toString()
+  } catch {
+    return dbUrl
+  }
+})()
 
 export default buildConfig({
   admin: {
@@ -37,6 +83,9 @@ export default buildConfig({
     FAQ,
     YouTubeVideos,
     StaticPages,
+    Artists,
+    Leads,
+    Quotes,
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),
@@ -46,9 +95,11 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL || '',
+      connectionString,
+      max: 2,
+      ssl: isRemoteDb ? { rejectUnauthorized: false } : false,
     },
   }),
   sharp,
-  plugins: [],
+  plugins: s3Plugin ? [s3Plugin] : [],
 })

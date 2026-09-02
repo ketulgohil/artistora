@@ -1,5 +1,6 @@
 import { getPayload, type Where } from 'payload'
 import config from '../payload.config'
+import { mediaFileUrl } from './media-url'
 
 // Reusable Payload instance for server components
 let _payload: Awaited<ReturnType<typeof getPayload>> | null = null
@@ -110,12 +111,37 @@ export async function getStaticPage(slug: string) {
   return docs[0] || null
 }
 
+// ── Artists ──
+export async function getArtists(city?: string) {
+  const payload = await getPayloadClient()
+  const where: Where = city ? { city: { equals: city } } : {}
+  const { docs } = await payload.find({
+    collection: 'artists',
+    where: Object.keys(where).length > 0 ? where : undefined,
+    sort: 'order',
+    depth: 1,
+  })
+  return docs
+}
+
+export async function getArtistBySlug(slug: string) {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'artists',
+    where: { slug: { equals: slug } },
+    depth: 2,
+    limit: 1,
+  })
+  return docs[0] || null
+}
+
 // ── Media URL helper ──
 export function mediaUrl(media: any): string {
   if (!media) return ''
   if (typeof media === 'string') return media
+  if (media.filename) return mediaFileUrl(media.filename)
   if (media.url) return media.url
-  return `/api/media/file/${media.filename}`
+  return ''
 }
 
 export function mediaDimensions(media: any): { width: number; height: number } {

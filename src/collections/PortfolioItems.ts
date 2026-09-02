@@ -2,6 +2,9 @@ import type { CollectionConfig } from 'payload'
 
 export const PortfolioItems: CollectionConfig = {
   slug: 'portfolio-items',
+  access: {
+    read: () => true,
+  },
   admin: {
     useAsTitle: 'altText',
     defaultColumns: ['image', 'category', 'featured', 'createdAt'],
