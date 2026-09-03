@@ -41,7 +41,7 @@ function Eyebrow({ children, tone = 'brand' }: { children: React.ReactNode; tone
   return (
     <p
       className={`mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${
-        tone === 'light' ? 'text-gold' : 'text-brand'
+        tone === 'light' ? 'text-white' : 'text-brand'
       }`}
     >
       <span
