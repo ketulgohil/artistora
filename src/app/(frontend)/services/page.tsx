@@ -90,20 +90,11 @@ function PinIcon() {
   )
 }
 
-function ClassIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-    </svg>
-  )
-}
-
 const serviceTags = [
   'Mehndi, photography, makeup, and decor artists',
   'Wedding, event, and occasion bookings',
   'Home service across Ahmedabad',
-  'Art workshops and portfolio showcases',
+  'Portfolio showcases',
 ]
 
 const serviceImages: Record<string, string> = {
@@ -280,21 +271,6 @@ export default async function ServicesPage() {
                 </strong>
                 <span className="mt-2! block text-sm leading-relaxed text-ink-soft">
                   Home and venue service across Ahmedabad for all event types
-                </span>
-              </div>
-              <div className="relative overflow-hidden rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
-                <div
-                  aria-hidden="true"
-                  className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-gold via-brand to-gold opacity-70"
-                />
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/10 text-brand-deep">
-                  <ClassIcon />
-                </span>
-                <strong className="font-display mt-5! block text-[1.25rem]! font-semibold text-ink">
-                  Workshops
-                </strong>
-                <span className="mt-2! block text-sm leading-relaxed text-ink-soft">
-                  Art workshops and learning sessions
                 </span>
               </div>
             </div>
@@ -498,44 +474,6 @@ export default async function ServicesPage() {
                   </li>
                 ))}
               </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* ── Class Callout ── */}
-      <section className={SECTION}>
-        <div className={CONTAINER}>
-          <div className="relative overflow-hidden rounded-[2rem] border border-line bg-cream-deep/80 px-7! py-10! shadow-soft md:px-12! md:py-12!">
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-brand/10 blur-2xl"
-            />
-            <div className="relative flex flex-col gap-8! lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-xl!">
-                <Eyebrow>Art Workshops</Eyebrow>
-                <h2 className="font-display text-2xl! leading-snug font-semibold text-ink md:text-[2.1rem]!">
-                  Learning support for beginners and aspiring artists.
-                </h2>
-                <p className="mt-4! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
-                  Offline sessions can help students improve cone control, flow,
-                  pattern composition, and confidence in practice with guided,
-                  in-person support.
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">
-                <a className={BTN_PRIMARY} href="tel:+917405387720">
-                  Ask About Workshops
-                </a>
-                <a
-                  className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/25 bg-white/70 px-7! py-3! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-white"
-                  href="https://wa.me/917405387720"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <WhatsAppIcon />
-                  WhatsApp For Details
-                </a>
-              </div>
             </div>
           </div>
         </div>
