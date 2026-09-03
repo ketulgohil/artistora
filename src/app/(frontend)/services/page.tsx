@@ -103,7 +103,7 @@ const serviceTags = [
   'Mehndi, photography, makeup, and decor artists',
   'Wedding, event, and occasion bookings',
   'Home service across Ahmedabad',
-  'Art classes and workshops for learners',
+  'Art workshops and portfolio showcases',
 ]
 
 const promisePoints = [
@@ -497,7 +497,7 @@ export default async function ServicesPage() {
             />
             <div className="relative flex flex-col gap-8! lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl!">
-                <Eyebrow>Mehndi Classes</Eyebrow>
+                <Eyebrow>Art Workshops</Eyebrow>
                 <h2 className="font-display text-2xl! leading-snug font-semibold text-ink md:text-[2.1rem]!">
                   Learning support for beginners and aspiring artists.
                 </h2>
@@ -509,7 +509,7 @@ export default async function ServicesPage() {
               </div>
               <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">
                 <a className={BTN_PRIMARY} href="tel:+917405387720">
-                  Ask About Classes
+                  Ask About Workshops
                 </a>
                 <a
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/25 bg-white/70 px-7! py-3! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-white"

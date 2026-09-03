@@ -41,7 +41,6 @@ export const HeaderFooter: GlobalConfig = {
                 { label: 'Home', path: '/' },
                 { label: 'Services', path: '/services' },
                 { label: 'Portfolio', path: '/portfolio' },
-                { label: 'Classes', path: '/classes' },
                 { label: 'Contact', path: '/contact' },
               ],
             },

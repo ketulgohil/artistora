@@ -358,10 +358,10 @@ export default async function HomeServiceMehndiPage() {
               </Link>
               <span aria-hidden="true" className="text-line">/</span>
               <Link
-                href="/classes"
+                href="/services"
                 className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
               >
-                Mehndi Classes in Ahmedabad
+                Art Workshops in Ahmedabad
               </Link>
               <span aria-hidden="true" className="text-line">/</span>
               <Link

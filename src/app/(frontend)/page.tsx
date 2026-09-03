@@ -8,9 +8,8 @@ import {
   getServices,
   getTestimonials,
   getFAQs,
-  getYouTubeVideos,
 } from '@/lib/payload'
-import type { SiteSetting, Service, Testimonial, Faq, YoutubeVideo } from '@/payload-types'
+import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
 
 function renderLexicalText(data: unknown): string {
   if (!data) return ''
@@ -86,12 +85,11 @@ function Star({ filled = true }: { filled?: boolean }) {
 }
 
 export default async function HomePage() {
-  const [settings, _services, testimonials, faqs, youtubeVideos] = await Promise.all([
+  const [settings, _services, testimonials, faqs] = await Promise.all([
     getSiteSettings() as Promise<SiteSetting>,
     getServices() as Promise<Service[]>,
     getTestimonials() as Promise<Testimonial[]>,
     getFAQs() as Promise<Faq[]>,
-    getYouTubeVideos() as Promise<YoutubeVideo[]>,
   ])
 
   const bookingUrl = '/get-quote'
@@ -99,10 +97,10 @@ export default async function HomePage() {
   const phone = settings.phone || '+91 7405387720'
 
   const signatureServices = [
-    { title: 'Mehndi Artists', text: 'Book bridal, engagement, and festive mehndi specialists with premium portfolios — intricate detailing, symmetry, and a flawless finish.' },
     { title: 'Photographers', text: 'Compare wedding, event, and portrait photographers with portfolios you can browse before you book.' },
     { title: 'Makeup Artists', text: 'Find bridal, reception, and occasion makeup artists — trial-ready, hygiene-first, and camera-friendly.' },
     { title: 'Decor & Event Planners', text: 'Stage, mandap, floral, and themed decor — matched to your event style and budget.' },
+    { title: 'Mehndi Artists', text: 'Book bridal, engagement, and festive mehndi specialists with premium portfolios and home service availability.' },
   ]
 
   const trustStats = [
@@ -375,65 +373,6 @@ export default async function HomePage() {
             <a className={BTN_OUTLINE} href="/get-quote">
               Find Your Artist
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── YouTube Showcase ── */}
-      <section className={`${SECTION} bg-white/60`}>
-        <div className={CONTAINER}>
-          <div className="grid items-center gap-10! lg:grid-cols-[1fr_1.25fr]">
-            <div>
-              <Eyebrow>Artist Tutorials</Eyebrow>
-              <h2 className="font-display text-2xl! leading-snug font-semibold text-ink md:text-[2.1rem]!">
-                Watch art tutorials, tips, and techniques from our artist community.
-              </h2>
-              <p className="mt-4! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
-                See practice clips, design breakdowns, and short tutorials shared by artists on Artistora.
-              </p>
-              <a
-                className="mt-8! inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full bg-[#c4302b] px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
-                href="https://www.youtube.com/@ShivaMehndiArtAndClasses"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z" />
-                </svg>
-                Subscribe On YouTube
-              </a>
-            </div>
-            <div className="grid gap-4! sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-              {youtubeVideos.slice(0, 3).map((v: YoutubeVideo) => (
-                <a
-                  className="group overflow-hidden rounded-2xl border border-line bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
-                  href={`https://www.youtube.com/watch?v=${v.videoId}`}
-                  key={v.id}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <span className="relative block aspect-video overflow-hidden">
-                    <img
-                      src={`https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`}
-                      alt={v.title || 'Artistora YouTube video'}
-                      width={480}
-                      height={360}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center gap-2! bg-coal/35 text-sm font-semibold text-white transition-colors duration-300 group-hover:bg-coal/50">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff4242" aria-hidden="true" className="drop-shadow">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                      Watch
-                    </span>
-                  </span>
-                  <span className="block px-4! py-3! text-[0.88rem] leading-snug font-semibold text-ink">
-                    {v.title}
-                  </span>
-                </a>
-              ))}
-            </div>
           </div>
         </div>
       </section>

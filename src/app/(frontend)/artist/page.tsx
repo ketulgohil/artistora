@@ -71,9 +71,9 @@ export default async function ArtistPage() {
       text: 'Browse verified artists for weddings, corporate events, birthdays, festivals, and special occasions with home service availability.',
     },
     {
-      label: 'Classes',
+      label: 'Workshops',
       value: 'Learn From Artists',
-      text: 'Art workshops and classes in Ahmedabad where beginners progress from basics to advanced techniques.',
+      text: 'Art workshops in Ahmedabad where beginners progress from basics to advanced techniques.',
     },
   ]
 

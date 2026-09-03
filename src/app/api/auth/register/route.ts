@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password,
-        role: role === 'artist' ? 'artist' : 'customer',
+        role: role === 'artist' ? 'artist' : role === 'admin' ? 'admin' : 'customer',
       },
     })
 

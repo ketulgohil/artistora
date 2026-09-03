@@ -67,7 +67,7 @@ export default function RegisterPage() {
               Create Your Account
             </h1>
             <p className="mt-2! text-sm text-ink-soft">
-              Join Artistora as a customer or mehndi artist
+              Join Artistora as a customer or artist
             </p>
           </div>
 
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                       Customer
                     </span>
                     <span className="mt-1! block text-xs leading-relaxed text-ink-muted">
-                      Browse &amp; book verified mehndi artists
+                      Browse &amp; book verified artists
                     </span>
                   </div>
                 </label>
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                         !isCustomer ? 'text-brand-deep' : 'text-ink group-hover:text-brand-deep'
                       }`}
                     >
-                      Mehndi Artist
+                      Artist
                     </span>
                     <span className="mt-1! block text-xs leading-relaxed text-ink-muted">
                       List your services &amp; get bookings
@@ -221,7 +221,7 @@ export default function RegisterPage() {
                   Artist Membership
                 </div>
                 <p className="mt-1.5! text-ink-muted">
-                  You’ll get an artist dashboard to showcase your mehndi portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
+                  You’ll get an artist dashboard to showcase your portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
                 </p>
               </div>
             )}
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder={isCustomer ? 'e.g. Priya Patel' : 'e.g. Priya’s Mehndi Studio'}
+                placeholder={isCustomer ? 'e.g. Priya Patel' : 'e.g. Priya.s Art Studio'}
                 required
                 className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
@@ -310,7 +310,7 @@ export default function RegisterPage() {
               ) : isCustomer ? (
                 'Create Customer Account'
               ) : (
-                'Register as Mehndi Artist'
+                'Register as Artist'
               )}
             </button>
           </form>

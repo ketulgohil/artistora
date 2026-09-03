@@ -47,11 +47,11 @@ function lexicalText(text: string) {
 // lookups stay correct even when filenames get dedupe suffixes like -1/-2.
 const SERVICES = [
   {
-    title: 'Mehndi Artists',
-    slug: 'mehndi-artists',
-    imageAlt: 'Mehndi Service',
+    title: 'Photographers',
+    slug: 'photographers',
+    imageAlt: 'Photography Service',
     description:
-      'Intricate mehndi designs with detailed motifs, balanced composition, and a premium finish — bridal, engagement, festive, and casual styles available.',
+      'Professional photography services with detailed motifs, balanced composition, and a premium finish — bridal, engagement, festive, and casual styles available.',
     points: ['Bridal & event specialists', 'Custom patterns', 'Home service available'],
     order: 1,
   },
@@ -114,13 +114,13 @@ const FAQS = [
   {
     question: 'What artist services can I book on Artistora?',
     answer:
-      'You can book mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals across Ahmedabad.',
+      'You can book artists, photographers, makeup artists, decorators, musicians, and other event professionals across Ahmedabad.',
     order: 1,
   },
   {
     question: 'How do classes and workshops work?',
     answer:
-      'Artistora offers classes and workshops in various art forms — mehndi, photography, makeup, and more. Browse available sessions and register online.',
+      'Artistora offers classes and workshops in various art forms — photography, makeup, and more. Browse available sessions and register online.',
     order: 2,
   },
   {
@@ -132,7 +132,7 @@ const FAQS = [
   {
     question: 'What services can be booked on Artistora?',
     answer:
-      'You can book mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals through the platform.',
+      'You can book artists, photographers, makeup artists, decorators, musicians, and other event professionals through the platform.',
     order: 4,
   },
   {

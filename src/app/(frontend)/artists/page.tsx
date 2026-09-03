@@ -51,13 +51,13 @@ export default async function ArtistsPage() {
         <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 -left-24 h-80 w-80 rounded-full bg-gold/15 blur-3xl" />
         <div className={`relative ${CONTAINER} py-14! md:py-20!`}>
-          <SectionHeading title="Mehndi Artists" subtitle="Find Your Perfect Artist" />
+          <SectionHeading title="Artists" subtitle="Find Your Perfect Artist" />
           <div className="mx-auto max-w-2xl! text-center">
             <h1 className="font-display text-[2.05rem]! leading-[1.18] font-semibold text-ink md:text-[2.7rem]!">
-              Browse verified mehndi artists in Ahmedabad
+              Browse verified artists in Ahmedabad
             </h1>
             <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
-              Discover talented mehndi artists for bridal, engagement, and festive occasions.
+              Discover talented artists for weddings, events, and special occasions.
               Compare styles, experience, and pricing — then request quotes from your favorites.
             </p>
           </div>
@@ -70,12 +70,12 @@ export default async function ArtistsPage() {
           <div className="mx-auto max-w-3xl! text-center">
             <Eyebrow>How It Works</Eyebrow>
             <h2 className="font-display text-2xl! font-semibold text-ink md:text-[2.1rem]!">
-              Three simple steps to book your mehndi artist
+              Three simple steps to book your artist
             </h2>
           </div>
           <div className="mt-12! grid gap-6! sm:grid-cols-3">
             {[
-              { step: '01', title: 'Browse Artists', text: 'Explore verified mehndi artists with portfolios, styles, and transparent pricing.' },
+              { step: '01', title: 'Browse Artists', text: 'Explore verified artists with portfolios, styles, and transparent pricing.' },
               { step: '02', title: 'Compare & Choose', text: 'Filter by style, experience, and budget to find the perfect match for your event.' },
               { step: '03', title: 'Get 3 Quotes', text: 'Submit your event details and receive competitive quotes from top artists.' },
             ].map((item) => (
@@ -212,10 +212,10 @@ export default async function ArtistsPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -right-20 -bottom-28 h-72 w-72 rounded-full bg-gold/10 blur-3xl" />
             <div className="relative mx-auto max-w-2xl! text-center">
               <h2 className="font-display text-3xl! leading-snug font-semibold text-white md:text-[2.4rem]!">
-                Are You a Mehndi Artist?
+                Are You an Artist?
               </h2>
               <p className="mt-4! text-sm leading-relaxed text-cream/60 md:text-[0.95rem]">
-                Join our platform and connect with customers looking for premium mehndi services in Ahmedabad.
+                Join our platform and connect with customers looking for professional artists in Ahmedabad.
               </p>
               <div className="mt-8! flex flex-wrap justify-center gap-3!">
                 <a

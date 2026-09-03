@@ -3,7 +3,7 @@ import Link from 'next/link'
 const BOOKING_URL = '/book'
 
 const popularBookings = [
-  { label: 'Mehndi Artists', to: '/services' },
+  { label: 'Artists', to: '/services' },
   { label: 'Photographers', to: '/artists' },
   { label: 'Makeup Artists', to: '/artists' },
   { label: 'Decor & Planning', to: '/artists' },
@@ -88,7 +88,7 @@ export default function Footer() {
               className="mb-4! h-auto w-44! rounded-lg"
             />
             <p className="mt-2! max-w-xs! text-sm leading-relaxed text-cream/55">
-              India&apos;s curated artist marketplace — discover, compare, and book verified mehndi, photography, makeup, and decor artists for every celebration.
+              India&apos;s curated artist marketplace — discover, compare, and book verified photography, makeup, decor, and event artists for every celebration.
             </p>
           </div>
 
