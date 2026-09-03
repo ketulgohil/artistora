@@ -51,18 +51,9 @@ const SERVICES = [
     slug: 'photographers',
     imageAlt: 'Photography Service',
     description:
-      'Professional photography services with detailed motifs, balanced composition, and a premium finish — bridal, engagement, festive, and casual styles available.',
-    points: ['Bridal & event specialists', 'Custom patterns', 'Home service available'],
-    order: 1,
-  },
-  {
-    title: 'Photographers',
-    slug: 'photographers',
-    imageAlt: 'Photography Service',
-    description:
       'Professional photographers for weddings, events, portraits, and commercial shoots — browse portfolios and compare packages before you book.',
     points: ['Wedding & event coverage', 'Portfolio available', 'Flexible packages'],
-    order: 2,
+    order: 1,
   },
   {
     title: 'Makeup Artists',
@@ -71,7 +62,25 @@ const SERVICES = [
     description:
       'Bridal, reception, and occasion makeup artists with trial options, hygiene-first practices, and camera-friendly finishes.',
     points: ['Bridal & occasion makeup', 'Trial available', 'Premium products'],
+    order: 2,
+  },
+  {
+    title: 'Decor & Event Planners',
+    slug: 'decor-event-planners',
+    imageAlt: 'Decor Service',
+    description:
+      'Stage, mandap, floral, and themed decor — matched to your event style and budget with professional event planning services.',
+    points: ['Wedding & event decor', 'Custom themes', 'Full event setup'],
     order: 3,
+  },
+  {
+    title: 'Mehndi Artists',
+    slug: 'mehndi-artists',
+    imageAlt: 'Mehndi Service',
+    description:
+      'Bridal, engagement, and festive mehndi specialists with premium portfolios and home service availability across Ahmedabad.',
+    points: ['Bridal & event specialists', 'Custom patterns', 'Home service available'],
+    order: 4,
   },
 ]
 

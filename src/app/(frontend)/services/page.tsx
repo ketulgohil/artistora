@@ -106,6 +106,13 @@ const serviceTags = [
   'Art workshops and portfolio showcases',
 ]
 
+const serviceImages: Record<string, string> = {
+  'Photographers': '/services/photographers.jpg',
+  'Makeup Artists': '/services/makeup.jpg',
+  'Decor & Event Planners': '/services/decor.jpg',
+  'Mehndi Artists': '/services/mehndi.jpg',
+}
+
 const promisePoints = [
   {
     title: 'Verified Professionals',
@@ -305,10 +312,10 @@ export default async function ServicesPage() {
                   />
                   <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
                     <img
-                      src={service.image ? mediaUrl(service.image) : mediaFileUrl('engagement.webp')}
+                      src={serviceImages[service.title] || (service.image ? mediaUrl(service.image) : mediaFileUrl('engagement.webp'))}
                       alt={service.title}
-                      width={mediaDimensions(service.image).width}
-                      height={mediaDimensions(service.image).height}
+                      width={800}
+                      height={600}
                       className="aspect-[4/3] w-full rounded-[1.7rem] object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                       loading="lazy"
                       decoding="async"

@@ -88,6 +88,10 @@ const BUSINESS_IMAGES: { file: string; alt: string }[] = [
   { file: 'deveshaa-avatar.webp', alt: 'Deveshaa avatar' },
   { file: 'rutva-avatar.webp', alt: 'Rutva avatar' },
   { file: 'urvi-avatar.webp', alt: 'Urvi avatar' },
+  { file: '../public/services/photographers.jpg', alt: 'Photography Service' },
+  { file: '../public/services/makeup.jpg', alt: 'Makeup Service' },
+  { file: '../public/services/decor.jpg', alt: 'Decor Service' },
+  { file: '../public/services/mehndi.jpg', alt: 'Mehndi Service' },
 ]
 
 // ── Helper: read file for Payload upload ──
@@ -224,25 +228,29 @@ async function main() {
   // ── 4. Upload Business Images ──
   console.log('\n🏪 Uploading business images...')
   const imgDir = path.join(OLD_SITE_PUBLIC, 'img')
-  if (fs.existsSync(imgDir)) {
-    for (const { file: filename, alt: altText } of BUSINESS_IMAGES) {
-      const filePath = path.join(imgDir, filename)
-      if (!fs.existsSync(filePath)) {
-        console.warn(`  ⚠  Not found: ${filename}`)
-        continue
-      }
+  const newImgDir = path.join(process.cwd(), 'public')
+  
+  for (const { file: filename, alt: altText } of BUSINESS_IMAGES) {
+    // Try old site first, then new public folder
+    let filePath = path.join(imgDir, filename)
+    if (!fs.existsSync(filePath)) {
+      filePath = path.join(newImgDir, filename)
+    }
+    if (!fs.existsSync(filePath)) {
+      console.warn(`  ⚠  Not found: ${filename}`)
+      continue
+    }
 
-      try {
-        const fileData = readFileForUpload(filePath)
-        await payload.create({
-          collection: 'media',
-          data: { alt: altText },
-          file: fileData,
-        })
-        console.log(`  ✅ Business: ${filename}`)
-      } catch (err) {
-        console.error(`  ❌ ${filename}:`, (err as Error).message)
-      }
+    try {
+      const fileData = readFileForUpload(filePath)
+      await payload.create({
+        collection: 'media',
+        data: { alt: altText },
+        file: fileData,
+      })
+      console.log(`  ✅ Business: ${filename}`)
+    } catch (err) {
+      console.error(`  ❌ ${filename}:`, (err as Error).message)
     }
   }
 
