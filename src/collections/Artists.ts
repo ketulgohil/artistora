@@ -241,6 +241,18 @@ export const Artists: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    // ── Search Ranking ──
+    {
+      name: 'searchRank',
+      type: 'number',
+      defaultValue: 0,
+      label: 'Search Rank Score',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Auto-calculated score based on rating, reviews, completed bookings, and profile completeness',
+      },
+    },
     // ── Featured & Subscription ──
     {
       type: 'collapsible',
