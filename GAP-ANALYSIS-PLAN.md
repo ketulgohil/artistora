@@ -46,43 +46,43 @@
 ## P1 — Important Reliability Fixes
 
 ### 3.1 Lead Lifecycle
-- [ ] new → reviewing → artists_matched → quotes_received → customer_contacted → artist_selected → booking_pending → booked
-- [ ] Add lost status and lostReason
+- [x] new → reviewing → artists_matched → quotes_received → customer_contacted → artist_selected → booking_pending → booked
+- [x] Add lost status and lostReason
 
 ### 3.2 Lead Ownership
-- [ ] Add assignedAdmin/owner to Lead
-- [ ] Allow reassignment later
+- [x] Add assignedAdmin/owner to Lead
+- [x] Allow reassignment later
 
 ### 3.3 Cancellation Metadata
-- [ ] cancelledBy: customer, artist, admin, system
-- [ ] cancellationReason
-- [ ] cancelledAt
-- [ ] Future-ready refundAmount/refundStatus fields
+- [x] cancelledBy: customer, artist, admin, system
+- [x] cancellationReason
+- [x] cancelledAt
+- [x] Future-ready refundAmount/refundStatus fields
 
 ### 3.4 Review Protection
-- [ ] Verify logged-in customer owns the booking
-- [ ] Only completed bookings can be reviewed
-- [ ] Prevent duplicate reviews for one booking
-- [ ] Store verifiedBooking = true
+- [x] Verify logged-in customer owns the booking
+- [x] Only completed bookings can be reviewed
+- [x] Prevent duplicate reviews for one booking
+- [x] Store verifiedBooking = true
 
 ### 3.5 Approval vs Verification
-- [ ] approvalStatus: pending, approved, rejected, suspended
-- [ ] verificationStatus: unverified, verified
-- [ ] Define evidence required for verified badge
+- [x] approvalStatus: pending, approved, rejected, suspended
+- [x] verificationStatus: unverified, verified
+- [x] Define evidence required for verified badge
 
 ### 3.6 Notifications
-- [ ] New lead/quote request
-- [ ] Quote received
-- [ ] Booking request
-- [ ] Artist accepted/declined
-- [ ] Booking confirmed/cancelled
-- [ ] Event reminder
-- [ ] Review request after completion
+- [x] New lead/quote request
+- [x] Quote received
+- [x] Booking request
+- [x] Artist accepted/declined
+- [x] Booking confirmed/cancelled
+- [x] Event reminder
+- [x] Review request after completion
 
 ### 3.7 Customer Privacy by Stage
-- [ ] Before selection: expose only area/city, date, service, guest count, budget, requirements
-- [ ] After confirmation: expose contact details
-- [ ] Document read/write permissions for every role
+- [x] Before selection: expose only area/city, date, service, guest count, budget, requirements
+- [x] After confirmation: expose contact details
+- [x] Document read/write permissions for every role
 
 ---
 
