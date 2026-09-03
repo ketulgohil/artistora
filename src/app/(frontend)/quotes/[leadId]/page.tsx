@@ -7,6 +7,9 @@ import Link from 'next/link'
 interface Quote {
   id: string
   amount: number
+  priceType?: string
+  unitRate?: number
+  units?: number
   message?: string
   estimatedHours?: number
   travelFee: number
@@ -98,7 +101,7 @@ export default function QuotesPage() {
 
         {success && (
           <div className="mb-6! rounded-xl border border-green-200 bg-green-50 px-4! py-3! text-sm text-green-700">
-            Quote accepted! The artist will contact you on WhatsApp shortly.
+            Quote accepted! A booking request has been sent to the artist for confirmation. You can also view it in <Link href="/my-bookings" className="font-semibold underline">My Bookings</Link>.
           </div>
         )}
 
@@ -124,7 +127,14 @@ export default function QuotesPage() {
               >
                 <div className="flex items-start justify-between gap-3!">
                   <div>
-                    <p className="font-semibold text-ink">{q.artistName}</p>
+                    <div className="flex items-center gap-2!">
+                      <p className="font-semibold text-ink">{q.artistName}</p>
+                      {q.priceType && (
+                        <span className="rounded-full bg-cream-deep px-2.5! py-0.5! text-[11px] font-medium text-ink-soft capitalize">
+                          {q.priceType.replace('_', ' ')}
+                        </span>
+                      )}
+                    </div>
                     {q.artistRating > 0 && (
                       <div className="mt-1! flex items-center gap-1! text-sm text-gold">
                         {'★'.repeat(Math.round(q.artistRating))}

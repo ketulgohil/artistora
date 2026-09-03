@@ -127,19 +127,24 @@ All 17 routes working (200 OK), content seeded, Payload CMS configured.
 - Email notifications (lead confirmation, quote sent, booking confirmation)
 - P0.1: Customer Identity & Secure Booking Access
 - P0.2: Separate Lead from Quote
+- P0.3: Artist Booking Acceptance (requested→artist_pending→confirmed→in_progress→completed)
+- P0.4: Basic Availability (blocked dates + conflict detection)
+- P0.5: Flexible Pricing (package, hourly, per_person, custom_quote)
+- P0.6: Multi-Artist Bookings (assignedArtists, roles, statuses, notifications)
+- P0.7: Payload Access Control (role & owner-level security across all collections)
 
 ---
 
 ## 📋 Pending — Gap Analysis (GAP-ANALYSIS-PLAN.md)
 
-### P0 — Critical (8 items remaining)
+### P0 — Critical (Completed ✅)
 | Item | Status | Description |
 |------|--------|-------------|
-| 2.3 Artist Booking Acceptance | [ ] | Statuses requested→confirmed→completed, accept/decline, decline reason |
-| 2.4 Basic Availability | [ ] | Date mechanism, conflict check before confirmation |
-| 2.5 Flexible Pricing | [ ] | priceType (hourly/per_person/package/custom), quote amount ≠ startingPrice |
-| 2.6 Multi-Artist Bookings | [ ] | Join collection, per-artist status, separate notifications |
-| 2.7 Payload Access Control | [ ] | Artist/customer/admin CRUD restrictions enforced in Payload |
+| 2.3 Artist Booking Acceptance | [x] | Statuses requested→artist_pending→confirmed→in_progress→completed, accept/decline, decline reason |
+| 2.4 Basic Availability | [x] | Date mechanism, conflict check before confirmation |
+| 2.5 Flexible Pricing | [x] | priceType (hourly/per_person/package/custom), quote amount ≠ startingPrice |
+| 2.6 Multi-Artist Bookings | [x] | assignedArtists array, per-artist status/role/fee, separate notifications |
+| 2.7 Payload Access Control | [x] | Artist/customer/admin CRUD restrictions enforced in Payload |
 
 ### P1 — Important (20 items remaining)
 Lead lifecycle, ownership, cancellation metadata, review protection, approval/verification dual status, full notification pipeline, customer privacy by stage.

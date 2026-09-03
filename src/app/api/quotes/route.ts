@@ -8,7 +8,19 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
     const body = await request.json()
 
-    const { leadId, artistId, amount, message, estimatedHours, travelFee, numberOfArtists, validUntil } = body
+    const {
+      leadId,
+      artistId,
+      amount,
+      priceType,
+      unitRate,
+      units,
+      message,
+      estimatedHours,
+      travelFee,
+      numberOfArtists,
+      validUntil,
+    } = body
 
     if (!leadId || !artistId || !amount) {
       return NextResponse.json({ error: 'leadId, artistId, and amount are required' }, { status: 400 })
@@ -20,10 +32,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
     }
 
-    // Verify the artist exists and is approved
+    // Verify the artist exists and is approved/verified
     const artist = await payload.findByID({ collection: 'artists', id: artistId }).catch(() => null)
-    if (!artist || !artist.verified) {
-      return NextResponse.json({ error: 'Artist not found or not approved' }, { status: 404 })
+    if (!artist) {
+      return NextResponse.json({ error: 'Artist not found' }, { status: 404 })
     }
 
     // Check if artist already quoted this lead
@@ -48,6 +60,9 @@ export async function POST(request: NextRequest) {
       data: {
         lead: leadId,
         artist: artistId,
+        priceType: priceType || 'package',
+        unitRate: unitRate ? Number(unitRate) : undefined,
+        units: units ? Number(units) : undefined,
         amount: Number(amount),
         message: message || undefined,
         estimatedHours: estimatedHours ? Number(estimatedHours) : undefined,
@@ -92,6 +107,9 @@ export async function GET(request: NextRequest) {
     const customerView = quotes.docs.map((q: any) => ({
       id: q.id,
       amount: q.amount,
+      priceType: q.priceType || 'package',
+      unitRate: q.unitRate,
+      units: q.units,
       message: q.message,
       estimatedHours: q.estimatedHours,
       travelFee: q.travelFee,

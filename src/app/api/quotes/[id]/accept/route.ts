@@ -26,12 +26,25 @@ export async function POST(
       return NextResponse.json({ error: 'Quote is no longer available' }, { status: 400 })
     }
 
+    const leadId = Number(typeof quote.lead === 'object' ? quote.lead.id : quote.lead)
+    const artistId = Number(typeof quote.artist === 'object' ? quote.artist.id : quote.artist)
+
+    // Fetch originating lead
+    const lead = await payload.findByID({
+      collection: 'leads',
+      id: leadId,
+    }).catch(() => null)
+
+    if (!lead) {
+      return NextResponse.json({ error: 'Originating lead not found' }, { status: 404 })
+    }
+
     // Reject all other quotes for this lead
     const otherQuotes = await payload.find({
       collection: 'quotes',
       where: {
         and: [
-          { lead: { equals: typeof quote.lead === 'object' ? quote.lead.id : quote.lead } },
+          { lead: { equals: leadId } },
           { id: { not_equals: quoteId } },
         ],
       },
@@ -53,20 +66,48 @@ export async function POST(
     })
 
     // Update the lead with accepted quote and artist
-    const leadId = Number(typeof quote.lead === 'object' ? quote.lead.id : quote.lead)
-    const artistId = Number(typeof quote.artist === 'object' ? quote.artist.id : quote.artist)
-
     await payload.update({
       collection: 'leads',
       id: leadId,
       data: {
-        status: 'accepted',
+        status: 'artist_selected',
         matchedArtists: [artistId],
         acceptedQuote: Number(quoteId),
       },
     })
 
-    return NextResponse.json({ success: true })
+    // Create booking in 'artist_pending' status so artist can accept/decline
+    const booking = await payload.create({
+      collection: 'bookings',
+      data: {
+        name: lead.customerName,
+        phone: lead.customerPhone,
+        email: lead.customerEmail || undefined,
+        eventType: lead.eventType,
+        eventDate: lead.eventDate,
+        location: lead.eventLocation,
+        guestCount: lead.guestCount || undefined,
+        designStyle: lead.designStyle || undefined,
+        message: `Booking created from accepted Quote #${quoteId}`,
+        lead: leadId,
+        quote: Number(quoteId),
+        artist: artistId,
+        assignedArtists: [
+          {
+            artist: artistId,
+            role: 'lead',
+            status: 'pending',
+            fee: quote.amount,
+          },
+        ],
+        status: 'artist_pending',
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      bookingId: booking.id,
+    })
   } catch (error) {
     console.error('Quote accept error:', error)
     return NextResponse.json({ error: 'Failed to accept quote' }, { status: 500 })

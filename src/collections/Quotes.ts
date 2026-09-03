@@ -4,7 +4,7 @@ export const Quotes: CollectionConfig = {
   slug: 'quotes',
   admin: {
     useAsTitle: 'id',
-    defaultColumns: ['lead', 'artist', 'amount', 'status', 'createdAt'],
+    defaultColumns: ['lead', 'artist', 'amount', 'priceType', 'status', 'createdAt'],
     group: 'Marketplace',
   },
   access: {
@@ -14,10 +14,12 @@ export const Quotes: CollectionConfig = {
 
       // Artists can read their own quotes
       if (req.user?.role === 'artist') {
-        return { artist: { equals: req.user.id } }
+        return {
+          'artist.user': { equals: req.user.id },
+        }
       }
 
-      // Customers: no direct read (use API endpoint)
+      // Customers access quotes via /api/quotes?leadId=X endpoint
       return false
     },
     create: ({ req }) => {
@@ -30,9 +32,11 @@ export const Quotes: CollectionConfig = {
       // Admins can update all
       if (req.user?.role === 'admin') return true
 
-      // Artists can update their own quotes (limited fields)
+      // Artists can update their own quotes
       if (req.user?.role === 'artist') {
-        return { artist: { equals: req.user.id } }
+        return {
+          'artist.user': { equals: req.user.id },
+        }
       }
 
       return false
@@ -57,11 +61,43 @@ export const Quotes: CollectionConfig = {
       label: 'Artist',
     },
     {
+      name: 'priceType',
+      type: 'select',
+      defaultValue: 'package',
+      options: [
+        { label: 'Package / Fixed Rate', value: 'package' },
+        { label: 'Hourly Rate', value: 'hourly' },
+        { label: 'Per Person / Guest', value: 'per_person' },
+        { label: 'Custom Quote', value: 'custom_quote' },
+      ],
+      label: 'Pricing Model',
+    },
+    {
+      name: 'unitRate',
+      type: 'number',
+      min: 0,
+      label: 'Rate per Unit / Hour / Guest (₹)',
+      admin: {
+        condition: (_, siblingData) =>
+          siblingData?.priceType === 'hourly' || siblingData?.priceType === 'per_person',
+      },
+    },
+    {
+      name: 'units',
+      type: 'number',
+      min: 1,
+      label: 'Number of Units / Hours / Guests',
+      admin: {
+        condition: (_, siblingData) =>
+          siblingData?.priceType === 'hourly' || siblingData?.priceType === 'per_person',
+      },
+    },
+    {
       name: 'amount',
       type: 'number',
       required: true,
       min: 0,
-      label: 'Quote Amount (₹)',
+      label: 'Total Quote Amount (₹)',
     },
     {
       name: 'message',

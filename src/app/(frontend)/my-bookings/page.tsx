@@ -5,14 +5,22 @@ import Link from 'next/link'
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   new: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'New' },
-  contacted: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Contacted' },
+  reviewing: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Reviewing' },
+  artists_matched: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Artists Matched' },
+  quotes_received: { bg: 'bg-indigo-100', text: 'text-indigo-700', label: 'Quotes Received' },
+  customer_contacted: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Customer Contacted' },
+  artist_selected: { bg: 'bg-green-100', text: 'text-green-700', label: 'Artist Selected' },
+  booking_pending: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Booking Pending' },
+  booked: { bg: 'bg-green-100', text: 'text-green-700', label: 'Booked' },
+  lost: { bg: 'bg-red-100', text: 'text-red-700', label: 'Lost' },
+  closed: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Closed' },
+  // Booking statuses
   confirmed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Confirmed' },
+  artist_pending: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Artist Pending' },
+  in_progress: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'In Progress' },
   completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Completed' },
   cancelled: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
-  'quotes-sent': { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Quotes Sent' },
-  accepted: { bg: 'bg-green-100', text: 'text-green-700', label: 'Accepted' },
-  booked: { bg: 'bg-green-100', text: 'text-green-700', label: 'Booked' },
-  closed: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Closed' },
+  declined: { bg: 'bg-red-100', text: 'text-red-700', label: 'Declined' },
 }
 
 const EVENT_LABELS: Record<string, string> = {

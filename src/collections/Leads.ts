@@ -93,7 +93,7 @@ export const Leads: CollectionConfig = {
       // Artists can read leads where they are matched
       if (req.user?.role === 'artist') {
         return {
-          matchedArtists: { contains: req.user.id },
+          'matchedArtists.user': { equals: req.user.id },
         }
       }
 
@@ -204,11 +204,34 @@ export const Leads: CollectionConfig = {
       defaultValue: 'new',
       options: [
         { label: 'New', value: 'new' },
-        { label: 'Quotes Sent', value: 'quotes-sent' },
-        { label: 'Accepted', value: 'accepted' },
+        { label: 'Reviewing', value: 'reviewing' },
+        { label: 'Artists Matched', value: 'artists_matched' },
+        { label: 'Quotes Received', value: 'quotes_received' },
+        { label: 'Customer Contacted', value: 'customer_contacted' },
+        { label: 'Artist Selected', value: 'artist_selected' },
+        { label: 'Booking Pending', value: 'booking_pending' },
         { label: 'Booked', value: 'booked' },
+        { label: 'Lost', value: 'lost' },
         { label: 'Closed', value: 'closed' },
       ],
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'lostReason',
+      type: 'textarea',
+      label: 'Lost Reason',
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.status === 'lost',
+      },
+    },
+    {
+      name: 'assignedAdmin',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'Assigned Admin',
       admin: {
         position: 'sidebar',
       },

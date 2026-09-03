@@ -3,7 +3,26 @@ import type { CollectionConfig } from 'payload'
 export const Artists: CollectionConfig = {
   slug: 'artists',
   access: {
-    read: () => true,
+    read: () => true, // Public artist directory
+    create: ({ req }) => {
+      // Admins and registered artists can create artist profile
+      if (req.user?.role === 'admin' || req.user?.role === 'artist') return true
+      return false
+    },
+    update: ({ req }) => {
+      // Admins can update all
+      if (req.user?.role === 'admin') return true
+
+      // Artists can update their own profile
+      if (req.user?.role === 'artist') {
+        return {
+          user: { equals: req.user.id },
+        }
+      }
+
+      return false
+    },
+    delete: ({ req }) => req.user?.role === 'admin',
   },
   admin: {
     useAsTitle: 'displayName',
@@ -77,12 +96,47 @@ export const Artists: CollectionConfig = {
       min: 0,
     },
     {
+      name: 'priceType',
+      type: 'select',
+      defaultValue: 'package',
+      options: [
+        { label: 'Package / Fixed Rate', value: 'package' },
+        { label: 'Hourly Rate', value: 'hourly' },
+        { label: 'Per Person / Guest', value: 'per_person' },
+        { label: 'Custom Quote Only', value: 'custom_quote' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Default pricing model',
+      },
+    },
+    {
       name: 'startingPrice',
       type: 'number',
       min: 0,
       admin: {
-        description: 'Starting price in INR (e.g. 2000)',
+        description: 'Starting price in INR for public display (e.g. 2000)',
       },
+    },
+    {
+      name: 'unavailableDates',
+      type: 'array',
+      label: 'Blocked / Unavailable Dates',
+      admin: {
+        description: 'Dates when this artist is unavailable for bookings',
+      },
+      fields: [
+        {
+          name: 'date',
+          type: 'date',
+          required: true,
+        },
+        {
+          name: 'reason',
+          type: 'text',
+          label: 'Reason (optional)',
+        },
+      ],
     },
     {
       name: 'services',
@@ -123,6 +177,9 @@ export const Artists: CollectionConfig = {
       name: 'verified',
       type: 'checkbox',
       defaultValue: false,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
       },
@@ -133,6 +190,9 @@ export const Artists: CollectionConfig = {
       min: 0,
       max: 5,
       defaultValue: 0,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
       },
@@ -142,6 +202,9 @@ export const Artists: CollectionConfig = {
       type: 'number',
       min: 0,
       defaultValue: 0,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
       },

@@ -345,9 +345,23 @@ export interface Artist {
   area?: string | null;
   yearsOfExperience?: number | null;
   /**
-   * Starting price in INR (e.g. 2000)
+   * Default pricing model
+   */
+  priceType?: ('package' | 'hourly' | 'per_person' | 'custom_quote') | null;
+  /**
+   * Starting price in INR for public display (e.g. 2000)
    */
   startingPrice?: number | null;
+  /**
+   * Dates when this artist is unavailable for bookings
+   */
+  unavailableDates?:
+    | {
+        date: string;
+        reason?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   services?: (number | Service)[] | null;
   styles?:
     | {
@@ -390,7 +404,22 @@ export interface Lead {
   additionalNotes?: string | null;
   matchedArtists?: (number | Artist)[] | null;
   acceptedQuote?: (number | null) | Quote;
-  status?: ('new' | 'quotes-sent' | 'accepted' | 'booked' | 'closed') | null;
+  status?:
+    | (
+        | 'new'
+        | 'reviewing'
+        | 'artists_matched'
+        | 'quotes_received'
+        | 'customer_contacted'
+        | 'artist_selected'
+        | 'booking_pending'
+        | 'booked'
+        | 'lost'
+        | 'closed'
+      )
+    | null;
+  lostReason?: string | null;
+  assignedAdmin?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -402,6 +431,9 @@ export interface Quote {
   id: number;
   lead: number | Lead;
   artist: number | Artist;
+  priceType?: ('package' | 'hourly' | 'per_person' | 'custom_quote') | null;
+  unitRate?: number | null;
+  units?: number | null;
   amount: number;
   message?: string | null;
   estimatedHours?: number | null;
@@ -427,8 +459,26 @@ export interface Booking {
   guestCount?: number | null;
   designStyle?: string | null;
   message?: string | null;
+  lead?: (number | null) | Lead;
+  quote?: (number | null) | Quote;
   artist?: (number | null) | Artist;
-  status?: ('new' | 'contacted' | 'confirmed' | 'completed' | 'cancelled') | null;
+  /**
+   * Manage multiple artists for large events or group functions
+   */
+  assignedArtists?:
+    | {
+        artist: number | Artist;
+        role?: ('lead' | 'assistant' | 'member') | null;
+        status?: ('pending' | 'accepted' | 'declined') | null;
+        declineReason?: string | null;
+        fee?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  status?:
+    | ('requested' | 'artist_pending' | 'confirmed' | 'in_progress' | 'completed' | 'declined' | 'cancelled')
+    | null;
+  declineReason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -703,7 +753,15 @@ export interface ArtistsSelect<T extends boolean = true> {
   city?: T;
   area?: T;
   yearsOfExperience?: T;
+  priceType?: T;
   startingPrice?: T;
+  unavailableDates?:
+    | T
+    | {
+        date?: T;
+        reason?: T;
+        id?: T;
+      };
   services?: T;
   styles?:
     | T
@@ -744,6 +802,8 @@ export interface LeadsSelect<T extends boolean = true> {
   matchedArtists?: T;
   acceptedQuote?: T;
   status?: T;
+  lostReason?: T;
+  assignedAdmin?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -754,6 +814,9 @@ export interface LeadsSelect<T extends boolean = true> {
 export interface QuotesSelect<T extends boolean = true> {
   lead?: T;
   artist?: T;
+  priceType?: T;
+  unitRate?: T;
+  units?: T;
   amount?: T;
   message?: T;
   estimatedHours?: T;
@@ -778,8 +841,21 @@ export interface BookingsSelect<T extends boolean = true> {
   guestCount?: T;
   designStyle?: T;
   message?: T;
+  lead?: T;
+  quote?: T;
   artist?: T;
+  assignedArtists?:
+    | T
+    | {
+        artist?: T;
+        role?: T;
+        status?: T;
+        declineReason?: T;
+        fee?: T;
+        id?: T;
+      };
   status?: T;
+  declineReason?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -15,31 +15,31 @@
 - [x] Store the selected quote on the lead/booking
 
 ### 2.3 Artist Booking Acceptance
-- [ ] Add statuses: requested → artist_pending → confirmed → in-progress → completed
-- [ ] Artist can accept or decline
-- [ ] Store decline reason
-- [ ] Only accepted requests become confirmed bookings
+- [x] Add statuses: requested → artist_pending → confirmed → in-progress → completed
+- [x] Artist can accept or decline
+- [x] Store decline reason
+- [x] Only accepted requests become confirmed bookings
 
 ### 2.4 Basic Availability
-- [ ] Add available/unavailable date mechanism
-- [ ] Check confirmed bookings for conflicts before confirmation
-- [ ] Keep full calendar system for later phase
+- [x] Add available/unavailable date mechanism
+- [x] Check confirmed bookings for conflicts before confirmation
+- [x] Keep full calendar system for later phase
 
 ### 2.5 Flexible Pricing
-- [ ] Add priceType: hourly, per_person, package, custom_quote
-- [ ] Keep startingPrice for public display
-- [ ] Allow quote amount to differ from startingPrice
+- [x] Add priceType: hourly, per_person, package, custom_quote
+- [x] Keep startingPrice for public display
+- [x] Allow quote amount to differ from startingPrice
 
 ### 2.6 Multi-Artist Bookings
-- [ ] Decide between Booking.artists[] or BookingArtists join collection
-- [ ] Support individual assignment/status for each artist
-- [ ] Notify every assigned artist separately
+- [x] Decide between Booking.artists[] or BookingArtists join collection
+- [x] Support individual assignment/status for each artist
+- [x] Notify every assigned artist separately
 
 ### 2.7 Payload Access Control
-- [ ] Artists can only read/update their own profile and authorized bookings/leads/quotes
-- [ ] Customers can only access their own bookings, leads and reviews
-- [ ] Approval and admin mutations must be admin-protected
-- [ ] Enforce access in Payload, not just frontend
+- [x] Artists can only read/update their own profile and authorized bookings/leads/quotes
+- [x] Customers can only access their own bookings, leads and reviews
+- [x] Approval and admin mutations must be admin-protected
+- [x] Enforce access in Payload, not just frontend
 
 ---
 
