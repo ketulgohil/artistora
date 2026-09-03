@@ -111,7 +111,13 @@ const serviceImages: Record<string, string> = {
   'Makeup Artists': '/services/makeup.jpg',
   'Decor & Event Planners': '/services/decor.jpg',
   'Mehndi Artists': '/services/mehndi.jpg',
+  'Bridal Mehndi': '/services/mehndi.jpg',
+  'Engagement Mehndi': '/services/mehndi.jpg',
+  'Baby Shower Mehndi': '/services/mehndi.jpg',
 }
+
+// Filter to show only main service categories
+const MAIN_SERVICES = ['Photographers', 'Makeup Artists', 'Decor & Event Planners', 'Mehndi Artists']
 
 const promisePoints = [
   {
@@ -300,7 +306,9 @@ export default async function ServicesPage() {
       <section className={SECTION}>
         <div className={CONTAINER}>
           <div className="flex flex-col gap-14! md:gap-20!">
-            {(services as any[]).map((service: any, index: number) => (
+            {(services as any[])
+              .filter((service: any) => MAIN_SERVICES.includes(service.title))
+              .map((service: any, index: number) => (
               <article
                 className="grid items-center gap-10! lg:grid-cols-2 lg:gap-16!"
                 key={service.id}
