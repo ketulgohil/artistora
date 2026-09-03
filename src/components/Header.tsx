@@ -93,7 +93,7 @@ export default function Header() {
                 Artistora
               </strong>
               <small className="text-[0.58rem] font-semibold tracking-[0.2em] text-brand uppercase md:text-[0.64rem]">
-                Artistora
+                Ahmedabad's verified artist marketplace
               </small>
             </span>
           </Link>
