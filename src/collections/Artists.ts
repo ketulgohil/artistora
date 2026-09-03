@@ -241,6 +241,70 @@ export const Artists: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    // ── Featured & Subscription ──
+    {
+      type: 'collapsible',
+      label: 'Featured & Subscription',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'isFeatured',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Featured Artist',
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
+        },
+        {
+          name: 'featuredUntil',
+          type: 'date',
+          label: 'Featured Until',
+          admin: {
+            condition: (_, siblingData) => siblingData?.isFeatured === true,
+            date: {
+              pickerAppearance: 'dayOnly',
+            },
+          },
+        },
+        {
+          name: 'subscriptionPlan',
+          type: 'select',
+          defaultValue: 'free',
+          label: 'Subscription Plan',
+          options: [
+            { label: 'Free', value: 'free' },
+            { label: 'Basic', value: 'basic' },
+            { label: 'Premium', value: 'premium' },
+          ],
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
+        },
+        {
+          name: 'subscriptionExpiresAt',
+          type: 'date',
+          label: 'Subscription Expires',
+          admin: {
+            condition: (_, siblingData) => siblingData?.subscriptionPlan !== 'free',
+            date: {
+              pickerAppearance: 'dayOnly',
+            },
+          },
+        },
+        {
+          name: 'maxPortfolioItems',
+          type: 'number',
+          label: 'Max Portfolio Items',
+          defaultValue: 10,
+          admin: {
+            description: 'Free: 10, Basic: 25, Premium: 50',
+          },
+        },
+      ],
+    },
     // ── Analytics Fields ──
     {
       type: 'collapsible',

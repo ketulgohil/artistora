@@ -383,6 +383,14 @@ export interface Artist {
   verificationStatus?: ('unverified' | 'verified') | null;
   rating?: number | null;
   reviewCount?: number | null;
+  isFeatured?: boolean | null;
+  featuredUntil?: string | null;
+  subscriptionPlan?: ('free' | 'basic' | 'premium') | null;
+  subscriptionExpiresAt?: string | null;
+  /**
+   * Free: 10, Basic: 25, Premium: 50
+   */
+  maxPortfolioItems?: number | null;
   profileViews?: number | null;
   leadsReceived?: number | null;
   quotesSent?: number | null;
@@ -831,6 +839,11 @@ export interface ArtistsSelect<T extends boolean = true> {
   verificationStatus?: T;
   rating?: T;
   reviewCount?: T;
+  isFeatured?: T;
+  featuredUntil?: T;
+  subscriptionPlan?: T;
+  subscriptionExpiresAt?: T;
+  maxPortfolioItems?: T;
   profileViews?: T;
   leadsReceived?: T;
   quotesSent?: T;
