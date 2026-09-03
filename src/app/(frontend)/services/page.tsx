@@ -278,7 +278,7 @@ export default async function ServicesPage() {
                   <ClassIcon />
                 </span>
                 <strong className="font-display mt-5! block text-[1.25rem]! font-semibold text-ink">
-                  Classes
+                  Workshops
                 </strong>
                 <span className="mt-2! block text-sm leading-relaxed text-ink-soft">
                   Art workshops and learning sessions
