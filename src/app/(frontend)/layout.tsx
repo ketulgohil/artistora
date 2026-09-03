@@ -7,19 +7,19 @@ import './styles.css'
 export const metadata = {
   metadataBase: new URL('https://www.artistora.com'),
   title: {
-    default: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
+    default: 'Artistora — Book Verified Artists in Ahmedabad',
     template: '%s | Artistora',
   },
   description:
-    'Artistora connects you with verified mehndi artists in Ahmedabad. Compare quotes from top bridal, engagement, and festive mehndi artists — book in minutes.',
+    'Artistora connects you with verified artists in Ahmedabad — mehndi, photography, makeup, decor, music, and more. Compare quotes and book in minutes.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
+    title: 'Artistora — Book Verified Artists in Ahmedabad',
     description:
-      'Compare quotes from top bridal, engagement, and festive mehndi artists in Ahmedabad.',
+      'Compare quotes from verified mehndi, photography, makeup, and decor artists in Ahmedabad.',
     url: 'https://www.artistora.com',
     siteName: 'Artistora',
     images: [{ url: '/artistora/social-profile-1000x1000.png', width: 1000, height: 1000 }],
@@ -28,8 +28,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
-    description: 'Compare quotes from verified mehndi artists in Ahmedabad.',
+    title: 'Artistora — Book Verified Artists in Ahmedabad',
+    description: 'Compare quotes from verified artists in Ahmedabad — mehndi, photography, makeup, decor, and more.',
     images: ['/artistora/social-profile-1000x1000.png'],
   },
 }

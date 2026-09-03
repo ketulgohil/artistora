@@ -99,10 +99,10 @@ export default async function HomePage() {
   const phone = settings.phone || '+91 7405387720'
 
   const signatureServices = [
-    { title: 'Bridal Mehndi', text: 'Book bridal specialists with a premium portfolio — intricate detailing, symmetry, and a flawless finish for your wedding day.' },
-    { title: 'Engagement & Festive', text: 'Compare artists for engagement, sangeet, and festive events with light, stylish, camera-friendly patterns.' },
-    { title: 'Baby Shower & Events', text: 'Warm, graceful mehndi for milestones, private functions, and family occasions across Ahmedabad.' },
-    { title: 'Mehndi Classes', text: 'Discover classes run by vetted artists across Ahmedabad for learners of linework, motifs, and composition.' },
+    { title: 'Mehndi Artists', text: 'Book bridal, engagement, and festive mehndi specialists with premium portfolios — intricate detailing, symmetry, and a flawless finish.' },
+    { title: 'Photographers', text: 'Compare wedding, event, and portrait photographers with portfolios you can browse before you book.' },
+    { title: 'Makeup Artists', text: 'Find bridal, reception, and occasion makeup artists — trial-ready, hygiene-first, and camera-friendly.' },
+    { title: 'Decor & Event Planners', text: 'Stage, mandap, floral, and themed decor — matched to your event style and budget.' },
   ]
 
   const trustStats = [
@@ -130,15 +130,14 @@ export default async function HomePage() {
           <div className="grid items-center gap-12! lg:grid-cols-2">
             {/* Copy */}
             <div>
-              <Eyebrow>Verified Mehndi Artists &middot; Ahmedabad</Eyebrow>
+              <Eyebrow>Verified Artists &middot; Ahmedabad</Eyebrow>
               <h1 className="font-display text-[2.35rem]! leading-[1.12] font-semibold text-ink md:text-[3.4rem]!">
-                Book a verified mehndi artist in Ahmedabad in minutes.
+                Book a verified artist in Ahmedabad in minutes.
               </h1>
               <p className="mt-6! max-w-xl! text-[1.02rem] leading-relaxed text-ink-soft">
-                Artistora connects you with vetted mehndi artists across
-                Ahmedabad. Compare free quotes for bridal mehndi, engagement
-                mehndi, baby shower, and festive designs — then book the artist
-                who fits your event and budget.
+                Artistora connects you with vetted artists across
+                Ahmedabad — mehndi, photography, makeup, decor, music, and more. Compare free quotes,
+                browse portfolios, and book the artist who fits your event and budget.
               </p>
               <div className="mt-8! flex flex-wrap items-center gap-4!">
                 <a className={BTN_PRIMARY} href={bookingUrl} rel="noreferrer">
@@ -275,26 +274,26 @@ export default async function HomePage() {
             />
             <div className="relative flex flex-col gap-10! lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl!">
-                <Eyebrow tone="light">For Mehndi Artists</Eyebrow>
+                <Eyebrow tone="light">For Artists</Eyebrow>
                 <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-[2.1rem]!">
                   Join Artistora and get discovered by clients across Ahmedabad.
                 </h2>
                 <p className="mt-4! text-sm leading-relaxed text-white/75 md:text-[0.95rem]">
                   Create a free artist profile, showcase your portfolio, and
-                  receive quote requests and bookings for bridal, festive, and
-                  event work — all in one place.
+                  receive quote requests and bookings for events, weddings, and
+                  special occasions — all in one place.
                 </p>
                 <div className="mt-6! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm text-cream/85">
-                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/bridal-mehndi">
-                    Bridal Mehndi Artists
+                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/services">
+                    Browse Services
                   </Link>
                   <span aria-hidden="true" className="text-white/25">/</span>
-                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/classes">
-                    Mehndi Classes in Ahmedabad
+                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/artists">
+                    Meet Our Artists
                   </Link>
                   <span aria-hidden="true" className="text-white/25">/</span>
-                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/home-service-mehndi-in-ahmedabad">
-                    Home Service Mehndi in Ahmedabad
+                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/get-quote">
+                    Get a Quote
                   </Link>
                 </div>
               </div>
@@ -350,7 +349,7 @@ export default async function HomePage() {
       {/* ── Testimonials ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
-          <SectionHeading title="What Clients Say" subtitle="Loved By Brides" />
+          <SectionHeading title="What Clients Say" subtitle="Trusted Reviews" />
           <div className="grid gap-5! md:grid-cols-2 lg:grid-cols-3">
             {testimonials.slice(0, 6).map((t: Testimonial) => (
               <article
@@ -387,10 +386,10 @@ export default async function HomePage() {
             <div>
               <Eyebrow>Artist Tutorials</Eyebrow>
               <h2 className="font-display text-2xl! leading-snug font-semibold text-ink md:text-[2.1rem]!">
-                Watch mehndi designs, tips, and tutorials from our artist community.
+                Watch art tutorials, tips, and techniques from our artist community.
               </h2>
               <p className="mt-4! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
-                See practice clips, bridal detailing, and short design tutorials shared by artists on Artistora.
+                See practice clips, design breakdowns, and short tutorials shared by artists on Artistora.
               </p>
               <a
                 className="mt-8! inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full bg-[#c4302b] px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"

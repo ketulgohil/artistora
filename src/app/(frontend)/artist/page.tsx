@@ -67,22 +67,22 @@ export default async function ArtistPage() {
     },
     {
       label: 'Book By Occasion',
-      value: 'Bridal & Events',
-      text: 'Browse verified artists for bridal, engagement, Arabic, Khafif, and festive mehndi with home service availability.',
+      value: 'Weddings & Events',
+      text: 'Browse verified artists for weddings, corporate events, birthdays, festivals, and special occasions with home service availability.',
     },
     {
       label: 'Classes',
       value: 'Learn From Artists',
-      text: 'Offline mehndi classes in Ahmedabad where beginners progress from basics to bridal-ready practice.',
+      text: 'Art workshops and classes in Ahmedabad where beginners progress from basics to advanced techniques.',
     },
   ]
 
   const qualityTags = [
-    'Clean Detailing',
-    'Balanced Composition',
-    'Elegant Finishing',
-    'Photo-Ready Designs',
-    'Calm & Comfortable Setup',
+    'Verified Professionals',
+    'Portfolio Review',
+    'Client Ratings',
+    'Transparent Pricing',
+    'Flexible Scheduling',
     'Consistent Quality',
   ]
 
@@ -91,7 +91,7 @@ export default async function ArtistPage() {
       {/* ── Editorial ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
-          <SectionHeading title="About Artistora" subtitle="Verified mehndi artists, one platform" />
+          <SectionHeading title="About Artistora" subtitle="Verified artists, one platform" />
 
           <div className="grid items-center gap-12! lg:grid-cols-[0.9fr_1.1fr] lg:gap-16!">
             {/* Framed image */}
@@ -121,22 +121,21 @@ export default async function ArtistPage() {
             {/* Platform copy */}
             <div>
               <h3 className="font-display text-[1.75rem]! leading-snug font-semibold text-ink md:text-3xl!">
-                Artistora &mdash; Verified Mehndi Artists in Ahmedabad
+                Artistora &mdash; Verified Artists in Ahmedabad
               </h3>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
                 Artistora is a curated marketplace that connects you with
-                verified mehndi artists in Ahmedabad. Every artist is selected
-                and reviewed for clean detailing, balanced composition, and
-                elegant finishing &mdash; so bridal mehndi reads beautifully both
-                in person and in photographs.
+                verified artists in Ahmedabad &mdash; mehndi specialists,
+                photographers, makeup artists, decorators, musicians, and more.
+                Every artist is selected and reviewed for skill, reliability,
+                and professionalism.
               </p>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
-                Browse artists by occasion &mdash; bridal mehndi, engagement
-                mehndi, baby showers, festive events, or offline mehndi classes
-                for learners who want structured, in-person guidance &mdash;
-                compare portfolios and reviews, and book with confidence. Every
-                session is approached with patience and precision, making each
-                booking feel personal and thoughtfully handled.
+                Browse artists by occasion &mdash; weddings, corporate events,
+                birthdays, festivals, or personal projects &mdash; compare
+                portfolios and reviews, and book with confidence. Whether you
+                need home service or venue-based support, Artistora makes the
+                process simple and transparent.
               </p>
               <div className="mt-7! flex flex-wrap gap-2.5!">
                 {qualityTags.map((tag) => (
@@ -195,34 +194,34 @@ export default async function ArtistPage() {
                   Ready to book a verified artist for your next celebration?
                 </h2>
                 <p className="mt-4! text-sm leading-relaxed text-cream/65 md:text-[0.95rem]">
-                  Whether you are planning a bridal booking, an engagement event,
-                  a baby shower, or want to learn mehndi through structured
-                  classes, reach out to check artist availability and discuss your vision.
+                  Whether you are planning a wedding, corporate event, birthday,
+                  festival, or any special occasion, reach out to check artist
+                  availability and discuss your vision.
                 </p>
                 <p className="mt-6! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm text-cream/75">
                   <Link
                     className="underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-white"
-                    href="/bridal-mehndi"
+                    href="/services"
                   >
-                    Explore bridal mehndi
+                    Browse services
                   </Link>
                   <span aria-hidden="true" className="text-cream/20">
                     /
                   </span>
                   <Link
                     className="underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-white"
-                    href="/classes"
+                    href="/artists"
                   >
-                    Mehndi classes in Ahmedabad
+                    Meet our artists
                   </Link>
                   <span aria-hidden="true" className="text-cream/20">
                     /
                   </span>
                   <Link
                     className="underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-white"
-                    href="/contact"
+                    href="/get-quote"
                   >
-                    Contact &amp; availability
+                    Get a free quote
                   </Link>
                 </p>
               </div>

@@ -47,30 +47,30 @@ function lexicalText(text: string) {
 // lookups stay correct even when filenames get dedupe suffixes like -1/-2.
 const SERVICES = [
   {
-    title: 'Bridal Mehndi',
-    slug: 'bridal-mehndi',
-    imageAlt: 'Bridal Mehndi Service',
+    title: 'Mehndi Artists',
+    slug: 'mehndi-artists',
+    imageAlt: 'Mehndi Service',
     description:
-      'Intricate bridal storytelling with detailed motifs, balanced composition, and a premium finish designed for your wedding photographs and close-up moments.',
-    points: ['Full bridal styling', 'Detailed custom patterns', 'Premium occasion focus'],
+      'Intricate mehndi designs with detailed motifs, balanced composition, and a premium finish — bridal, engagement, festive, and casual styles available.',
+    points: ['Bridal & event specialists', 'Custom patterns', 'Home service available'],
     order: 1,
   },
   {
-    title: 'Engagement Mehndi',
-    slug: 'engagement-mehndi',
-    imageAlt: 'Engagement Mehndi Service',
+    title: 'Photographers',
+    slug: 'photographers',
+    imageAlt: 'Photography Service',
     description:
-      'Modern, elegant engagement mehndi that feels romantic, stylish, and polished without losing the warmth of traditional design language.',
-    points: ['Contemporary styling', 'Camera-friendly finish', 'Ideal for ring ceremonies'],
+      'Professional photographers for weddings, events, portraits, and commercial shoots — browse portfolios and compare packages before you book.',
+    points: ['Wedding & event coverage', 'Portfolio available', 'Flexible packages'],
     order: 2,
   },
   {
-    title: 'Baby Shower Mehndi',
-    slug: 'baby-shower-mehndi',
-    imageAlt: 'Baby Shower Mehndi',
+    title: 'Makeup Artists',
+    slug: 'makeup-artists',
+    imageAlt: 'Makeup Service',
     description:
-      'Soft, graceful mehndi for baby showers and intimate family occasions, with patterns that feel celebratory, neat, and beautifully balanced.',
-    points: ['Gentle festive patterns', 'Family event ready', 'Comfort-first experience'],
+      'Bridal, reception, and occasion makeup artists with trial options, hygiene-first practices, and camera-friendly finishes.',
+    points: ['Bridal & occasion makeup', 'Trial available', 'Premium products'],
     order: 3,
   },
 ]
@@ -91,19 +91,19 @@ async function resolveMediaId(
 const TESTIMONIALS = [
   {
     name: 'Urvika Parekh',
-    text: 'Very beautiful designs and excellent speed. I would highly recommend Bhumi for mehndi.',
+    text: 'Artistora made it easy to find and book the right artist for our wedding. Professional, reliable, and a pleasure to work with.',
     rating: 5,
     order: 1,
   },
   {
     name: 'Rutva Krunal Prajapati',
-    text: 'They are among the best mehndi artists in Ahmedabad and made my day with beautiful, intricate work.',
+    text: 'We found amazing artists for our event through Artistora. The quoting process was transparent and the service was excellent.',
     rating: 5,
     order: 2,
   },
   {
     name: 'Devsha Rathod',
-    text: 'The exquisite design and stunning details were truly remarkable. I had an exceptional experience.',
+    text: 'The quality of artists on Artistora is outstanding. From mehndi to photography, everything was handled professionally.',
     rating: 5,
     order: 3,
   },
@@ -112,33 +112,33 @@ const TESTIMONIALS = [
 // ── FAQ ──
 const FAQS = [
   {
-    question: 'Do you provide home service in Ahmedabad?',
+    question: 'What artist services can I book on Artistora?',
     answer:
-      'Yes. Home service is available across Ahmedabad for bridal bookings, engagements, baby showers, and event mehndi appointments.',
+      'You can book mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals across Ahmedabad.',
     order: 1,
   },
   {
-    question: 'Do you also teach mehndi classes?',
+    question: 'How do classes and workshops work?',
     answer:
-      'Yes. Artistora also offers mehndi classes in Ahmedabad for beginners and learners who want structured offline practice.',
+      'Artistora offers classes and workshops in various art forms — mehndi, photography, makeup, and more. Browse available sessions and register online.',
     order: 2,
   },
   {
-    question: 'How early should bridal mehndi be booked?',
+    question: 'How early should I book an artist?',
     answer:
-      'For weddings and large family events, booking your bridal mehndi artist in advance is best so date availability, design planning, and event timing can be handled smoothly.',
+      'For weddings and large events, booking your artist in advance is best so date availability, planning, and event timing can be handled smoothly.',
     order: 3,
   },
   {
-    question: 'Which mehndi services can be booked?',
+    question: 'What services can be booked on Artistora?',
     answer:
-      'You can inquire about bridal mehndi, engagement mehndi, baby shower bookings, family functions, Arabic style mehndi, home service appointments, and offline mehndi classes.',
+      'You can book mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals through the platform.',
     order: 4,
   },
   {
     question: 'Do you provide service outside Ahmedabad?',
     answer:
-      'Yes. Artistora is based in Ahmedabad and serves bookings across Ahmedabad including nearby neighborhoods like Ghatlodiya, with timing planned around the event and number of people.',
+      'Yes. Artistora is based in Ahmedabad and serves bookings across the city and nearby areas, with timing planned around the event and number of people.',
     order: 5,
   },
 ]

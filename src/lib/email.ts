@@ -16,6 +16,9 @@ export async function sendBookingConfirmation(to: string, data: {
     'baby-shower': 'Baby Shower',
     'family-function': 'Family Function',
     festival: 'Festival',
+    wedding: 'Wedding',
+    corporate: 'Corporate Event',
+    birthday: 'Birthday',
     other: 'Other',
   }
 
@@ -28,7 +31,7 @@ export async function sendBookingConfirmation(to: string, data: {
       <div style="background: #ffffff; padding: 32px; border: 1px solid #f1d9dc; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="margin: 0 0 16px; font-size: 15px;">Hi <strong>${data.name}</strong>,</p>
         <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #41506b;">
-          Thank you for reaching out to Artistora! We've received your booking request and will get back to you within <strong>24 hours</strong> to confirm availability.
+          Thank you for reaching out to Artistora! We've received your booking request and will get back to you within <strong>24 hours</strong> to confirm artist availability.
         </p>
         <div style="background: #fdeeee; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <p style="margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #ec6783; font-weight: 600;">Booking Details</p>
@@ -72,6 +75,9 @@ export async function sendBookingNotification(data: {
     'baby-shower': 'Baby Shower',
     'family-function': 'Family Function',
     festival: 'Festival',
+    wedding: 'Wedding',
+    corporate: 'Corporate Event',
+    birthday: 'Birthday',
     other: 'Other',
   }
 

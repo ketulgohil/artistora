@@ -3,10 +3,10 @@ import Link from 'next/link'
 const BOOKING_URL = '/book'
 
 const popularBookings = [
-  { label: 'Bridal Mehndi Artist', to: '/bridal-mehndi' },
-  { label: 'Mehndi Services', to: '/services' },
-  { label: 'Mehndi Classes', to: '/classes' },
-  { label: 'Portfolio Gallery', to: '/portfolio' },
+  { label: 'Mehndi Artists', to: '/services' },
+  { label: 'Photographers', to: '/artists' },
+  { label: 'Makeup Artists', to: '/artists' },
+  { label: 'Decor & Planning', to: '/artists' },
 ]
 
 const trustLinks = [
@@ -51,7 +51,7 @@ export default function Footer() {
                 Book Verified Artists
               </p>
               <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-3xl!">
-                Beautiful mehndi for bridal, festive, and event celebrations.
+                Verified artists for weddings, events, and celebrations.
               </h2>
             </div>
             <div className="flex flex-col gap-3! sm:flex-row">
@@ -88,7 +88,7 @@ export default function Footer() {
               className="mb-4! h-auto w-44! rounded-lg"
             />
             <p className="mt-2! max-w-xs! text-sm leading-relaxed text-cream/55">
-              India&apos;s curated mehndi artist marketplace — discover, compare, and book verified artists for every celebration.
+              India&apos;s curated artist marketplace — discover, compare, and book verified mehndi, photography, makeup, and decor artists for every celebration.
             </p>
           </div>
 

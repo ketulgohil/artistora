@@ -54,7 +54,7 @@ export const HeaderFooter: GlobalConfig = {
               name: 'footerTagline',
               type: 'textarea',
               defaultValue:
-                'Artistora connects you with verified mehndi artists across Ahmedabad for bridal, engagement, festive, and home-service mehndi.',
+                'Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, music, and more.',
             },
             {
               name: 'copyrightText',

@@ -25,7 +25,7 @@ async function run() {
         phone: '+91 7405387720',
         email: 'gohilketul5@gmail.com',
         address: 'Ahmedabad, Gujarat, India',
-        tagline: 'Verified Mehndi Artist Marketplace – Ahmedabad',
+        tagline: 'Verified Artist Marketplace – Ahmedabad',
         whatsappNumber: '+917405387720',
         bookingFormUrl: '/book',
         googleMapUrl:
@@ -50,7 +50,7 @@ async function run() {
       slug: 'header-footer',
       data: {
         footerTagline:
-          'Artistora connects you with verified mehndi artists across Ahmedabad for bridal, engagement, festive, and home-service mehndi.',
+          'Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, music, and more.',
         copyrightText: '© Artistora. All rights reserved.',
       },
     })

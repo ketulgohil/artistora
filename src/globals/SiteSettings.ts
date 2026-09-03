@@ -45,7 +45,7 @@ export const SiteSettings: GlobalConfig = {
             {
               name: 'tagline',
               type: 'text',
-              defaultValue: 'Verified Mehndi Artist Marketplace – Ahmedabad',
+              defaultValue: 'Verified Artist Marketplace – Ahmedabad',
             },
           ],
         },
@@ -92,7 +92,7 @@ export const SiteSettings: GlobalConfig = {
             {
               name: 'defaultMetaTitle',
               type: 'text',
-              defaultValue: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
+              defaultValue: 'Artistora — Book Verified Artists in Ahmedabad',
             },
             {
               name: 'defaultMetaDescription',

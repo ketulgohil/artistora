@@ -104,21 +104,21 @@ function ClockIcon() {
 }
 
 const classTopics = [
-  'Paste and cone making',
-  'Traditional belts',
-  'Chex',
-  'Peacock',
-  'Startup bunch',
-  'Bridal figures',
-  'Doli and elephant',
-  'Bridal startup',
-  'Engagement figures',
+  'Mehndi basics and advanced techniques',
+  'Photography fundamentals',
+  'Makeup and styling essentials',
+  'Event decoration and setup',
+  'Portfolio building',
+  'Client communication',
+  'Business basics for artists',
+  'Creative composition',
+  'Traditional and modern styles',
 ]
 
 const classHighlights = [
   {
     title: 'Basic To Advanced',
-    text: 'The class is designed for learners who want to start with the fundamentals and move toward bridal-ready mehndi practice.',
+    text: 'Classes are designed for learners who want to start with fundamentals and progress to professional-level skills in their chosen art form.',
   },
   {
     title: 'Certificate Provided',
@@ -126,7 +126,7 @@ const classHighlights = [
   },
   {
     title: 'Offline Learning',
-    text: 'Classes are held at a dedicated offline venue in Ahmedabad, making them practical for students coming from nearby areas who want direct in-person guidance.',
+    text: 'Classes are held at a dedicated venue in Ahmedabad, making them practical for students coming from nearby areas who want direct in-person guidance.',
   },
 ]
 
@@ -165,18 +165,15 @@ export default async function ClassesPage() {
         <div className={`relative ${CONTAINER} py-14! md:py-20!`}>
           <div className="grid items-center gap-12! lg:grid-cols-[1.15fr_1fr]">
             <div>
-              <Eyebrow>Basic To Advanced Mehndi Training</Eyebrow>
+              <Eyebrow>Basic To Advanced Training</Eyebrow>
               <h1 className="font-display text-[2.1rem]! leading-[1.15] font-semibold text-ink md:text-[2.8rem]!">
-                Offline Mehndi Classes in Ahmedabad — Basic to Advanced Training
+                Art Classes & Workshops in Ahmedabad — Learn From Verified Artists
               </h1>
               <p className="mt-6! text-[0.98rem] leading-relaxed text-ink-soft md:leading-[1.75]">
-                These mehndi classes in Ahmedabad are taught by experienced
-                artists and designed for learners who want structured offline
-                guidance, step-by-step teaching, and practical practice with
-                traditional and bridal design elements. If you are searching for
-                mehndi classes in Ahmedabad or want a nearby class from Gota,
-                Ghatlodiya, Sola, Jagatpur, Ranip, Vandematram, or Akhbarnagar,
-                reach out and we&apos;ll help you find the right batch.
+                Artistora offers classes and workshops in Ahmedabad taught by
+                experienced artists — mehndi, photography, makeup, decoration,
+                and more. Whether you are a beginner or looking to refine your
+                skills, find the right class for your learning goals.
               </p>
               <div className="mt-6! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
                 <a className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand" href="/portfolio">

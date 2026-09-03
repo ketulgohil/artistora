@@ -100,39 +100,39 @@ function ClassIcon() {
 }
 
 const serviceTags = [
-  'Arabic and khafif style mehndi',
-  'Festival and family function bookings',
+  'Mehndi, photography, makeup, and decor artists',
+  'Wedding, event, and occasion bookings',
   'Home service across Ahmedabad',
-  'Offline mehndi classes for learners',
+  'Art classes and workshops for learners',
 ]
 
 const promisePoints = [
   {
-    title: 'Clean Detailing',
-    text: 'Designs are built with attention to neat lines, balance, and finishing so they look rich both in person and in photographs.',
+    title: 'Verified Professionals',
+    text: 'Every artist on Artistora is vetted for quality, reliability, and professionalism — so you book with confidence.',
   },
   {
-    title: 'Comfortable Experience',
-    text: 'The service is handled with a calm pace and practical setup so the mehndi process feels smooth during busy occasions.',
+    title: 'Transparent Pricing',
+    text: 'Compare quotes from multiple artists, see exactly what you are paying for, and choose what fits your budget.',
   },
   {
     title: 'Occasion Fit',
-    text: 'Design intensity and style can be adjusted based on the event, your outfit, and how bold or minimal you want the look to feel.',
+    text: 'Whether it is a wedding, corporate event, birthday, or festival — find the right artist matched to your event style and scale.',
   },
 ]
 
 const addOns = [
   {
-    title: 'Glitter & Embellishments',
-    text: 'Add shimmer accents, crystals, or glitter highlights to make the design pop for evening events and receptions.',
+    title: 'Multi-Service Packages',
+    text: 'Bundle mehndi, makeup, photography, and decor services for a seamless event experience with coordinated scheduling.',
   },
   {
-    title: 'Multi-Person Bookings',
-    text: 'Book for the bride, bridesmaids, family members, or guest groups with coordinated scheduling and consistent quality.',
+    title: 'Multi-Artist Bookings',
+    text: 'Book for large groups, bridal parties, or corporate events with multiple artists and consistent quality across the board.',
   },
   {
-    title: 'Extended Coverage',
-    text: 'Choose from half-arm, full-arm, leg, or back detailing based on the event scale and how much coverage you want.',
+    title: 'Custom Requirements',
+    text: 'From themed events to specific cultural traditions — discuss your vision and get tailored artist recommendations.',
   },
 ]
 
@@ -141,41 +141,41 @@ const serviceReviews = [
     name: 'Urvika Parekh',
     source: 'Google Review',
     quote:
-      'Very beautiful designs and excellent speed. The artist was professional and a pleasure to book through Artistora.',
+      'Artistora made it easy to find and book the right artist for our wedding. Professional, reliable, and a pleasure to work with.',
   },
   {
     name: 'Rutva Krunal Prajapati',
     source: 'Google Review',
     quote:
-      'Artistora matched us with one of the best mehndi artists in Ahmedabad and made my day with beautiful, intricate work.',
+      'We found amazing artists for our event through Artistora. The quoting process was transparent and the service was excellent.',
   },
 ]
 
 const serviceAreaNotes = [
-  'Bridal bookings in Ghatlodiya, Gota, Sola, and nearby Ahmedabad areas',
-  'Engagement and family event sessions with planning around your ceremony timing',
-  'Home service scheduling based on location, design coverage, and guest count',
+  'Wedding and event bookings across Ahmedabad and nearby areas',
+  'Corporate events, parties, and family functions with flexible scheduling',
+  'Home service, venue service, and studio-based bookings available',
 ]
 
 const planningPoints = [
-  'Choose the event type and preferred design style before the call.',
-  'Decide whether you need only the bride, only guests, or a mixed family booking.',
-  'Share the location so arrival time and setup can be planned realistically.',
-  'Keep inspiration images ready if you want a more specific bridal or Arabic direction.',
+  'Choose the event type and preferred artist category before the call.',
+  'Decide whether you need one artist, a team, or multiple services.',
+  'Share the venue and schedule so arrival time and setup can be planned.',
+  'Keep inspiration references ready if you want a specific style or theme.',
 ]
 
 const bookingSteps = [
   'Share your date, occasion, and location.',
-  'Discuss the design style or mehndi type you want.',
-  'Confirm availability and booking details.',
-  'Enjoy the mehndi session on your special day.',
+  'Discuss the artist category and style you need.',
+  'Compare quotes and confirm your booking.',
+  'Enjoy the service on your special day.',
 ]
 
 const fallbackFaqs = [
   {
-    question: 'Which mehndi services can be booked from this page?',
+    question: 'What artist services can be booked from this page?',
     answer:
-      'You can inquire about bridal mehndi, engagement mehndi, baby shower bookings, family functions, Arabic style mehndi, home service appointments, and offline mehndi classes from this page.',
+      'You can inquire about mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals through this page.',
   },
   {
     question: 'Do you provide service outside one specific area?',
@@ -215,30 +215,29 @@ export default async function ServicesPage() {
 
           <div className="grid items-center gap-12! lg:grid-cols-[1.25fr_0.9fr] lg:gap-16!">
             <div>
-              <Eyebrow>Mehndi Services In Ahmedabad</Eyebrow>
+              <Eyebrow>Artist Services In Ahmedabad</Eyebrow>
               <h1 className="font-display text-[2.05rem]! leading-[1.18] font-semibold text-ink md:text-[2.7rem]!">
-                Bridal mehndi, event mehndi, and classes designed for every celebration.
+                Mehndi, photography, makeup, decor, and more — for every celebration.
               </h1>
               <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
-                Artistora connects you with verified mehndi artists across
-                Ahmedabad for bridal mehndi, engagement mehndi, baby shower
-                mehndi, festive bookings, home service mehndi in Ahmedabad,
-                and offline mehndi classes &mdash; with elegant detail and a
-                smooth booking experience.
+                Artistora connects you with verified artists across
+                Ahmedabad — mehndi specialists, photographers, makeup artists,
+                decorators, musicians, and event planners. Compare free quotes,
+                browse portfolios, and book the right artist for your event.
               </p>
               <div className="mt-5! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
                 <Link
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
-                  href="/bridal-mehndi"
+                  href="/artists"
                 >
-                  Explore bridal mehndi page
+                  Browse all artists
                 </Link>
                 <span aria-hidden="true" className="text-line">/</span>
                 <Link
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
-                  href="/contact"
+                  href="/get-quote"
                 >
-                  Check wedding date availability
+                  Get a free quote
                 </Link>
               </div>
               <div className="mt-7! flex flex-wrap gap-2.5!">
@@ -267,7 +266,7 @@ export default async function ServicesPage() {
                   Home Service
                 </strong>
                 <span className="mt-2! block text-sm leading-relaxed text-ink-soft">
-                  Home service mehndi in Ahmedabad for bridal and event bookings
+                  Home and venue service across Ahmedabad for all event types
                 </span>
               </div>
               <div className="relative overflow-hidden rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
@@ -282,7 +281,7 @@ export default async function ServicesPage() {
                   Classes
                 </strong>
                 <span className="mt-2! block text-sm leading-relaxed text-ink-soft">
-                  Offline mehndi learning support
+                  Art workshops and learning sessions
                 </span>
               </div>
             </div>

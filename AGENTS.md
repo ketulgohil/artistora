@@ -2,10 +2,10 @@
 
 ## Overview
 
-Artistora is a **mehndi artist marketplace** connecting customers with verified mehndi artists in Ahmedabad, Gujarat. Built with Payload 3 CMS + Next.js 16 + Tailwind CSS v4.
+Artistora is an **artist marketplace** connecting customers with verified artists in Ahmedabad, Gujarat — mehndi, photography, makeup, decor, music, and more. Built with Payload 3 CMS + Next.js 16 + Tailwind CSS v4.
 
 **Domain:** https://www.artistora.com
-**Business:** Artistora — Verified Mehndi Artist Marketplace
+**Business:** Artistora — Verified Artist Marketplace
 
 ---
 
