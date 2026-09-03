@@ -322,6 +322,89 @@ export const Bookings: CollectionConfig = {
         },
       ],
     },
+    // ── Payment Fields ──
+    {
+      name: 'totalAmount',
+      type: 'number',
+      label: 'Total Amount (INR)',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'advanceAmount',
+      type: 'number',
+      label: 'Advance Amount (INR)',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'remainingAmount',
+      type: 'number',
+      label: 'Remaining Amount (INR)',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'platformFee',
+      type: 'number',
+      label: 'Platform Fee (INR)',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'artistAmount',
+      type: 'number',
+      label: 'Artist Payout (INR)',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'paymentStatus',
+      type: 'select',
+      defaultValue: 'unpaid',
+      options: [
+        { label: 'Unpaid', value: 'unpaid' },
+        { label: 'Pending', value: 'pending' },
+        { label: 'Partially Paid', value: 'partially_paid' },
+        { label: 'Paid', value: 'paid' },
+        { label: 'Refunded', value: 'refunded' },
+      ],
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'paymentMethod',
+      type: 'select',
+      label: 'Payment Method',
+      options: [
+        { label: 'Cash', value: 'cash' },
+        { label: 'UPI', value: 'upi' },
+        { label: 'Bank Transfer', value: 'bank_transfer' },
+        { label: 'Online', value: 'online' },
+      ],
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'paymentReference',
+      type: 'text',
+      label: 'Payment Reference / Transaction ID',
+      admin: {
+        position: 'sidebar',
+      },
+    },
     {
       name: 'status',
       type: 'select',

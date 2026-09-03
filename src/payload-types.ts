@@ -479,6 +479,14 @@ export interface Booking {
         id?: string | null;
       }[]
     | null;
+  totalAmount?: number | null;
+  advanceAmount?: number | null;
+  remainingAmount?: number | null;
+  platformFee?: number | null;
+  artistAmount?: number | null;
+  paymentStatus?: ('unpaid' | 'pending' | 'partially_paid' | 'paid' | 'refunded') | null;
+  paymentMethod?: ('cash' | 'upi' | 'bank_transfer' | 'online') | null;
+  paymentReference?: string | null;
   status?:
     | ('requested' | 'artist_pending' | 'confirmed' | 'in_progress' | 'completed' | 'declined' | 'cancelled')
     | null;
@@ -890,6 +898,14 @@ export interface BookingsSelect<T extends boolean = true> {
         fee?: T;
         id?: T;
       };
+  totalAmount?: T;
+  advanceAmount?: T;
+  remainingAmount?: T;
+  platformFee?: T;
+  artistAmount?: T;
+  paymentStatus?: T;
+  paymentMethod?: T;
+  paymentReference?: T;
   status?: T;
   declineReason?: T;
   cancelledBy?: T;
