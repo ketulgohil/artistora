@@ -395,7 +395,7 @@ export default function DashboardPage() {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-ink-soft">Profile URL</span>
-                  <span className="text-xs text-brand">shivamehndiart.com/artists/{artist.slug}</span>
+                  <span className="text-xs text-brand">www.artistora.com/artists/{artist.slug}</span>
                 </div>
               </div>
             </div>
@@ -464,7 +464,7 @@ export default function DashboardPage() {
                       type="text"
                       value={form.area}
                       onChange={(e) => update('area', e.target.value)}
-                      placeholder="e.g. Chandlodiya, Vastrapur"
+                      placeholder="e.g. Vastrapur, SG Highway"
                       className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                     />
                   </div>

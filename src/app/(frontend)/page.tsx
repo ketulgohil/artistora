@@ -94,23 +94,22 @@ export default async function HomePage() {
     getYouTubeVideos() as Promise<YoutubeVideo[]>,
   ])
 
-  const bookingUrl = '/book'
+  const bookingUrl = '/get-quote'
   const mapUrl = settings.googleMapUrl || ''
-  const businessName = settings.businessName || 'Shiva Mehndi Art'
-  const phone = settings.phone || '+91 8469662012'
+  const phone = settings.phone || '+91 7405387720'
 
   const signatureServices = [
-    { title: 'Bridal Luxury', text: 'Intricate bridal storytelling from a bridal mehndi artist focused on refined detailing, symmetry, and a premium finish for your wedding day.' },
-    { title: 'Arabic & Khafif', text: 'Light, stylish, camera-friendly patterns for festive events, engagement ceremonies, and modern celebrations.' },
+    { title: 'Bridal Mehndi', text: 'Book bridal specialists with a premium portfolio — intricate detailing, symmetry, and a flawless finish for your wedding day.' },
+    { title: 'Engagement & Festive', text: 'Compare artists for engagement, sangeet, and festive events with light, stylish, camera-friendly patterns.' },
     { title: 'Baby Shower & Events', text: 'Warm, graceful mehndi for milestones, private functions, and family occasions across Ahmedabad.' },
-    { title: 'Mehndi Classes', text: 'Mehndi classes in Ahmedabad for learners who want to build confidence in linework, motifs, composition, and finishing.' },
+    { title: 'Mehndi Classes', text: 'Discover classes run by vetted artists across Ahmedabad for learners of linework, motifs, and composition.' },
   ]
 
   const trustStats = [
-    { value: '200+', label: 'Portfolio Photos' },
-    { value: 'Offline', label: 'Classes Available' },
+    { value: '3+', label: 'Free Quotes' },
+    { value: '24h', label: 'Quote Response' },
+    { value: 'Verified', label: 'Artists Only' },
     { value: 'Across', label: 'Ahmedabad Home Service' },
-    { value: 'Studio', label: 'Based In Chandlodiya' },
   ]
 
   const galleryImages = ['Bridal.webp', 'Baby_shower.webp', 'engagement.webp', 'deveshaa.webp']
@@ -131,36 +130,36 @@ export default async function HomePage() {
           <div className="grid items-center gap-12! lg:grid-cols-2">
             {/* Copy */}
             <div>
-              <Eyebrow>Professional Mehndi Artist &middot; Ahmedabad</Eyebrow>
+              <Eyebrow>Verified Mehndi Artists &middot; Ahmedabad</Eyebrow>
               <h1 className="font-display text-[2.35rem]! leading-[1.12] font-semibold text-ink md:text-[3.4rem]!">
-                Bridal mehndi artist in Ahmedabad for elegant events and modern celebrations.
+                Book a verified mehndi artist in Ahmedabad in minutes.
               </h1>
               <p className="mt-6! max-w-xl! text-[1.02rem] leading-relaxed text-ink-soft">
-                {businessName} is a professional mehndi artist Ahmedabad
-                clients book for bridal mehndi, engagement mehndi, baby shower
-                mehndi, festive designs, and mehndi classes in Ahmedabad that
-                feel polished, graceful, and beautifully personal.
+                Artistora connects you with vetted mehndi artists across
+                Ahmedabad. Compare free quotes for bridal mehndi, engagement
+                mehndi, baby shower, and festive designs — then book the artist
+                who fits your event and budget.
               </p>
               <div className="mt-8! flex flex-wrap items-center gap-4!">
-                <a className={BTN_PRIMARY} href={bookingUrl} target="_blank" rel="noreferrer">
-                  Book Bridal Mehndi
+                <a className={BTN_PRIMARY} href={bookingUrl} rel="noreferrer">
+                  Get Free Quotes
                 </a>
-                <Link className={BTN_OUTLINE} href="/portfolio">
-                  View Portfolio
+                <Link className={BTN_OUTLINE} href="/artists">
+                  Browse Artists
                 </Link>
               </div>
               <div className="mt-9! flex flex-wrap items-center gap-x-6! gap-y-3! text-sm text-ink-soft">
                 <span className="inline-flex items-center gap-2!">
                   <GoldCheck />
-                  Bridal specialist
+                  Verified artists
+                </span>
+                <span className="inline-flex items-center gap-2!">
+                  <GoldCheck />
+                  Free, no-obligation quotes
                 </span>
                 <span className="inline-flex items-center gap-2!">
                   <GoldCheck />
                   Home service available
-                </span>
-                <span className="inline-flex items-center gap-2!">
-                  <GoldCheck />
-                  Offline classes
                 </span>
               </div>
             </div>
@@ -174,7 +173,7 @@ export default async function HomePage() {
               <div className="relative rounded-[2.4rem] bg-white/85 p-2.5! shadow-lift ring-1 ring-line/70">
                 <img
                   src={mediaFileUrl('Bridal.webp')}
-                  alt="Bridal mehndi artist work in Ahmedabad by Shiva Mehndi Art"
+                  alt="Bridal mehndi work by a verified artist on Artistora"
                   width={1400}
                   height={933}
                   className="aspect-[4/5] w-full rounded-[2rem] object-cover"
@@ -190,8 +189,7 @@ export default async function HomePage() {
                   ))}
                 </div>
                 <p className="mt-1.5! text-sm font-bold text-ink">
-                  114+ happy reviews
-                  <span className="font-normal text-ink-muted"> from Google</span>
+                  Trusted by Ahmedabad clients
                 </p>
               </div>
 
@@ -235,7 +233,7 @@ export default async function HomePage() {
       {/* ── Signature Services ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
-          <SectionHeading title="Signature Experiences" subtitle="What Clients Book" />
+          <SectionHeading title="What You Can Book" subtitle="Popular Services" />
           <div className="grid gap-6! sm:grid-cols-2">
             {signatureServices.map((service) => (
               <article
@@ -263,7 +261,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Classes CTA ── */}
+      {/* ── Join as Artist CTA ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
           <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand via-brand-dark to-brand-deep px-6! py-12! shadow-lift md:px-12! md:py-14!">
@@ -277,18 +275,18 @@ export default async function HomePage() {
             />
             <div className="relative flex flex-col gap-10! lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl!">
-                <Eyebrow tone="light">Mehndi Classes In Ahmedabad</Eyebrow>
+                <Eyebrow tone="light">For Mehndi Artists</Eyebrow>
                 <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-[2.1rem]!">
-                  Learn basic to advanced mehndi techniques with guided offline practice.
+                  Join Artistora and get discovered by clients across Ahmedabad.
                 </h2>
                 <p className="mt-4! text-sm leading-relaxed text-white/75 md:text-[0.95rem]">
-                  Explore the dedicated classes page for batch timings, topics
-                  covered, certificate details, and how to reserve your seat for
-                  mehndi classes in Ahmedabad.
+                  Create a free artist profile, showcase your portfolio, and
+                  receive quote requests and bookings for bridal, festive, and
+                  event work — all in one place.
                 </p>
                 <div className="mt-6! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm text-cream/85">
                   <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/bridal-mehndi">
-                    Bridal Mehndi in Ahmedabad
+                    Bridal Mehndi Artists
                   </Link>
                   <span aria-hidden="true" className="text-white/25">/</span>
                   <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/classes">
@@ -301,17 +299,15 @@ export default async function HomePage() {
                 </div>
               </div>
               <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">
-                <Link className={BTN_LIGHT} href="/classes">
-                  Explore Mehndi Classes
+                <Link className={BTN_LIGHT} href="/register">
+                  Join As An Artist
                 </Link>
-                <a
+                <Link
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border border-white/40 px-7! py-3! text-sm font-semibold text-white transition-colors duration-200 hover:bg-white/10"
-                  href={bookingUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                  href="/get-quote"
                 >
-                  Book A Class Seat
-                </a>
+                  Request Quotes
+                </Link>
               </div>
             </div>
           </div>
@@ -321,13 +317,13 @@ export default async function HomePage() {
       {/* ── Gallery Preview ── */}
       <section className={`${SECTION} bg-white/60`}>
         <div className={CONTAINER}>
-          <SectionHeading title="Gallery Preview" subtitle="Designs In Focus" />
+          <SectionHeading title="Artist Work" subtitle="Designs In Focus" />
           <div className="grid grid-cols-2 gap-4! md:grid-cols-4 md:gap-5!">
             {galleryImages.map((img) => (
               <figure className="group relative overflow-hidden rounded-2xl shadow-soft" key={img}>
                 <img
                   src={mediaFileUrl(img)}
-                  alt="Mehndi design by Shiva Mehndi Art"
+                  alt="Mehndi design by artists on Artistora"
                   width={600}
                   height={800}
                   className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -354,7 +350,7 @@ export default async function HomePage() {
       {/* ── Testimonials ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
-          <SectionHeading title="Google Reviews" subtitle="Client Love" />
+          <SectionHeading title="What Clients Say" subtitle="Loved By Brides" />
           <div className="grid gap-5! md:grid-cols-2 lg:grid-cols-3">
             {testimonials.slice(0, 6).map((t: Testimonial) => (
               <article
@@ -377,8 +373,8 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="mt-10! text-center">
-            <a className={BTN_OUTLINE} href={mapUrl} target="_blank" rel="noreferrer">
-              Open Google Business Profile
+            <a className={BTN_OUTLINE} href="/get-quote">
+              Find Your Artist
             </a>
           </div>
         </div>
@@ -389,12 +385,12 @@ export default async function HomePage() {
         <div className={CONTAINER}>
           <div className="grid items-center gap-10! lg:grid-cols-[1fr_1.25fr]">
             <div>
-              <Eyebrow>YouTube Tutorials</Eyebrow>
+              <Eyebrow>Artist Tutorials</Eyebrow>
               <h2 className="font-display text-2xl! leading-snug font-semibold text-ink md:text-[2.1rem]!">
-                Watch latest mehndi videos and subscribe for new uploads.
+                Watch mehndi designs, tips, and tutorials from our artist community.
               </h2>
               <p className="mt-4! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
-                See class practice clips, bridal detailing, and short design tutorials from Shiva Mehndi Art.
+                See practice clips, bridal detailing, and short design tutorials shared by artists on Artistora.
               </p>
               <a
                 className="mt-8! inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full bg-[#c4302b] px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
@@ -420,7 +416,7 @@ export default async function HomePage() {
                   <span className="relative block aspect-video overflow-hidden">
                     <img
                       src={`https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`}
-                      alt={v.title || 'Shiva Mehndi Art YouTube video'}
+                      alt={v.title || 'Artistora YouTube video'}
                       width={480}
                       height={360}
                       loading="lazy"
@@ -479,22 +475,24 @@ export default async function HomePage() {
             />
             <div className="relative flex flex-col gap-10! lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl!">
-                <Eyebrow tone="light">Local Trust Signals</Eyebrow>
+                <Eyebrow tone="light">Trusted &amp; Local</Eyebrow>
                 <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-[2rem]!">
-                  Based in Chandlodiya and serving bookings across Ahmedabad.
+                  Serving home-service bookings across Ahmedabad.
                 </h2>
                 <p className="mt-4! text-sm leading-relaxed text-cream/60">
-                  {businessName} keeps the business name, phone number, address, and map reference consistent across the site so local searchers can connect the website with the Google Business Profile and local map listing.
+                  Artistora verifies every artist profile, keeps quotes free and
+                  transparent, and stays one WhatsApp message away whenever you
+                  need help choosing or booking your artist.
                 </p>
                 <div className="mt-6! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm text-cream/75">
                   <span className="inline-flex items-center gap-2!">
                     <GoldCheck />
-                    {businessName}
+                    Artistora
                   </span>
                   <span aria-hidden="true" className="text-cream/20">/</span>
                   <span>{phone}</span>
                   <span aria-hidden="true" className="text-cream/20">/</span>
-                  <span>Chandlodiya, Ahmedabad</span>
+                  <span>Ahmedabad, Gujarat</span>
                 </div>
               </div>
               <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">

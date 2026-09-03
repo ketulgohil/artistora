@@ -141,18 +141,18 @@ const serviceReviews = [
     name: 'Urvika Parekh',
     source: 'Google Review',
     quote:
-      'Very beautiful designs and excellent speed. I would highly recommend Bhumi for mehndi.',
+      'Very beautiful designs and excellent speed. The artist was professional and a pleasure to book through Artistora.',
   },
   {
     name: 'Rutva Krunal Prajapati',
     source: 'Google Review',
     quote:
-      'They are among the best mehndi artists in Ahmedabad and made my day with beautiful, intricate work.',
+      'Artistora matched us with one of the best mehndi artists in Ahmedabad and made my day with beautiful, intricate work.',
   },
 ]
 
 const serviceAreaNotes = [
-  'Bridal bookings in Chandlodiya, Ghatlodiya, and nearby Ahmedabad areas',
+  'Bridal bookings in Ghatlodiya, Gota, Sola, and nearby Ahmedabad areas',
   'Engagement and family event sessions with planning around your ceremony timing',
   'Home service scheduling based on location, design coverage, and guest count',
 ]
@@ -178,9 +178,9 @@ const fallbackFaqs = [
       'You can inquire about bridal mehndi, engagement mehndi, baby shower bookings, family functions, Arabic style mehndi, home service appointments, and offline mehndi classes from this page.',
   },
   {
-    question: 'Do you provide service outside Chandlodiya?',
+    question: 'Do you provide service outside one specific area?',
     answer:
-      'Yes. Shiva Mehndi Art is based in Chandlodiya and serves bookings across Ahmedabad including nearby neighborhoods like Ghatlodiya, with timing planned around the event and number of people.',
+      'Yes. Artistora artists accept bookings across Ahmedabad, including neighborhoods like Ghatlodiya, Gota, and Sola, with timing planned around the event and number of people.',
   },
   {
     question: 'What details help before confirming a booking?',
@@ -220,10 +220,11 @@ export default async function ServicesPage() {
                 Bridal mehndi, event mehndi, and classes designed for every celebration.
               </h1>
               <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
-                Shiva Mehndi Art offers bridal mehndi in Ahmedabad, engagement
-                mehndi, baby shower mehndi, festive bookings, home service
-                mehndi in Ahmedabad, and offline mehndi classes with a focus on
-                elegant detail and a smooth booking experience.
+                Artistora connects you with verified mehndi artists across
+                Ahmedabad for bridal mehndi, engagement mehndi, baby shower
+                mehndi, festive bookings, home service mehndi in Ahmedabad,
+                and offline mehndi classes &mdash; with elegant detail and a
+                smooth booking experience.
               </p>
               <div className="mt-5! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
                 <Link
@@ -508,12 +509,12 @@ export default async function ServicesPage() {
                 </p>
               </div>
               <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">
-                <a className={BTN_PRIMARY} href="tel:+918469662012">
+                <a className={BTN_PRIMARY} href="tel:+917405387720">
                   Ask About Classes
                 </a>
                 <a
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/25 bg-white/70 px-7! py-3! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-white"
-                  href="https://wa.me/918469662012"
+                  href="https://wa.me/917405387720"
                   target="_blank"
                   rel="noreferrer"
                 >

@@ -69,7 +69,7 @@ export const Artists: CollectionConfig = {
     {
       name: 'area',
       type: 'text',
-      label: 'Primary service area (e.g. Chandlodiya, Vastrapur)',
+      label: 'Primary service area (e.g. Ahmedabad, Vastrapur)',
     },
     {
       name: 'yearsOfExperience',

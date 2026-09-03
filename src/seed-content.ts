@@ -120,7 +120,7 @@ const FAQS = [
   {
     question: 'Do you also teach mehndi classes?',
     answer:
-      'Yes. Shiva Mehndi Art also offers mehndi classes in Ahmedabad for beginners and learners who want structured offline practice.',
+      'Yes. Artistora also offers mehndi classes in Ahmedabad for beginners and learners who want structured offline practice.',
     order: 2,
   },
   {
@@ -136,9 +136,9 @@ const FAQS = [
     order: 4,
   },
   {
-    question: 'Do you provide service outside Chandlodiya?',
+    question: 'Do you provide service outside Ahmedabad?',
     answer:
-      'Yes. Shiva Mehndi Art is based in Chandlodiya and serves bookings across Ahmedabad including nearby neighborhoods like Ghatlodiya, with timing planned around the event and number of people.',
+      'Yes. Artistora is based in Ahmedabad and serves bookings across Ahmedabad including nearby neighborhoods like Ghatlodiya, with timing planned around the event and number of people.',
     order: 5,
   },
 ]

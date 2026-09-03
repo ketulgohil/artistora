@@ -20,7 +20,7 @@ export default function BookingPolicyPage() {
             Booking Policy
           </h1>
           <p className="mt-6! max-w-2xl! text-[0.95rem] leading-relaxed text-ink-soft">
-            By booking a session with Shiva Mehndi Art, you agree to the following terms and conditions.
+            By booking a mehndi session through Artistora, you agree to the following terms and conditions.
           </p>
         </div>
       </section>
@@ -80,19 +80,19 @@ export default function BookingPolicyPage() {
                 Contact
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                For any questions, changes, or clarifications regarding your booking, please reach out to us at{' '}
+                For any questions, changes, or clarifications regarding your booking, please reach out to our support team at{' '}
                 <a
-                  href="tel:+919327928198"
+                  href="tel:+917405387720"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  +91 93279 28198
+                  +91 74053 87720
                 </a>{' '}
                 or email{' '}
                 <a
-                  href="mailto:bhumichanpura1234@gmail.com"
+                  href="mailto:gohilketul5@gmail.com"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  bhumichanpura1234@gmail.com
+                  gohilketul5@gmail.com
                 </a>
                 . We are happy to assist you.
               </p>

@@ -16,36 +16,36 @@ export const SiteSettings: GlobalConfig = {
               name: 'businessName',
               type: 'text',
               required: true,
-              defaultValue: 'Shiva Mehndi Art',
+              defaultValue: 'Artistora',
             },
             {
               name: 'founderName',
               type: 'text',
               required: true,
-              defaultValue: 'Bhumi Chanpura',
+              defaultValue: 'Ketul Gohil',
             },
             {
               name: 'phone',
               type: 'text',
               required: true,
-              defaultValue: '+91 8469662012',
+              defaultValue: '+91 7405387720',
             },
             {
               name: 'email',
               type: 'email',
               required: true,
-              defaultValue: 'bhumichanpura1234@gmail.com',
+              defaultValue: 'gohilketul5@gmail.com',
             },
             {
               name: 'address',
               type: 'text',
               required: true,
-              defaultValue: 'C-206 Neelkanth Homes, Chandlodiya, Ahmedabad 382481',
+              defaultValue: 'Ahmedabad, Gujarat, India',
             },
             {
               name: 'tagline',
               type: 'text',
-              defaultValue: 'Premium Mehndi Artist – Ahmedabad',
+              defaultValue: 'Verified Mehndi Artist Marketplace – Ahmedabad',
             },
           ],
         },
@@ -55,34 +55,34 @@ export const SiteSettings: GlobalConfig = {
             {
               name: 'facebookUrl',
               type: 'text',
-              defaultValue: 'https://facebook.com/',
+              defaultValue: '',
             },
             {
               name: 'instagramUrl',
               type: 'text',
-              defaultValue: 'https://instagram.com/',
+              defaultValue: '',
             },
             {
               name: 'youtubeUrl',
               type: 'text',
-              defaultValue: 'https://youtube.com/',
+              defaultValue: '',
             },
             {
               name: 'googleMapUrl',
               type: 'text',
-              defaultValue: 'https://maps.google.com/',
+              defaultValue:
+                'https://www.google.com/maps/search/?api=1&query=Ahmedabad%2C%20Gujarat%2C%20India',
             },
             {
               name: 'bookingFormUrl',
               type: 'text',
               required: true,
-              defaultValue:
-                'https://docs.google.com/forms/d/e/1FAIpQLSeE8i0kMqjmb8jjVLc_YgNGR8q413ZdgEXQbzNZdULpf9r8MA/viewform',
+              defaultValue: '/book',
             },
             {
               name: 'whatsappNumber',
               type: 'text',
-              defaultValue: '+918469662012',
+              defaultValue: '+917405387720',
             },
           ],
         },
@@ -92,13 +92,13 @@ export const SiteSettings: GlobalConfig = {
             {
               name: 'defaultMetaTitle',
               type: 'text',
-              defaultValue: 'Shiva Mehndi Art — Premium Mehndi Artist in Ahmedabad',
+              defaultValue: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
             },
             {
               name: 'defaultMetaDescription',
               type: 'textarea',
               defaultValue:
-                'Shiva Mehndi Art by Bhumi Chanpura offers premium bridal, engagement, and festive mehndi in Ahmedabad. Home service available.',
+                'Artistora connects you with verified mehndi artists in Ahmedabad. Compare quotes from top bridal, engagement, and festive mehndi artists — book in minutes.',
             },
             {
               name: 'defaultOgImage',

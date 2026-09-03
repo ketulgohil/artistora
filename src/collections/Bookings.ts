@@ -6,7 +6,7 @@ export const Bookings: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'phone', 'eventType', 'eventDate', 'status', 'createdAt'],
-    group: 'Shiva Mehndi Art',
+    group: 'Artistora',
   },
   hooks: {
     afterChange: [
@@ -29,7 +29,7 @@ export const Bookings: CollectionConfig = {
           }
         }
 
-        // Send notification to Bhumi
+        // Send notification to Artistora admin
         try {
           await sendBookingNotification({
             name,

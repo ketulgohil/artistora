@@ -53,8 +53,8 @@ export async function POST(
     })
 
     // Update the lead with accepted quote and artist
-    const leadId = typeof quote.lead === 'object' ? quote.lead.id : quote.lead
-    const artistId = typeof quote.artist === 'object' ? quote.artist.id : quote.artist
+    const leadId = Number(typeof quote.lead === 'object' ? quote.lead.id : quote.lead)
+    const artistId = Number(typeof quote.artist === 'object' ? quote.artist.id : quote.artist)
 
     await payload.update({
       collection: 'leads',
@@ -62,7 +62,7 @@ export async function POST(
       data: {
         status: 'accepted',
         matchedArtists: [artistId],
-        acceptedQuote: quoteId,
+        acceptedQuote: Number(quoteId),
       },
     })
 

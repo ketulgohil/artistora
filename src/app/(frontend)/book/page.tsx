@@ -165,7 +165,7 @@ export default function BookPage() {
                 type="text"
                 value={form.location}
                 onChange={(e) => update('location', e.target.value)}
-                placeholder="e.g. Chandlodiya, Ahmedabad"
+                placeholder="e.g. SG Highway, Ahmedabad"
                 required
                 className={inputClass}
               />

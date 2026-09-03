@@ -57,25 +57,23 @@ const CARD =
 
 export default async function ArtistPage() {
   const settings = (await getSiteSettings()) as any
-  const businessName = settings.businessName || 'Shiva Mehndi Art'
-  const founderName = settings.founderName || 'Bhumi Chanpura'
   const bookingUrl = '/book'
 
   const highlights = [
     {
-      label: 'Experience',
-      value: 'Professional Artist',
-      text: 'Serving bridal and event clients across Ahmedabad with a 5.0 Google rating and 114+ reviews.',
+      label: 'Verified Network',
+      value: 'Checked & Reviewed',
+      text: 'Artists are verified on skill and reliability, with ratings and reviews from real clients across Ahmedabad.',
     },
     {
-      label: 'Teaching',
-      value: 'Class Instructor',
-      text: 'Conducts offline mehndi classes for beginners, covering basics to bridal-ready practice.',
-    },
-    {
-      label: 'Specialization',
+      label: 'Book By Occasion',
       value: 'Bridal & Events',
-      text: 'Specializes in bridal, engagement, Arabic, Khafif, and festive mehndi with home service availability.',
+      text: 'Browse verified artists for bridal, engagement, Arabic, Khafif, and festive mehndi with home service availability.',
+    },
+    {
+      label: 'Classes',
+      value: 'Learn From Artists',
+      text: 'Offline mehndi classes in Ahmedabad where beginners progress from basics to bridal-ready practice.',
     },
   ]
 
@@ -90,13 +88,13 @@ export default async function ArtistPage() {
 
   return (
     <>
-      {/* ── Editorial bio ── */}
+      {/* ── Editorial ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
-          <SectionHeading title="About the Artist" subtitle={`Meet ${founderName}`} />
+          <SectionHeading title="About Artistora" subtitle="Verified mehndi artists, one platform" />
 
           <div className="grid items-center gap-12! lg:grid-cols-[0.9fr_1.1fr] lg:gap-16!">
-            {/* Framed portrait */}
+            {/* Framed image */}
             <div className="relative mx-auto w-full max-w-md!">
               <div
                 aria-hidden="true"
@@ -109,7 +107,7 @@ export default async function ArtistPage() {
               <div className="relative rounded-[2.2rem] bg-white p-2.5! shadow-lift ring-1 ring-line/70">
                 <img
                   src={mediaFileUrl('Bhumi.webp')}
-                  alt={`${founderName} — Founder of ${businessName}`}
+                  alt="Bridal mehndi by artists on Artistora"
                   width={1200}
                   height={1600}
                   className="aspect-[3/4] w-full rounded-[1.9rem] object-cover"
@@ -120,24 +118,25 @@ export default async function ArtistPage() {
               <Sparkle className="absolute -bottom-4 left-10 h-4 w-4 text-gold/40" />
             </div>
 
-            {/* Bio copy */}
+            {/* Platform copy */}
             <div>
               <h3 className="font-display text-[1.75rem]! leading-snug font-semibold text-ink md:text-3xl!">
-                {founderName} &mdash; Founder of {businessName}
+                Artistora &mdash; Verified Mehndi Artists in Ahmedabad
               </h3>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
-                {founderName} is the mehndi artist behind {businessName},
-                based in Chandlodiya, Ahmedabad. With a focus on clean
-                detailing, balanced composition, and elegant finishing, she
-                has built a reputation for bridal mehndi that reads beautifully
-                both in person and in photographs.
+                Artistora is a curated marketplace that connects you with
+                verified mehndi artists in Ahmedabad. Every artist is selected
+                and reviewed for clean detailing, balanced composition, and
+                elegant finishing &mdash; so bridal mehndi reads beautifully both
+                in person and in photographs.
               </p>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
-                Her work spans bridal mehndi, engagement mehndi, baby showers,
-                festive events, and offline mehndi classes for learners who
-                want structured, in-person guidance. Every design is approached
-                with patience and precision, making each booking feel personal
-                and thoughtfully handled.
+                Browse artists by occasion &mdash; bridal mehndi, engagement
+                mehndi, baby showers, festive events, or offline mehndi classes
+                for learners who want structured, in-person guidance &mdash;
+                compare portfolios and reviews, and book with confidence. Every
+                session is approached with patience and precision, making each
+                booking feel personal and thoughtfully handled.
               </p>
               <div className="mt-7! flex flex-wrap gap-2.5!">
                 {qualityTags.map((tag) => (
@@ -190,15 +189,15 @@ export default async function ArtistPage() {
               className="pointer-events-none absolute -right-20 -bottom-28 h-72 w-72 rounded-full bg-gold/10 blur-3xl"
             />
             <div className="relative flex flex-col gap-10! lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl!">
+              <div className="relative max-w-2xl!">
                 <Eyebrow tone="light">Book Your Session</Eyebrow>
                 <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-[2.1rem]!">
-                  Ready to work with {founderName} for your next celebration?
+                  Ready to book a verified artist for your next celebration?
                 </h2>
                 <p className="mt-4! text-sm leading-relaxed text-cream/65 md:text-[0.95rem]">
                   Whether you are planning a bridal booking, an engagement event,
                   a baby shower, or want to learn mehndi through structured
-                  classes, reach out to check availability and discuss your vision.
+                  classes, reach out to check artist availability and discuss your vision.
                 </p>
                 <p className="mt-6! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm text-cream/75">
                   <Link
@@ -229,7 +228,7 @@ export default async function ArtistPage() {
               </div>
               <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">
                 <a className={BTN_LIGHT} href={bookingUrl} target="_blank" rel="noreferrer">
-                  Book {businessName}
+                  Book an Artist
                 </a>
                 <Link className={BTN_GHOST_LINE} href="/portfolio">
                   View Portfolio

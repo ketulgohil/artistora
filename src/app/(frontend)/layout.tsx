@@ -5,9 +5,33 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import './styles.css'
 
 export const metadata = {
-  title: 'Shiva Mehndi Art — Premium Mehndi Artist in Ahmedabad',
+  metadataBase: new URL('https://www.artistora.com'),
+  title: {
+    default: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
+    template: '%s | Artistora',
+  },
   description:
-    'Shiva Mehndi Art by Bhumi Chanpura offers premium bridal, engagement, and festive mehndi in Ahmedabad. Home service available.',
+    'Artistora connects you with verified mehndi artists in Ahmedabad. Compare quotes from top bridal, engagement, and festive mehndi artists — book in minutes.',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    title: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
+    description:
+      'Compare quotes from top bridal, engagement, and festive mehndi artists in Ahmedabad.',
+    url: 'https://www.artistora.com',
+    siteName: 'Artistora',
+    images: [{ url: '/artistora/social-profile-1000x1000.png', width: 1000, height: 1000 }],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Artistora — Book Verified Mehndi Artists in Ahmedabad',
+    description: 'Compare quotes from verified mehndi artists in Ahmedabad.',
+    images: ['/artistora/social-profile-1000x1000.png'],
+  },
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -19,7 +43,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&display=swap"
           rel="stylesheet"
         />
       </head>

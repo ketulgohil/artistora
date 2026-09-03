@@ -32,13 +32,13 @@ async function main() {
 
       const mediaDoc = await payload.create({
         collection: 'media',
-        data: { alt: `${catTitle} mehndi design by Shiva Mehndi Art` },
+        data: { alt: `${catTitle} mehndi design by Artistora` },
         file: { data: Buffer.from(data), mimetype: mimeMap[ext] || 'image/webp', name: filename, size: fs.statSync(filePath).size },
       })
 
       await payload.create({
         collection: 'portfolio-items',
-        data: { image: mediaDoc.id, category: categoryId, altText: `${catTitle} mehndi design by Shiva Mehndi Art` },
+        data: { image: mediaDoc.id, category: categoryId, altText: `${catTitle} mehndi design by Artistora` },
       })
       console.log(`✅ ${catTitle}: ${filename}`)
     }

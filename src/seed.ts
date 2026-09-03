@@ -72,14 +72,14 @@ const FEATURED_IMAGES = [
 
 // Business images to import
 const BUSINESS_IMAGES: { file: string; alt: string }[] = [
-  { file: 'Bhumi.webp', alt: 'Bhumi Chanpura - Founder Shiva Mehndi Art' },
+  { file: 'Bhumi.webp', alt: 'Bhumi Chanpura - Featured Artist on Artistora' },
   { file: 'Bridal.webp', alt: 'Bridal Mehndi Service' },
   { file: 'Baby_shower.webp', alt: 'Baby Shower Mehndi' },
   { file: 'engagement.webp', alt: 'Engagement Mehndi Service' },
-  { file: 'Shiva_Mehndi_Banner.webp', alt: 'Shiva Mehndi Art Banner' },
-  { file: 'favicon.ico', alt: 'Shiva Mehndi Art Favicon' },
+  { file: 'Shiva_Mehndi_Banner.webp', alt: 'Artistora Banner' },
+  { file: 'favicon.ico', alt: 'Artistora Favicon' },
   { file: 'og-share.jpg', alt: 'OG Share Image' },
-  { file: 'shivu-large.webp', alt: 'Shiva Mehndi Art Large Image' },
+  { file: 'shivu-large.webp', alt: 'Artistora Large Image' },
   { file: 'devider.png', alt: 'Section Divider' },
   { file: 'peacock.png', alt: 'Peacock Motif' },
   { file: 'deveshaa.webp', alt: 'Deveshaa - Client photo' },
@@ -170,7 +170,7 @@ async function main() {
 
       try {
         const fileData = readFileForUpload(filePath)
-        const altText = `${catDef.title} mehndi design by Shiva Mehndi Art`
+        const altText = `${catDef.title} mehndi design by Artistora`
 
         const mediaDoc = await payload.create({
           collection: 'media',
@@ -207,7 +207,7 @@ async function main() {
       try {
         const fileData = readFileForUpload(filePath)
         const nameNoExt = path.basename(filename, path.extname(filename))
-        const altText = `${nameNoExt.replace(/[_-]+/g, ' ')} with Shiva Mehndi Art`
+        const altText = `${nameNoExt.replace(/[_-]+/g, ' ')} with Artistora`
 
         await payload.create({
           collection: 'media',

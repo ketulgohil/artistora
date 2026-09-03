@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { mediaFileUrl } from '@/lib/media-url'
 
 const BOOKING_URL = '/book'
 
@@ -71,7 +70,7 @@ export default function Header() {
   return (
     <header className="fixed top-0 right-0 left-0 z-50">
       <div
-        className={`bg-[rgba(255,251,247,0.86)] shadow-[0_10px_30px_rgba(100,52,26,0.07)] backdrop-blur-xl transition-transform duration-300 ${
+        className={`bg-[rgba(254,246,247,0.86)] shadow-[0_10px_30px_rgba(4,34,75,0.07)] backdrop-blur-xl transition-transform duration-300 ${
           isHiddenOnScroll ? '-translate-y-full' : ''
         }`}
       >
@@ -79,22 +78,22 @@ export default function Header() {
           {/* Brand */}
           <Link
             href="/"
-            className="flex min-w-0 items-center gap-3!"
+            className="flex min-w-0 items-center gap-2.5!"
             onClick={() => setIsOpen(false)}
           >
             <img
-              src={mediaFileUrl('shivu-large.webp')}
-              alt="Shiva Mehndi Art"
-              width={1890}
-              height={1224}
-              className="h-auto w-20! shrink-0 rounded-xl object-contain md:w-24!"
+              src="/artistora/logo-icon-transparent.png"
+              alt="Artistora lotus mark"
+              width={64}
+              height={64}
+              className="h-11! w-auto shrink-0 object-contain md:h-12!"
             />
             <span className="flex min-w-0 flex-col leading-tight">
-              <strong className="font-display text-lg! font-bold text-brand-deep md:text-xl!">
-                Shiva Mehndi Art
+              <strong className="font-display text-xl! font-bold tracking-tight text-brand-deep md:text-2xl!">
+                Artistora
               </strong>
-              <small className="text-[0.6rem] font-semibold tracking-[0.18em] text-ink-muted uppercase md:text-[0.66rem]">
-                Mehndi Artist &amp; Classes
+              <small className="text-[0.58rem] font-semibold tracking-[0.2em] text-brand uppercase md:text-[0.64rem]">
+                Mehndi Artist Marketplace
               </small>
             </span>
           </Link>
@@ -178,7 +177,7 @@ export default function Header() {
 
         {/* Mobile / tablet panel */}
         {isOpen && (
-          <div className="border-t border-line/80 bg-[rgba(255,252,248,0.98)] backdrop-blur-xl lg:hidden">
+          <div className="border-t border-line/80 bg-[rgba(254,246,247,0.98)] backdrop-blur-xl lg:hidden">
             <div className="mx-auto max-w-6xl px-4! py-4! md:px-6!">
               <ul className="flex flex-col gap-1!">
                 {navItems.map((item) => {

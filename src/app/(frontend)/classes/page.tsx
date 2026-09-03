@@ -126,7 +126,7 @@ const classHighlights = [
   },
   {
     title: 'Offline Learning',
-    text: 'The classes are held in Chandlodiya, Ahmedabad, making them practical for students coming from nearby areas who want direct in-person guidance.',
+    text: 'Classes are held at a dedicated offline venue in Ahmedabad, making them practical for students coming from nearby areas who want direct in-person guidance.',
   },
 ]
 
@@ -140,7 +140,7 @@ export default async function ClassesPage() {
   ])
 
   const bookingUrl = '/book'
-  const whatsappNumber = settings.whatsappNumber || '918469662012'
+  const whatsappNumber = settings.whatsappNumber || '917405387720'
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`
   const youtubeUrl = settings.youtubeUrl || 'https://www.youtube.com/@ShivaMehndiArtAndClasses'
 
@@ -167,16 +167,16 @@ export default async function ClassesPage() {
             <div>
               <Eyebrow>Basic To Advanced Mehndi Training</Eyebrow>
               <h1 className="font-display text-[2.1rem]! leading-[1.15] font-semibold text-ink md:text-[2.8rem]!">
-                Offline Mehndi Classes in Ahmedabad — Basic to Advanced Training in Chandlodiya
+                Offline Mehndi Classes in Ahmedabad — Basic to Advanced Training
               </h1>
               <p className="mt-6! text-[0.98rem] leading-relaxed text-ink-soft md:leading-[1.75]">
-                These mehndi classes in Ahmedabad are designed for learners who
-                want structured offline guidance, step-by-step teaching, and
-                practical practice with traditional and bridal design elements.
-                If you are searching for mehndi classes in Chandlodiya or want
-                a nearby mehndi class from Gota, Ghatlodiya, Sola, Jagatpur,
-                Ranip, Vandematram, or Akhbarnagar, this is the dedicated
-                offline training location.
+                These mehndi classes in Ahmedabad are taught by experienced
+                artists and designed for learners who want structured offline
+                guidance, step-by-step teaching, and practical practice with
+                traditional and bridal design elements. If you are searching for
+                mehndi classes in Ahmedabad or want a nearby class from Gota,
+                Ghatlodiya, Sola, Jagatpur, Ranip, Vandematram, or Akhbarnagar,
+                reach out and we&apos;ll help you find the right batch.
               </p>
               <div className="mt-6! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
                 <a className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand" href="/portfolio">
@@ -215,7 +215,7 @@ export default async function ClassesPage() {
                 <div className="overflow-hidden rounded-[2rem]">
                   <img
                     src={mediaFileUrl('shivu-large.webp')}
-                    alt="Shiva Mehndi Art classes"
+                    alt="Mehndi classes by artists on Artistora"
                     width={1890}
                     height={1224}
                     loading="lazy"
@@ -296,7 +296,7 @@ export default async function ClassesPage() {
                 <div className="p-2.5!">
                   <iframe
                     src={`https://www.youtube.com/embed/${v.videoId}`}
-                    title={v.title || 'Shiva Mehndi Art video'}
+                    title={v.title || 'Artistora mehndi tutorial video'}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="block aspect-video w-full rounded-[1.35rem] border-0"
@@ -350,9 +350,9 @@ export default async function ClassesPage() {
                 <PinIcon />
               </span>
               <Eyebrow>Location</Eyebrow>
-              <h3 className="font-display text-xl! font-semibold text-ink">Chandlodiya, Ahmedabad</h3>
+              <h3 className="font-display text-xl! font-semibold text-ink">Ahmedabad, Gujarat</h3>
               <p className="mt-3! text-sm leading-relaxed text-ink-soft">
-                Offline mehndi classes in Chandlodiya with direct in-person
+                Offline mehndi classes in Ahmedabad with direct in-person
                 support and guidance.
               </p>
             </article>

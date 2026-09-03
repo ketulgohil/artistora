@@ -219,7 +219,7 @@ export default async function ArtistsPage() {
               </p>
               <div className="mt-8! flex flex-wrap justify-center gap-3!">
                 <a
-                  href="https://wa.me/918469662012"
+                  href="https://wa.me/917405387720"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"

@@ -67,7 +67,7 @@ export default function RegisterPage() {
               Create Your Account
             </h1>
             <p className="mt-2! text-sm text-ink-soft">
-              Join Shiva Mehndi Art as a customer or mehndi artist
+              Join Artistora as a customer or mehndi artist
             </p>
           </div>
 
@@ -235,7 +235,7 @@ export default function RegisterPage() {
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder={isCustomer ? 'e.g. Priya Patel' : 'e.g. Priya Mehndi Art'}
+                placeholder={isCustomer ? 'e.g. Priya Patel' : 'e.g. Priya’s Mehndi Studio'}
                 required
                 className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
               />

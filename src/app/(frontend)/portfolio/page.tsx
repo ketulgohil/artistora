@@ -158,7 +158,7 @@ export default function PortfolioPage() {
                         src: imgUrl(item),
                         width: imgWidth(item),
                         height: imgHeight(item),
-                        alt: item.altText || 'Mehndi design by Shiva Mehndi Art',
+                        alt: item.altText || 'Mehndi design by artists on Artistora',
                       })
                     }
                     type="button"
@@ -167,7 +167,7 @@ export default function PortfolioPage() {
                   >
                     <img
                       src={imgUrl(item)}
-                      alt={item.altText || 'Mehndi design by Shiva Mehndi Art'}
+                      alt={item.altText || 'Mehndi design by artists on Artistora'}
                       width={imgWidth(item)}
                       height={imgHeight(item)}
                       className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"

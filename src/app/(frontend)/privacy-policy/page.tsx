@@ -20,9 +20,9 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p className="mt-6! max-w-2xl! text-[0.95rem] leading-relaxed text-ink-soft">
-            Shiva Mehndi Art respects your privacy. This policy outlines how we
-            collect, use, and protect your information when you use our website
-            or services.
+            Artistora respects your privacy. This policy outlines how we
+            collect, use, and protect your information when you use our platform,
+            website, or services.
           </p>
         </div>
       </section>
@@ -50,7 +50,7 @@ export default function PrivacyPolicyPage() {
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
                 Your information is used solely to respond to your inquiries,
-                confirm bookings, provide the mehndi services you request, and
+                connect you with verified mehndi artists, confirm bookings, and
                 improve our offerings. We do not sell or share your data with third
                 parties for marketing purposes.
               </p>
@@ -90,10 +90,10 @@ export default function PrivacyPolicyPage() {
                 If you have questions about this policy or how your data is
                 handled, please contact us at{' '}
                 <a
-                  href="mailto:bhumichanpura1234@gmail.com"
+                  href="mailto:gohilketul5@gmail.com"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  bhumichanpura1234@gmail.com
+                  gohilketul5@gmail.com
                 </a>
                 .
               </p>

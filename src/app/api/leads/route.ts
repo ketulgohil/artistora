@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Send notification to Bhumi (non-blocking)
+    // Send notification to Artistora admin (non-blocking)
     sendQuoteNotification({
       customerName,
       customerPhone,

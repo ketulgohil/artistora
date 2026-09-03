@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { mediaFileUrl } from '@/lib/media-url'
 
 const BOOKING_URL = '/book'
 
@@ -49,10 +48,10 @@ export default function Footer() {
           <div className="relative flex flex-col items-center justify-between gap-8! md:flex-row">
             <div className="max-w-xl!">
               <p className="mb-2! text-[0.7rem] font-semibold tracking-[0.3em] text-cream/70 uppercase">
-                Book Your Mehndi Session
+                Book Verified Artists
               </p>
               <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-3xl!">
-                Elegant designs for bridal, festive, and event celebrations.
+                Beautiful mehndi for bridal, festive, and event celebrations.
               </h2>
             </div>
             <div className="flex flex-col gap-3! sm:flex-row">
@@ -64,7 +63,7 @@ export default function Footer() {
               </a>
               <a
                 className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-cream/40 px-7! py-3! text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream/70 hover:bg-white/10"
-                href="https://wa.me/918469662012"
+                href="https://wa.me/917405387720"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -82,17 +81,14 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <img
-              src={mediaFileUrl('shivu-large.webp')}
-              alt="Shiva Mehndi Art"
-              width={1890}
-              height={1224}
-              className="mb-4! h-20 w-auto rounded-xl"
+              src="/artistora/logo-full-white.png"
+              alt="Artistora"
+              width={480}
+              height={293}
+              className="mb-4! h-auto w-44! rounded-lg"
             />
-            <p className="font-display text-lg! font-semibold text-cream">
-              Shiva Mehndi Art
-            </p>
-            <p className="mt-2! text-sm leading-relaxed text-cream/55">
-              Bridal elegance, festive charm, and thoughtful mehndi artistry for every celebration in Ahmedabad.
+            <p className="mt-2! max-w-xs! text-sm leading-relaxed text-cream/55">
+              India&apos;s curated mehndi artist marketplace — discover, compare, and book verified artists for every celebration.
             </p>
           </div>
 
@@ -144,7 +140,7 @@ export default function Footer() {
             <ul className="flex flex-col gap-3.5!">
               <li>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query=C-206%20Neelkanth%20Homes%2C%20Near%20Harivilla%20Flats%2C%20Gayatri%20Nagar%2C%20Chandlodiya%2C%20Ahmedabad%2C%20Gujarat%20382481"
+                  href="https://www.google.com/maps/search/?api=1&query=Ahmedabad%2C%20Gujarat%2C%20India"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-start gap-3! text-sm text-cream/65 transition-colors duration-200 hover:text-cream"
@@ -153,30 +149,30 @@ export default function Footer() {
                     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <span>C-206 Neelkanth Homes, Chandlodiya, Ahmedabad 382481</span>
+                  <span>Ahmedabad, Gujarat, India</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+918469662012"
+                  href="tel:+917405387720"
                   className="flex items-center gap-3! text-sm text-cream/65 transition-colors duration-200 hover:text-cream"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-gold">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
-                  <span>+91 8469662012</span>
+                  <span>+91 7405387720</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:bhumichanpura1234@gmail.com"
+                  href="mailto:gohilketul5@gmail.com"
                   className="flex items-center gap-3! text-sm text-cream/65 transition-colors duration-200 hover:text-cream"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-gold">
                     <rect x="2" y="4" width="20" height="16" rx="2" />
                     <path d="m22 7-10 6L2 7" />
                   </svg>
-                  <span className="break-all">bhumichanpura1234@gmail.com</span>
+                  <span className="break-all">gohilketul5@gmail.com</span>
                 </a>
               </li>
             </ul>
@@ -187,7 +183,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-cream/10 py-5!">
         <p className="mx-auto max-w-6xl px-4! text-center text-xs text-cream/40 md:px-6!">
-          &copy; {year} Shiva Mehndi Art. All rights reserved.
+          &copy; {year} Artistora. All rights reserved.
         </p>
       </div>
     </footer>

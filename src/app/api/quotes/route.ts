@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Verify the artist exists and is approved
     const artist = await payload.findByID({ collection: 'artists', id: artistId }).catch(() => null)
-    if (!artist || !artist.isApproved) {
+    if (!artist || !artist.verified) {
       return NextResponse.json({ error: 'Artist not found or not approved' }, { status: 404 })
     }
 

@@ -1,42 +1,42 @@
 /* ═══════════════════════════════════════════════════════
-   Shiva Mehndi Art — Tailwind v4 theme + global base
+   Artistora — Tailwind v4 theme + global base
    All component styling lives as Tailwind utilities in JSX.
    ═══════════════════════════════════════════════════════ */
 @import "tailwindcss";
 
 /* ── Design Tokens ── */
 @theme inline {
-  --color-brand: #b37343;
-  --color-brand-dark: #8c5327;
-  --color-brand-deep: #64341a;
-  --color-brand-light: #dca97c;
-  --color-gold: #b9925a;
-  --color-green: #3f5e4d;
-  --color-cream: #faf6f0;
-  --color-cream-deep: #f3e9db;
+  --color-brand: #ec6783;
+  --color-brand-dark: #d14a68;
+  --color-brand-deep: #04224b;
+  --color-brand-light: #f6a6b8;
+  --color-gold: #c77e90;
+  --color-green: #17856b;
+  --color-cream: #fdeeee;
+  --color-cream-deep: #f9e0e3;
   --color-card: #ffffff;
-  --color-ink: #2b1c10;
-  --color-ink-soft: #5c4a3a;
-  --color-ink-muted: #8a7660;
-  --color-line: #ecdfd0;
-  --color-coal: #241208;
+  --color-ink: #04224b;
+  --color-ink-soft: #41506b;
+  --color-ink-muted: #7e8aa3;
+  --color-line: #f1d9dc;
+  --color-coal: #031936;
 
   /* Legacy aliases (old inline `var(--color-*)` references) */
-  --color-surface: #faf6f0;
-  --color-surface-alt: #f3e9db;
-  --color-text-primary: #2b1c10;
-  --color-text-secondary: #5c4a3a;
-  --color-text-muted: #8a7660;
-  --color-border: #ecdfd0;
-  --color-accent: #87b9ae;
-  --color-accent-dark: #6a9e93;
-  --color-accent-light: #a5cdc4;
+  --color-surface: #fdeeee;
+  --color-surface-alt: #f9e0e3;
+  --color-text-primary: #04224b;
+  --color-text-secondary: #41506b;
+  --color-text-muted: #7e8aa3;
+  --color-border: #f1d9dc;
+  --color-accent: #ef8199;
+  --color-accent-dark: #d14a68;
+  --color-accent-light: #f9c7d1;
 
-  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  --shadow-soft: 0 2px 8px rgb(79 45 25 / 0.05), 0 12px 32px rgb(79 45 25 / 0.07);
-  --shadow-lift: 0 8px 18px rgb(79 45 25 / 0.09), 0 24px 48px rgb(79 45 25 / 0.12);
+  --shadow-soft: 0 2px 8px rgb(4 34 75 / 0.05), 0 12px 32px rgb(4 34 75 / 0.07);
+  --shadow-lift: 0 8px 18px rgb(4 34 75 / 0.09), 0 24px 48px rgb(4 34 75 / 0.12);
 }
 
 /* ── Base ── */

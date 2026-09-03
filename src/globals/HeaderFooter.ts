@@ -54,12 +54,12 @@ export const HeaderFooter: GlobalConfig = {
               name: 'footerTagline',
               type: 'textarea',
               defaultValue:
-                'Premium mehndi artistry by Bhumi Chanpura, based in Chandlodiya, Ahmedabad. Bridal, engagement, festive, and home-service mehndi across the city.',
+                'Artistora connects you with verified mehndi artists across Ahmedabad for bridal, engagement, festive, and home-service mehndi.',
             },
             {
               name: 'copyrightText',
               type: 'text',
-              defaultValue: '© Shiva Mehndi Art. All rights reserved.',
+              defaultValue: '© Artistora. All rights reserved.',
             },
             {
               name: 'footerLinks',

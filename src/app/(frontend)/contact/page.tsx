@@ -81,15 +81,15 @@ const CARD =
 export default async function ContactPage() {
   const settings = (await getSiteSettings()) as any
 
-  const businessName = settings.businessName || 'Shiva Mehndi Art'
-  const phone = settings.phone || '+91 8469662012'
+  const businessName = settings.businessName || 'Artistora'
+  const phone = settings.phone || '+91 7405387720'
   const email = settings.email || ''
   const address = settings.address || ''
   const bookingUrl = '/book'
-  const whatsappNumber = settings.whatsappNumber || '918469662012'
+  const whatsappNumber = settings.whatsappNumber || '917405387720'
   const googleMapUrl = settings.googleMapUrl || ''
 
-  const mapSrc = googleMapUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29388.253119139237!2d72.538!3d23.036!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e84f6b1f7c1b7%3A0x1e8f8f8f8f8f8f8f!2sChandlodiya%2C%20Ahmedabad!5e0!3m2!1sen!2sin!4v1'
+  const mapSrc = googleMapUrl || 'https://maps.google.com/maps?q=Ahmedabad%2C%20Gujarat%2C%20India&z=11&output=embed'
 
   const bookingInfo = [
     'Your event date',
@@ -113,7 +113,7 @@ export default async function ContactPage() {
                 Reach out for bridal mehndi, festive bookings, events, and classes.
               </p>
               <p className="mt-4! max-w-xl! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
-                Whether you are planning a wedding, engagement, baby shower, family event, or want to know more about mehndi classes, Shiva Mehndi Art makes it easy to book a professional mehndi artist in Ahmedabad through direct call, WhatsApp, or the booking form. The studio is based in Chandlodiya and regularly serves nearby areas like Gota, Ghatlodiya, Sola, and Science City along with home service across Ahmedabad.
+                Whether you are planning a wedding, engagement, baby shower, family event, or want to know more about mehndi classes, Artistora makes it easy to book a verified mehndi artist in Ahmedabad through direct call, WhatsApp, or the booking form. Artists on the platform regularly serve areas like Gota, Ghatlodiya, Sola, and Science City along with home service across Ahmedabad.
               </p>
 
               {bookingUrl && (
@@ -195,7 +195,7 @@ export default async function ContactPage() {
                   Home service available across Ahmedabad.
                 </h3>
                 <p className="mt-3! text-sm leading-relaxed text-ink-soft">
-                  Bookings can be discussed for bridal sessions, engagement functions, baby showers, festive appointments, and other special events in Chandlodiya, Gota, Ghatlodiya, Sola, Science City, and other areas with home service across Ahmedabad.
+                  Bookings can be discussed for bridal sessions, engagement functions, baby showers, festive appointments, and other special events in Gota, Ghatlodiya, Sola, Science City, and other areas with home service across Ahmedabad.
                 </p>
               </article>
               <article className={CARD}>
@@ -204,7 +204,7 @@ export default async function ContactPage() {
                   Offline mehndi classes for learners.
                 </h3>
                 <p className="mt-3! text-sm leading-relaxed text-ink-soft">
-                  If you are interested in learning mehndi, you can also use this page to ask about class details and guidance for offline classes in Chandlodiya, Ahmedabad, especially if you are looking for a nearby class from Gota, Ghatlodiya, Sola, or Science City.
+                  If you are interested in learning mehndi, you can also use this page to ask about class details and guidance for offline classes in Ahmedabad, especially if you are looking for a nearby class from Gota, Ghatlodiya, Sola, or Science City.
                 </p>
               </article>
             </div>
@@ -246,7 +246,7 @@ export default async function ContactPage() {
               href="/thank-you"
               className="mt-2! inline-flex cursor-pointer items-center gap-1.5! font-semibold text-brand underline decoration-brand/40 underline-offset-4 transition-colors duration-200 hover:text-brand-deep hover:decoration-brand-deep"
             >
-              https://www.shivamehndiart.com/thank-you
+              https://www.artistora.com/thank-you
               <ArrowUpRightIcon />
             </a>
           </div>

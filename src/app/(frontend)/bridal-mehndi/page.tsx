@@ -85,7 +85,7 @@ export default async function BridalMehndiPage() {
   ])
 
   const bookingUrl = '/book'
-  const whatsappNumber = ((settings as any).whatsappNumber || '918469662012').replace(/[^0-9]/g, '')
+  const whatsappNumber = ((settings as any).whatsappNumber || '917405387720').replace(/[^0-9]/g, '')
   const whatsappUrl = `https://wa.me/${whatsappNumber}`
 
   const bridalService = (services as any[]).find(
@@ -121,7 +121,7 @@ export default async function BridalMehndiPage() {
     },
     {
       q: 'Do you provide home service for bridal mehndi in Ahmedabad?',
-      a: 'Yes, bridal mehndi home service is available across Ahmedabad including Chandlodiya, Ghatlodiya, Gota, Sola, Jagatpur, and nearby areas. Travel is included within these zones.',
+      a: 'Yes, bridal mehndi home service is available across Ahmedabad including Ghatlodiya, Gota, Sola, Jagatpur, and nearby areas. Travel is included within these zones.',
     },
     {
       q: 'How long does a bridal mehndi session take?',
@@ -148,10 +148,10 @@ export default async function BridalMehndiPage() {
               Premium bridal mehndi designed around your wedding story.
             </h1>
             <p className="mx-auto mt-6! max-w-2xl! text-[1.02rem] leading-relaxed text-ink-soft">
-              Every bridal mehndi session at Shiva Mehndi Art is built around the bride&apos;s
+              Every bridal mehndi booking on Artistora is built around the bride&apos;s
               personality, outfit, and the scale of the wedding. From dense traditional motifs
-              to light contemporary accents, the design is composed with care and finished to
-              read beautifully in photographs. Based in Chandlodiya, Ahmedabad, with home
+              to light contemporary accents, each design is composed with care and finished to
+              read beautifully in photographs. Verified artists are based in Ahmedabad, with home
               service across the city.
             </p>
             <div className="mt-8! flex flex-wrap items-center justify-center gap-4!">
@@ -185,7 +185,7 @@ export default async function BridalMehndiPage() {
             <div className="relative rounded-[2.4rem] bg-white/85 p-2.5! shadow-lift ring-1 ring-line/70">
               <img
                 src={mediaFileUrl('Bridal.webp')}
-                alt="Bridal mehndi by Shiva Mehndi Art"
+                alt="Bridal mehndi by artists on Artistora"
                 width={1400}
                 height={933}
                 className="aspect-[3/2] w-full rounded-[2rem] object-cover"

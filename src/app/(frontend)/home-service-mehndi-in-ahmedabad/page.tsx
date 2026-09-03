@@ -26,13 +26,12 @@ function Eyebrow({ children, tone = 'brand' }: { children: React.ReactNode; tone
 export default async function HomeServiceMehndiPage() {
   const settings = (await getSiteSettings()) as any
 
-  const businessName = settings.businessName || 'Shiva Mehndi Art'
+  const businessName = settings.businessName || 'Artistora'
   const bookingUrl = '/book'
-  const phone = settings.phone || '+91 8469662012'
-  const whatsappNumber = settings.whatsappNumber || '918469662012'
+  const phone = settings.phone || '+91 7405387720'
+  const whatsappNumber = settings.whatsappNumber || '917405387720'
 
   const coverageAreas = [
-    'Chandlodiya',
     'Ghatlodiya',
     'Gota',
     'Sola',
@@ -89,9 +88,9 @@ export default async function HomeServiceMehndiPage() {
                 Home service mehndi across Ahmedabad for bridal and event celebrations.
               </h2>
               <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
-                {businessName} provides home service mehndi across Ahmedabad for clients who prefer
+                {businessName} connects you with verified artists who provide home service mehndi across Ahmedabad for clients who prefer
                 the comfort and convenience of getting mehndi done at their own location. Whether it&apos;s
-                a bridal booking, an engagement ceremony, a baby shower, or a family function, the artist
+                a bridal booking, an engagement ceremony, a baby shower, or a family function, an artist
                 travels to your venue with all the necessary materials and setup.
               </p>
               <p className="mt-7! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm">
