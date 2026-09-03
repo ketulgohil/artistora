@@ -89,19 +89,19 @@
 ## P2 — Scale & Monetization Readiness
 
 ### 4.1 Payments / Advance Booking
-- [ ] totalAmount, advanceAmount, remainingAmount
-- [ ] platformFee, artistAmount
-- [ ] paymentStatus: unpaid, pending, partially_paid, paid, refunded
+- [x] totalAmount, advanceAmount, remainingAmount
+- [x] platformFee, artistAmount
+- [x] paymentStatus: unpaid, pending, partially_paid, paid, refunded
 
 ### 4.2 Artist Analytics
-- [ ] Profile views, leads, quotes, bookings won, conversion rate, reviews, earnings
+- [x] Profile views, leads, quotes, bookings won, conversion rate, reviews, earnings
 
 ### 4.3 Featured Listings / Subscriptions
-- [ ] Free profile, featured placement, more portfolio capacity, analytics
-- [ ] Subscription status and renewal dates
+- [x] Free profile, featured placement, more portfolio capacity, analytics
+- [x] Subscription status and renewal dates
 
 ### 4.4 Search Ranking
-- [ ] Rating, verified reviews, response rate, completed bookings, profile completeness, location relevance
+- [x] Rating, verified reviews, response rate, completed bookings, profile completeness, location relevance
 
 ---
 
