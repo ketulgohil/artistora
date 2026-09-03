@@ -362,3 +362,201 @@ export async function sendArtistBookingEmail(to: string, data: {
     html,
   })
 }
+
+// ── Artist Accepted Booking ──
+export async function sendArtistAcceptedEmail(to: string, data: {
+  artistName: string
+  customerName: string
+  eventType: string
+  eventDate: string
+  eventLocation: string
+}) {
+  const EVENT_LABELS: Record<string, string> = {
+    bridal: 'Bridal Mehndi',
+    engagement: 'Engagement Mehndi',
+    'baby-shower': 'Baby Shower',
+    'family-function': 'Family Function',
+    festival: 'Festival',
+    other: 'Other',
+  }
+
+  const html = `
+    <div style="font-family: 'Manrope', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #f1d9dc;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #04224B;">Booking Confirmed</h1>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Hi ${data.artistName},
+      </p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        You have accepted the booking for <strong>${data.customerName}</strong>.
+      </p>
+      <div style="background: #fdeeee; border-radius: 12px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0 0 8px; font-size: 14px; color: #04224B;"><strong>Event:</strong> ${EVENT_LABELS[data.eventType] || data.eventType}</p>
+        <p style="margin: 0 0 8px; font-size: 14px; color: #04224B;"><strong>Date:</strong> ${new Date(data.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p style="margin: 0; font-size: 14px; color: #04224B;"><strong>Location:</strong> ${data.eventLocation}</p>
+      </div>
+      <p style="margin: 20px 0 0; font-size: 14px; color: #7e8aa3; line-height: 1.6;">
+        Please prepare for the event. You can view booking details in your dashboard.
+      </p>
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="https://www.artistora.com/dashboard" style="display: inline-block; padding: 12px 32px; background: #ec6783; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 14px;">View Dashboard</a>
+      </div>
+      <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: `Booking Confirmed: ${EVENT_LABELS[data.eventType] || data.eventType} on ${new Date(data.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+    html,
+  })
+}
+
+// ── Artist Declined Booking ──
+export async function sendArtistDeclinedEmail(to: string, data: {
+  artistName: string
+  customerName: string
+  eventType: string
+  eventDate: string
+  reason?: string
+}) {
+  const EVENT_LABELS: Record<string, string> = {
+    bridal: 'Bridal Mehndi',
+    engagement: 'Engagement Mehndi',
+    'baby-shower': 'Baby Shower',
+    'family-function': 'Family Function',
+    festival: 'Festival',
+    other: 'Other',
+  }
+
+  const html = `
+    <div style="font-family: 'Manrope', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #f1d9dc;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #04224B;">Booking Declined</h1>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Hi ${data.artistName},
+      </p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        The booking for <strong>${data.customerName}</strong> has been declined.
+      </p>
+      <div style="background: #fdeeee; border-radius: 12px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0 0 8px; font-size: 14px; color: #04224B;"><strong>Event:</strong> ${EVENT_LABELS[data.eventType] || data.eventType}</p>
+        <p style="margin: 0; font-size: 14px; color: #04224B;"><strong>Date:</strong> ${new Date(data.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        ${data.reason ? `<p style="margin: 8px 0 0; font-size: 14px; color: #04224B;"><strong>Reason:</strong> ${data.reason}</p>` : ''}
+      </div>
+      <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: `Booking Declined: ${EVENT_LABELS[data.eventType] || data.eventType}`,
+    html,
+  })
+}
+
+// ── Booking Cancelled ──
+export async function sendBookingCancelledEmail(to: string, data: {
+  name: string
+  eventType: string
+  eventDate: string
+  cancelledBy: string
+  reason?: string
+}) {
+  const EVENT_LABELS: Record<string, string> = {
+    bridal: 'Bridal Mehndi',
+    engagement: 'Engagement Mehndi',
+    'baby-shower': 'Baby Shower',
+    'family-function': 'Family Function',
+    festival: 'Festival',
+    other: 'Other',
+  }
+
+  const html = `
+    <div style="font-family: 'Manrope', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #f1d9dc;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #04224B;">Booking Cancelled</h1>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Hi ${data.name},
+      </p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Your booking for <strong>${EVENT_LABELS[data.eventType] || data.eventType}</strong> has been cancelled.
+      </p>
+      <div style="background: #fdeeee; border-radius: 12px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0 0 8px; font-size: 14px; color: #04224B;"><strong>Event:</strong> ${EVENT_LABELS[data.eventType] || data.eventType}</p>
+        <p style="margin: 0 0 8px; font-size: 14px; color: #04224B;"><strong>Date:</strong> ${new Date(data.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p style="margin: 0 0 8px; font-size: 14px; color: #04224B;"><strong>Cancelled by:</strong> ${data.cancelledBy}</p>
+        ${data.reason ? `<p style="margin: 0; font-size: 14px; color: #04224B;"><strong>Reason:</strong> ${data.reason}</p>` : ''}
+      </div>
+      <p style="margin: 20px 0 0; font-size: 14px; color: #7e8aa3; line-height: 1.6;">
+        If you have any questions, please contact us at <a href="mailto:support@artistora.com" style="color: #ec6783;">support@artistora.com</a>.
+      </p>
+      <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: `Booking Cancelled: ${EVENT_LABELS[data.eventType] || data.eventType}`,
+    html,
+  })
+}
+
+// ── Review Request ──
+export async function sendReviewRequestEmail(to: string, data: {
+  customerName: string
+  artistName: string
+  eventType: string
+  bookingId: number
+}) {
+  const EVENT_LABELS: Record<string, string> = {
+    bridal: 'Bridal Mehndi',
+    engagement: 'Engagement Mehndi',
+    'baby-shower': 'Baby Shower',
+    'family-function': 'Family Function',
+    festival: 'Festival',
+    other: 'Other',
+  }
+
+  const html = `
+    <div style="font-family: 'Manrope', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #f1d9dc;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #04224B;">How was your experience?</h1>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Hi ${data.customerName},
+      </p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Your <strong>${EVENT_LABELS[data.eventType] || data.eventType}</strong> session with <strong>${data.artistName}</strong> has been completed. We'd love to hear your feedback!
+      </p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Your review helps other customers find the best artists and helps artists improve their services.
+      </p>
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="https://www.artistora.com/my-bookings" style="display: inline-block; padding: 12px 32px; background: #ec6783; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 14px;">Leave a Review</a>
+      </div>
+      <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: `How was your ${EVENT_LABELS[data.eventType] || data.eventType} with ${data.artistName}?`,
+    html,
+  })
+}
