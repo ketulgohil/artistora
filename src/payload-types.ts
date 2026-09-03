@@ -479,6 +479,11 @@ export interface Booking {
     | ('requested' | 'artist_pending' | 'confirmed' | 'in_progress' | 'completed' | 'declined' | 'cancelled')
     | null;
   declineReason?: string | null;
+  cancelledBy?: ('customer' | 'artist' | 'admin' | 'system') | null;
+  cancellationReason?: string | null;
+  cancelledAt?: string | null;
+  refundAmount?: number | null;
+  refundStatus?: ('pending' | 'processing' | 'refunded' | 'denied') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -856,6 +861,11 @@ export interface BookingsSelect<T extends boolean = true> {
       };
   status?: T;
   declineReason?: T;
+  cancelledBy?: T;
+  cancellationReason?: T;
+  cancelledAt?: T;
+  refundAmount?: T;
+  refundStatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }

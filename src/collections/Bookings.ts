@@ -348,6 +348,68 @@ export const Bookings: CollectionConfig = {
         condition: (_, siblingData) => siblingData?.status === 'declined',
       },
     },
+    {
+      name: 'cancelledBy',
+      type: 'select',
+      label: 'Cancelled By',
+      options: [
+        { label: 'Customer', value: 'customer' },
+        { label: 'Artist', value: 'artist' },
+        { label: 'Admin', value: 'admin' },
+        { label: 'System', value: 'system' },
+      ],
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.status === 'cancelled',
+      },
+    },
+    {
+      name: 'cancellationReason',
+      type: 'textarea',
+      label: 'Cancellation Reason',
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.status === 'cancelled',
+      },
+    },
+    {
+      name: 'cancelledAt',
+      type: 'date',
+      label: 'Cancelled At',
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.status === 'cancelled',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+    },
+    {
+      name: 'refundAmount',
+      type: 'number',
+      label: 'Refund Amount (INR)',
+      min: 0,
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.status === 'cancelled',
+      },
+    },
+    {
+      name: 'refundStatus',
+      type: 'select',
+      label: 'Refund Status',
+      defaultValue: 'pending',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Processing', value: 'processing' },
+        { label: 'Refunded', value: 'refunded' },
+        { label: 'Denied', value: 'denied' },
+      ],
+      admin: {
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.status === 'cancelled',
+      },
+    },
   ],
   timestamps: true,
 }
