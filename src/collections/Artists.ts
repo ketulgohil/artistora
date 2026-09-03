@@ -185,6 +185,38 @@ export const Artists: CollectionConfig = {
       },
     },
     {
+      name: 'approvalStatus',
+      type: 'select',
+      defaultValue: 'pending',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Approved', value: 'approved' },
+        { label: 'Rejected', value: 'rejected' },
+        { label: 'Suspended', value: 'suspended' },
+      ],
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'verificationStatus',
+      type: 'select',
+      defaultValue: 'unverified',
+      options: [
+        { label: 'Unverified', value: 'unverified' },
+        { label: 'Verified', value: 'verified' },
+      ],
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'rating',
       type: 'number',
       min: 0,

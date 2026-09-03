@@ -379,6 +379,8 @@ export interface Artist {
       }[]
     | null;
   verified?: boolean | null;
+  approvalStatus?: ('pending' | 'approved' | 'rejected' | 'suspended') | null;
+  verificationStatus?: ('unverified' | 'verified') | null;
   rating?: number | null;
   reviewCount?: number | null;
   order?: number | null;
@@ -809,6 +811,8 @@ export interface ArtistsSelect<T extends boolean = true> {
         id?: T;
       };
   verified?: T;
+  approvalStatus?: T;
+  verificationStatus?: T;
   rating?: T;
   reviewCount?: T;
   order?: T;
