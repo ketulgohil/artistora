@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Artistora <onboarding@resend.dev>'
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Artistora <hello@artistora.com>'
 
 export async function sendBookingConfirmation(to: string, data: {
   name: string
@@ -81,7 +81,7 @@ export async function sendBookingNotification(data: {
     other: 'Other',
   }
 
-  const notifyTo = process.env.RESEND_NOTIFY_EMAIL || 'gohilketul5@gmail.com'
+  const notifyTo = process.env.RESEND_NOTIFY_EMAIL || 'hello@artistora.com'
 
   const html = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; color: #04224b;">
@@ -269,7 +269,7 @@ export async function sendQuoteNotification(data: {
   designStyle?: string
   additionalNotes?: string
 }) {
-  const notifyTo = process.env.RESEND_NOTIFY_EMAIL || 'gohilketul5@gmail.com'
+  const notifyTo = process.env.RESEND_NOTIFY_EMAIL || 'hello@artistora.com'
 
   const html = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; color: #04224b;">

@@ -15,7 +15,7 @@ const ARTISTS = [
     slug: 'bhumi-chanpura',
     phone: '+917405387720',
     whatsappNumber: '7405387720',
-    email: 'gohilketul5@gmail.com',
+    email: 'hello@artistora.com',
     bio: 'Featured Artistora artist with 8+ years of experience in bridal and festive mehndi. Known for intricate detailing, clean lines, and a calm, professional service experience across Ahmedabad.',
     city: 'Ahmedabad',
     area: 'Ahmedabad',

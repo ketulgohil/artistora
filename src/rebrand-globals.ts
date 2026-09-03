@@ -23,7 +23,7 @@ async function run() {
         businessName: 'Artistora',
         founderName: 'Ketul Gohil',
         phone: '+91 7405387720',
-        email: 'gohilketul5@gmail.com',
+        email: 'hello@artistora.com',
         address: 'Ahmedabad, Gujarat, India',
         tagline: 'Verified Artist Marketplace – Ahmedabad',
         whatsappNumber: '+917405387720',

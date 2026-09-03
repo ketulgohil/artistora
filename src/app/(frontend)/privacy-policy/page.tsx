@@ -90,10 +90,10 @@ export default function PrivacyPolicyPage() {
                 If you have questions about this policy or how your data is
                 handled, please contact us at{' '}
                 <a
-                  href="mailto:gohilketul5@gmail.com"
+                  href="mailto:support@artistora.com"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  gohilketul5@gmail.com
+                  support@artistora.com
                 </a>
                 .
               </p>

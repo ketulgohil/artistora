@@ -165,14 +165,14 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:gohilketul5@gmail.com"
+                  href="mailto:hello@artistora.com"
                   className="flex items-center gap-3! text-sm text-cream/65 transition-colors duration-200 hover:text-cream"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-gold">
                     <rect x="2" y="4" width="20" height="16" rx="2" />
                     <path d="m22 7-10 6L2 7" />
                   </svg>
-                  <span className="break-all">gohilketul5@gmail.com</span>
+                  <span className="break-all">hello@artistora.com</span>
                 </a>
               </li>
             </ul>

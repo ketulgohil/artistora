@@ -89,10 +89,10 @@ export default function BookingPolicyPage() {
                 </a>{' '}
                 or email{' '}
                 <a
-                  href="mailto:gohilketul5@gmail.com"
+                  href="mailto:bookings@artistora.com"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  gohilketul5@gmail.com
+                  bookings@artistora.com
                 </a>
                 . We are happy to assist you.
               </p>
