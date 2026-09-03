@@ -70,11 +70,6 @@ export default async function ArtistPage() {
       value: 'Weddings & Events',
       text: 'Browse verified artists for weddings, corporate events, birthdays, festivals, and special occasions with home service availability.',
     },
-    {
-      label: 'Workshops',
-      value: 'Learn From Artists',
-      text: 'Art workshops in Ahmedabad where beginners progress from basics to advanced techniques.',
-    },
   ]
 
   const qualityTags = [
@@ -106,10 +101,10 @@ export default async function ArtistPage() {
               />
               <div className="relative rounded-[2.2rem] bg-white p-2.5! shadow-lift ring-1 ring-line/70">
                 <img
-                  src={mediaFileUrl('Bhumi.webp')}
-                  alt="Bridal mehndi by artists on Artistora"
-                  width={1200}
-                  height={1600}
+                  src="/services/mehndi-new.jpg"
+                  alt="Artists on Artistora"
+                  width={800}
+                  height={600}
                   className="aspect-[3/4] w-full rounded-[1.9rem] object-cover"
                   loading="eager"
                 />

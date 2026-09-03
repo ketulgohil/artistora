@@ -113,7 +113,7 @@ export default async function ContactPage() {
                 Reach out for weddings, events, and special occasions.
               </p>
               <p className="mt-4! max-w-xl! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
-                Whether you are planning a wedding, engagement, baby shower, family event, or want to know more about artist classes, Artistora makes it easy to book a verified artist in Ahmedabad through direct call, WhatsApp, or the booking form. Artists on the platform regularly serve areas like Gota, Ghatlodiya, Sola, and Science City along with home service across Ahmedabad.
+                Whether you are planning a wedding, engagement, baby shower, family event, or any special occasion, Artistora makes it easy to book a verified artist in Ahmedabad through direct call, WhatsApp, or the booking form. Artists on the platform regularly serve areas like Gota, Ghatlodiya, Sola, and Science City along with home service across Ahmedabad.
               </p>
 
               {bookingUrl && (
@@ -196,15 +196,6 @@ export default async function ContactPage() {
                 </h3>
                 <p className="mt-3! text-sm leading-relaxed text-ink-soft">
                   Bookings can be discussed for bridal sessions, engagement functions, baby showers, festive appointments, and other special events in Gota, Ghatlodiya, Sola, Science City, and other areas with home service across Ahmedabad.
-                </p>
-              </article>
-              <article className={CARD}>
-                <Eyebrow>Also Available</Eyebrow>
-                <h3 className="mt-2! font-display text-xl! font-semibold text-ink">
-                  Offline artist classes for learners.
-                </h3>
-                <p className="mt-3! text-sm leading-relaxed text-ink-soft">
-                  If you are interested in learning art, you can also use this page to ask about class details and guidance for offline classes in Ahmedabad, especially if you are looking for a nearby class from Gota, Ghatlodiya, Sola, or Science City.
                 </p>
               </article>
             </div>

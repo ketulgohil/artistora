@@ -361,7 +361,7 @@ export default async function HomeServiceMehndiPage() {
                 href="/services"
                 className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
               >
-                Art Workshops in Ahmedabad
+                All Services
               </Link>
               <span aria-hidden="true" className="text-line">/</span>
               <Link
