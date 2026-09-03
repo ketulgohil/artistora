@@ -18,6 +18,7 @@ import { Artists } from './collections/Artists'
 import { Leads } from './collections/Leads'
 import { Quotes } from './collections/Quotes'
 import { Bookings } from './collections/Bookings'
+import { Reviews } from './collections/Reviews'
 import { SiteSettings } from './globals/SiteSettings'
 import { HeaderFooter } from './globals/HeaderFooter'
 
@@ -88,6 +89,7 @@ export default buildConfig({
     Leads,
     Quotes,
     Bookings,
+    Reviews,
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),
