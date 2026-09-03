@@ -110,10 +110,10 @@ const serviceImages: Record<string, string> = {
   'Photographers': '/services/photographers.jpg',
   'Makeup Artists': '/services/makeup.jpg',
   'Decor & Event Planners': '/services/decor.jpg',
-  'Mehndi Artists': '/services/mehndi-new.jpg',
-  'Bridal Mehndi': '/services/mehndi-new.jpg',
-  'Engagement Mehndi': '/services/mehndi-new.jpg',
-  'Baby Shower Mehndi': '/services/mehndi-new.jpg',
+  'Mehndi Artists': '/api/media/file/Bridal.webp',
+  'Bridal Mehndi': '/api/media/file/Bridal.webp',
+  'Engagement Mehndi': '/api/media/file/Bridal.webp',
+  'Baby Shower Mehndi': '/api/media/file/Bridal.webp',
 }
 
 // Filter to show only main service categories
