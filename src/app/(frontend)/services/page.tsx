@@ -316,7 +316,7 @@ export default async function ServicesPage() {
                   </div>
                 </div>
                 <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-                  <Eyebrow>Signature Mehndi Service</Eyebrow>
+                  <Eyebrow>Signature Service</Eyebrow>
                   <h3 className="font-display text-[1.7rem]! leading-snug font-semibold text-ink md:text-[2rem]!">
                     {service.title}
                   </h3>
