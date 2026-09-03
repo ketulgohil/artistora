@@ -305,7 +305,7 @@ export default async function ServicesPage() {
                   />
                   <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
                     <img
-                      src={service.image ? mediaUrl(service.image) : mediaFileUrl('Bridal.webp')}
+                      src={service.image ? mediaUrl(service.image) : mediaFileUrl('engagement.webp')}
                       alt={service.title}
                       width={mediaDimensions(service.image).width}
                       height={mediaDimensions(service.image).height}
