@@ -241,6 +241,57 @@ export const Artists: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    // ── Analytics Fields ──
+    {
+      type: 'collapsible',
+      label: 'Analytics',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'profileViews',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'leadsReceived',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'quotesSent',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'bookingsWon',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'totalEarnings',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            readOnly: true,
+            description: 'Total earnings in INR from completed bookings',
+          },
+        },
+      ],
+    },
     {
       name: 'order',
       type: 'number',

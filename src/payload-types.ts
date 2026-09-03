@@ -383,6 +383,14 @@ export interface Artist {
   verificationStatus?: ('unverified' | 'verified') | null;
   rating?: number | null;
   reviewCount?: number | null;
+  profileViews?: number | null;
+  leadsReceived?: number | null;
+  quotesSent?: number | null;
+  bookingsWon?: number | null;
+  /**
+   * Total earnings in INR from completed bookings
+   */
+  totalEarnings?: number | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -823,6 +831,11 @@ export interface ArtistsSelect<T extends boolean = true> {
   verificationStatus?: T;
   rating?: T;
   reviewCount?: T;
+  profileViews?: T;
+  leadsReceived?: T;
+  quotesSent?: T;
+  bookingsWon?: T;
+  totalEarnings?: T;
   order?: T;
   updatedAt?: T;
   createdAt?: T;
