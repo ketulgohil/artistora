@@ -3,6 +3,10 @@ import { sendArtistBookingEmail } from '../lib/email'
 
 export const Leads: CollectionConfig = {
   slug: 'leads',
+  labels: {
+    singular: 'Quote Request',
+    plural: 'Quote Requests',
+  },
   admin: {
     useAsTitle: 'customerName',
     defaultColumns: ['customerName', 'customerPhone', 'eventType', 'eventDate', 'status', 'createdAt'],
@@ -134,11 +138,15 @@ export const Leads: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        { label: 'Bridal Mehndi', value: 'bridal' },
-        { label: 'Engagement Mehndi', value: 'engagement' },
+        { label: 'Wedding', value: 'wedding' },
+        { label: 'Engagement Celebration', value: 'engagement' },
+        { label: 'Birthday', value: 'birthday' },
         { label: 'Baby Shower', value: 'baby-shower' },
-        { label: 'Family Function', value: 'family-function' },
-        { label: 'Festival', value: 'festival' },
+        { label: 'Corporate Event', value: 'corporate' },
+        { label: 'Festival or Celebration', value: 'festival' },
+        // Retained for existing leads created before the marketplace became multi-service.
+        { label: 'Legacy: Bridal Mehndi', value: 'bridal' },
+        { label: 'Legacy: Family Function', value: 'family-function' },
         { label: 'Other', value: 'other' },
       ],
     },

@@ -59,7 +59,8 @@ shivamehndiart-v2/
 │   │   │   ├── quotes/route.ts   # POST artist quote, GET customer quotes
 │   │   │   ├── quotes/[id]/accept/route.ts
 │   │   │   ├── bookings/route.ts # POST booking, PATCH status
-│   │   │   └── my-bookings/route.ts # GET by phone
+│   │   │   ├── my-bookings/route.ts # GET by phone
+│   │   │   └── analytics/route.ts # GET aggregated analytics data
 │   │   └── (payload)/            # Payload admin panel (auto-generated)
 │   ├── collections/              # Payload collection configs
 │   │   ├── Users.ts              # NextAuth users
@@ -132,6 +133,19 @@ All 17 routes working (200 OK), content seeded, Payload CMS configured.
 - P0.5: Flexible Pricing (package, hourly, per_person, custom_quote)
 - P0.6: Multi-Artist Bookings (assignedArtists, roles, statuses, notifications)
 - P0.7: Payload Access Control (role & owner-level security across all collections)
+
+### Analytics Dashboard (Completed)
+- Recharts charting library installed
+- `/api/dashboard/analytics` endpoint (computed on-demand, no counters)
+- Analytics tab in artist dashboard with:
+  - KPI cards (earnings, profile views, conversion rate, avg response time)
+  - Revenue trend (6-month area chart)
+  - Bookings by status (bar chart)
+  - Event type breakdown (pie/donut chart)
+  - Conversion funnel (leads → quotes → accepted → completed)
+  - Rating distribution (horizontal bar chart)
+  - Quote performance stats
+- Profile view tracking (increments on artist profile page visit)
 
 ---
 

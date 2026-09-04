@@ -19,13 +19,13 @@ export default function SectionHeading({
       </h2>
       <div
         aria-hidden="true"
-        className="mx-auto mt-5! flex items-center justify-center gap-2! text-gold"
+        className="mx-auto mt-5! flex items-center justify-center gap-2! text-brand"
       >
-        <span className="h-px w-10 bg-gradient-to-r from-transparent to-gold/70" />
-        <svg width="10" height="10" viewBox="0 0 10 10" className="rotate-45 text-gold" fill="currentColor">
+        <span className="h-px w-10 bg-gradient-to-r from-transparent to-brand/70" />
+        <svg width="10" height="10" viewBox="0 0 10 10" className="rotate-45 text-brand" fill="currentColor">
           <rect x="0" y="0" width="10" height="10" rx="1" />
         </svg>
-        <span className="h-px w-10 bg-gradient-to-l from-transparent to-gold/70" />
+        <span className="h-px w-10 bg-gradient-to-l from-transparent to-brand/70" />
       </div>
     </div>
   )

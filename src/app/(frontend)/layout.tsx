@@ -2,6 +2,7 @@ import React from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import BrandLoader from '@/components/BrandLoader'
 import './styles.css'
 
 export const metadata = {
@@ -48,6 +49,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         />
       </head>
       <body>
+        <BrandLoader />
         <a
           href="#main-content"
           className="skip-link absolute left-4 top-3 z-[1000] -translate-y-48 rounded-full bg-white px-5 py-2.5 text-sm text-ink shadow-soft ring-1 ring-line transition-transform duration-200 focus:translate-y-0"

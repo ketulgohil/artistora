@@ -7,11 +7,12 @@ const CONTAINER = 'mx-auto max-w-3xl! px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
 
 const EVENT_TYPES = [
-  { value: 'bridal', label: 'Bridal Mehndi' },
-  { value: 'engagement', label: 'Engagement Mehndi' },
+  { value: 'wedding', label: 'Wedding' },
+  { value: 'engagement', label: 'Engagement Celebration' },
+  { value: 'birthday', label: 'Birthday' },
   { value: 'baby-shower', label: 'Baby Shower' },
-  { value: 'family-function', label: 'Family Function' },
-  { value: 'festival', label: 'Festival' },
+  { value: 'corporate', label: 'Corporate Event' },
+  { value: 'festival', label: 'Festival or Celebration' },
   { value: 'other', label: 'Other' },
 ]
 
@@ -25,18 +26,10 @@ const BUDGET_RANGES = [
   { value: 'unsure', label: 'Not sure yet' },
 ]
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] uppercase text-brand">
-      <span aria-hidden="true" className="h-px w-8 bg-brand/50" />
-      {children}
-    </p>
-  )
-}
-
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
-    <div className="mb-8! flex items-center justify-center gap-2!">
+    <div className="mb-8! flex items-center justify-center gap-2!" role="group" aria-label={`Step ${current} of ${total}`}>
+      <span className="sr-only">Step {current} of {total}</span>
       {Array.from({ length: total }, (_, i) => (
         <div key={i} className="flex items-center gap-2!">
           <div
@@ -47,6 +40,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
                   ? 'bg-green text-white'
                   : 'bg-line text-ink-muted'
             }`}
+            aria-hidden="true"
           >
             {i + 1 < current ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +51,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
             )}
           </div>
           {i < total - 1 && (
-            <div className={`h-px w-8! ${i + 1 < current ? 'bg-green' : 'bg-line'}`} />
+            <div className={`h-px w-8! ${i + 1 < current ? 'bg-green' : 'bg-line'}`} aria-hidden="true" />
           )}
         </div>
       ))}
@@ -67,6 +61,10 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 
 export default function GetQuotePage() {
   const [step, setStep] = useState(1)
+  const [minimumDate] = useState(() => {
+    const now = new Date()
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+  })
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -104,6 +102,7 @@ export default function GetQuotePage() {
         body: JSON.stringify({
           ...form,
           guestCount: form.guestCount ? Number(form.guestCount) : undefined,
+          customerEmail: form.customerEmail || undefined,
         }),
       })
       const data = await res.json()
@@ -130,7 +129,7 @@ export default function GetQuotePage() {
               Quote Request Received!
             </h1>
             <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-              Thank you, {form.customerName}! We have received your request for {form.eventType === 'bridal' ? 'Bridal Mehndi' : form.eventType.replace('-', ' ')}. Our team will match you with up to 3 verified artists and send quotes within 24 hours.
+              Thank you, {form.customerName}! We have received your request for {form.eventType.replace('-', ' ')}. Our team will match you with up to 3 verified artists and send quotes within 24 hours.
             </p>
             <p className="mt-3! text-sm text-ink-muted">
               You will be contacted on {form.customerPhone} via WhatsApp or call.
@@ -163,7 +162,7 @@ export default function GetQuotePage() {
         <div className={`relative ${CONTAINER} py-14! md:py-20!`}>
           <SectionHeadingInline title="Get 3 Quotes" subtitle="Free, No Obligation" />
           <p className="mx-auto mt-4! max-w-xl! text-center text-[0.95rem] leading-relaxed text-ink-soft">
-            Share your event details and receive competitive quotes from up to 3 verified mehndi artists in Ahmedabad.
+            Share your event details and receive competitive quotes from up to 3 verified artists in Ahmedabad.
           </p>
         </div>
       </section>
@@ -210,7 +209,7 @@ export default function GetQuotePage() {
                     type="email"
                     value={form.customerEmail}
                     onChange={(e) => update('customerEmail', e.target.value)}
-                    placeholder="e.g. priya@email.com"
+                    placeholder="e.g. priya@example.com"
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
                 </div>
@@ -240,6 +239,8 @@ export default function GetQuotePage() {
                     type="date"
                     value={form.eventDate}
                     onChange={(e) => update('eventDate', e.target.value)}
+                    min={minimumDate || undefined}
+                    required
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
                 </div>
@@ -285,14 +286,14 @@ export default function GetQuotePage() {
             {/* Step 3: Preferences */}
             {step === 3 && (
               <div className="flex flex-col gap-5!">
-                <h3 className="font-display text-xl! font-semibold text-ink">Design Preferences</h3>
+                <h3 className="font-display text-xl! font-semibold text-ink">Service Preferences</h3>
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Preferred Style (optional)</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Style or service requirements (optional)</label>
                   <input
                     type="text"
                     value={form.designStyle}
                     onChange={(e) => update('designStyle', e.target.value)}
-                    placeholder="e.g. Arabic, Bridal, Minimal, Indo-Western"
+                    placeholder="e.g. coverage, style, deliverables, or timing"
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
                 </div>
@@ -302,14 +303,14 @@ export default function GetQuotePage() {
                     value={form.additionalNotes}
                     onChange={(e) => update('additionalNotes', e.target.value)}
                     rows={4}
-                    placeholder="Any specific requirements, outfit details, or design inspiration..."
+                    placeholder="Any specific requirements, theme details, or preferences..."
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 resize-none"
                   />
                 </div>
                 <div className="rounded-xl bg-cream-deep/70 p-4! text-sm leading-relaxed text-ink-soft">
                   <strong className="text-ink">What happens next?</strong>
                   <br />
-                  We will match you with up to 3 verified mehndi artists who fit your event type, location, and budget. You will receive quotes via WhatsApp within 24 hours.
+                  We will match you with up to 3 verified artists who fit your event type, location, and budget. You will receive quotes via WhatsApp within 24 hours.
                 </div>
               </div>
             )}

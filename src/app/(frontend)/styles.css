@@ -43,6 +43,13 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 96px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body {
@@ -63,5 +70,158 @@
   [role="button"]:focus-visible {
     outline: 2px solid var(--color-brand);
     outline-offset: 3px;
+  }
+}
+
+/* ── Artistora entrance moment ── */
+.brand-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #04224b;
+  color: #fff;
+  animation: brand-loader-exit 520ms cubic-bezier(0.76, 0, 0.24, 1) 1120ms forwards;
+}
+
+.loader-active {
+  overflow: hidden;
+}
+
+.brand-loader__halo {
+  position: absolute;
+  width: min(70vw, 46rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(236 103 131 / 0.25) 0, rgb(236 103 131 / 0.09) 30%, transparent 68%);
+  filter: blur(4px);
+  animation: brand-loader-breathe 1800ms ease-in-out infinite alternate;
+}
+
+.brand-loader__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: brand-loader-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand-loader__mark-wrap {
+  position: relative;
+  display: grid;
+  width: 7rem;
+  height: 7rem;
+  place-items: center;
+}
+
+.brand-loader__mark {
+  position: relative;
+  z-index: 1;
+  width: 5rem;
+  height: 5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px rgb(246 166 184 / 0.38));
+  animation: brand-loader-mark 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand-loader__orbit {
+  position: absolute;
+  inset: 0.3rem;
+  border: 1px solid rgb(246 166 184 / 0.35);
+  border-top-color: #ec6783;
+  border-radius: 999px;
+  animation: brand-loader-orbit 1200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand-loader__name {
+  margin: 1.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: brand-loader-text 700ms ease-out 250ms both;
+}
+
+.brand-loader__tagline {
+  margin: 0.65rem 0 0;
+  color: rgb(255 255 255 / 0.58);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  animation: brand-loader-text 700ms ease-out 380ms both;
+}
+
+.brand-loader__progress {
+  display: block;
+  width: 7rem;
+  height: 2px;
+  margin-top: 2.2rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.16);
+  animation: brand-loader-text 700ms ease-out 450ms both;
+}
+
+.brand-loader__progress span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: #ec6783;
+  animation: brand-loader-progress 1150ms cubic-bezier(0.65, 0, 0.35, 1) 300ms both;
+}
+
+@keyframes brand-loader-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes brand-loader-mark {
+  from { opacity: 0; transform: scale(0.68) rotate(-9deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes brand-loader-orbit {
+  from { opacity: 0; transform: rotate(-100deg) scale(0.72); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+@keyframes brand-loader-text {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes brand-loader-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(290%); }
+}
+
+@keyframes brand-loader-breathe {
+  from { transform: scale(0.93); opacity: 0.7; }
+  to { transform: scale(1.06); opacity: 1; }
+}
+
+@keyframes brand-loader-exit {
+  from { opacity: 1; clip-path: inset(0 0 0 0); }
+  to { opacity: 0; clip-path: inset(0 0 100% 0); visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-loader,
+  .brand-loader__halo,
+  .brand-loader__content,
+  .brand-loader__mark,
+  .brand-loader__orbit,
+  .brand-loader__name,
+  .brand-loader__tagline,
+  .brand-loader__progress,
+  .brand-loader__progress span {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
   }
 }

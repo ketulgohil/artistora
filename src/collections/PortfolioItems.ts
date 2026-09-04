@@ -7,7 +7,7 @@ export const PortfolioItems: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'altText',
-    defaultColumns: ['image', 'category', 'featured', 'createdAt'],
+    defaultColumns: ['image', 'artist', 'serviceCategory', 'category', 'featured', 'createdAt'],
     group: 'Portfolio',
   },
   fields: [
@@ -22,6 +22,35 @@ export const PortfolioItems: CollectionConfig = {
       type: 'relationship',
       relationTo: 'portfolio-categories',
       required: true,
+      label: 'Style / Subcategory',
+    },
+    {
+      name: 'serviceCategory',
+      type: 'select',
+      required: true,
+      defaultValue: 'mehndi',
+      label: 'Service Category',
+      options: [
+        { label: 'Mehndi', value: 'mehndi' },
+        { label: 'Photography', value: 'photography' },
+        { label: 'Makeup', value: 'makeup' },
+        { label: 'Decor & Planning', value: 'decor' },
+        { label: 'Other', value: 'other' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Broad service category used for the public portfolio filter',
+      },
+    },
+    {
+      name: 'artist',
+      type: 'relationship',
+      relationTo: 'artists',
+      label: 'Artist',
+      admin: {
+        position: 'sidebar',
+        description: 'The artist whose work is shown in this portfolio item',
+      },
     },
     {
       name: 'altText',

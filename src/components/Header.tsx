@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-const BOOKING_URL = '/book'
+const BOOKING_URL = '/get-quote'
 
 const navItems = [
   { to: '/', label: 'Home' },
@@ -69,7 +69,7 @@ export default function Header() {
   return (
     <header className="fixed top-0 right-0 left-0 z-50">
       <div
-        className={`bg-[rgba(254,246,247,0.86)] shadow-[0_10px_30px_rgba(4,34,75,0.07)] backdrop-blur-xl transition-transform duration-300 ${
+        className={`bg-[rgba(253,238,238,0.86)] shadow-[0_10px_30px_rgba(4,34,75,0.07)] backdrop-blur-xl transition-transform duration-300 ${
           isHiddenOnScroll ? '-translate-y-full' : ''
         }`}
       >
@@ -92,7 +92,7 @@ export default function Header() {
                 Artistora
               </strong>
               <small className="text-[0.58rem] font-semibold tracking-[0.2em] text-brand uppercase md:text-[0.64rem]">
-                Ahmedabad's verified artist marketplace
+                Ahmedabad&apos;s verified artist marketplace
               </small>
             </span>
           </Link>
@@ -149,14 +149,14 @@ export default function Header() {
               {user ? (
                 user.role === 'artist' ? (
                   <Link
-                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(179,115,67,0.45)]"
+                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(236,103,131,0.45)]"
                     href="/dashboard"
                   >
                     Dashboard
                   </Link>
                 ) : (
                   <Link
-                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(179,115,67,0.45)]"
+                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(236,103,131,0.45)]"
                     href="/get-quote"
                   >
                     Get Quote
@@ -164,7 +164,7 @@ export default function Header() {
                 )
               ) : (
                 <Link
-                  className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(179,115,67,0.45)]"
+                  className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(236,103,131,0.45)]"
                   href="/login"
                 >
                   Login
@@ -176,8 +176,9 @@ export default function Header() {
 
         {/* Mobile / tablet panel */}
         {isOpen && (
-          <div className="border-t border-line/80 bg-[rgba(254,246,247,0.98)] backdrop-blur-xl lg:hidden">
+          <div className="border-t border-line/80 bg-[rgba(253,238,238,0.98)] backdrop-blur-xl lg:hidden">
             <div className="mx-auto max-w-6xl px-4! py-4! md:px-6!">
+              <nav aria-label="Mobile navigation">
               <ul className="flex flex-col gap-1!">
                 {navItems.map((item) => {
                   const active = isActive(item)
@@ -202,7 +203,7 @@ export default function Header() {
                 {user ? (
                   user.role === 'artist' ? (
                     <Link
-                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
+                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
                       href="/dashboard"
                       onClick={() => setIsOpen(false)}
                     >
@@ -210,7 +211,7 @@ export default function Header() {
                     </Link>
                   ) : (
                     <Link
-                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
+                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
                       href="/get-quote"
                       onClick={() => setIsOpen(false)}
                     >
@@ -219,7 +220,7 @@ export default function Header() {
                   )
                 ) : (
                   <Link
-                    className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(179,115,67,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
+                    className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
                     href="/login"
                     onClick={() => setIsOpen(false)}
                   >
@@ -227,6 +228,7 @@ export default function Header() {
                   </Link>
                 )}
               </div>
+              </nav>
             </div>
           </div>
         )}

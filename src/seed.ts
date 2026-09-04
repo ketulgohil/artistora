@@ -125,6 +125,17 @@ async function main() {
 
   console.log('📦 Payload instance ready')
 
+  // Existing portfolio images came from Bhumi Chanpura's original business
+  // site. Link them to her marketplace profile without touching any images
+  // already assigned to another artist.
+  const bhumiResult = await payload.find({
+    collection: 'artists',
+    where: { slug: { equals: 'bhumi-chanpura' } },
+    limit: 1,
+    depth: 0,
+  })
+  const bhumiId = bhumiResult.docs[0]?.id
+
   // ── 1. Create Categories ──
   console.log('\n📁 Creating portfolio categories...')
   const categoryIdMap: Record<string, number> = {}
@@ -144,6 +155,27 @@ async function main() {
       })
       console.log(`  ✅ Created "${cat.title}" (id: ${created.id})`)
       categoryIdMap[cat.slug] = Number(created.id)
+    }
+  }
+
+  if (bhumiId) {
+    const unassignedPortfolio = await payload.find({
+      collection: 'portfolio-items',
+      where: { artist: { exists: false } },
+      limit: 500,
+      depth: 0,
+    })
+
+    for (const item of unassignedPortfolio.docs) {
+      await payload.update({
+        collection: 'portfolio-items',
+        id: item.id,
+        data: { artist: bhumiId },
+      })
+    }
+
+    if (unassignedPortfolio.docs.length > 0) {
+      console.log(`  ✅ Assigned ${unassignedPortfolio.docs.length} existing portfolio items to Bhumi Chanpura`)
     }
   }
 
@@ -187,6 +219,8 @@ async function main() {
           data: {
             image: mediaDoc.id,
             category: categoryId,
+            serviceCategory: 'mehndi',
+            artist: bhumiId || undefined,
             altText,
           },
         })

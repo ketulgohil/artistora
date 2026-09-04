@@ -38,7 +38,12 @@ async function main() {
 
       await payload.create({
         collection: 'portfolio-items',
-        data: { image: mediaDoc.id, category: categoryId, altText: `${catTitle} mehndi design by Artistora` },
+        data: {
+          image: mediaDoc.id,
+          category: categoryId,
+          serviceCategory: 'mehndi',
+          altText: `${catTitle} mehndi design by Artistora`,
+        },
       })
       console.log(`✅ ${catTitle}: ${filename}`)
     }

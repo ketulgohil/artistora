@@ -88,7 +88,7 @@ export default function RegisterPage() {
                   onClick={() => handleRoleChange('customer')}
                   className={`group relative flex flex-col justify-between rounded-2xl p-4! md:p-5! text-left transition-all duration-200 cursor-pointer ${
                     isCustomer
-                      ? 'border-2 border-brand bg-brand/5 shadow-[0_4px_16px_rgba(179,115,67,0.12)] ring-1 ring-brand/30'
+                      ? 'border-2 border-brand bg-brand/5 shadow-[0_4px_16px_rgba(236,103,131,0.12)] ring-1 ring-brand/30'
                       : 'border-2 border-line bg-white hover:border-brand/40 hover:bg-cream/40'
                   }`}
                 >
@@ -149,7 +149,7 @@ export default function RegisterPage() {
                   onClick={() => handleRoleChange('artist')}
                   className={`group relative flex flex-col justify-between rounded-2xl p-4! md:p-5! text-left transition-all duration-200 cursor-pointer ${
                     !isCustomer
-                      ? 'border-2 border-brand bg-brand/5 shadow-[0_4px_16px_rgba(179,115,67,0.12)] ring-1 ring-brand/30'
+                      ? 'border-2 border-brand bg-brand/5 shadow-[0_4px_16px_rgba(236,103,131,0.12)] ring-1 ring-brand/30'
                       : 'border-2 border-line bg-white hover:border-brand/40 hover:bg-cream/40'
                   }`}
                 >

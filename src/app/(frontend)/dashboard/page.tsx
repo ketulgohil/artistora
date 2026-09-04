@@ -3,13 +3,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, FunnelChart, Funnel, LabelList,
+  LineChart, Line, Area, AreaChart,
+} from 'recharts'
 
 const CONTAINER = 'mx-auto max-w-5xl! px-4! md:px-6!'
 const SECTION = 'py-10! md:py-16!'
 
 const STYLE_OPTIONS = [
   'Bridal', 'Arabic', 'Indo-Western', 'Minimal', 'Traditional',
-  'Rajasthani', 'Heavy Sider', 'Designer Bengle', 'Engagement', 'Baby Shower',
+  'Rajasthani', 'Modern', 'Floral', 'Geometric', 'Custom Design',
 ]
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -92,7 +97,7 @@ interface LeadItem {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'bookings' | 'leads' | 'availability' | 'profile'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'leads' | 'availability' | 'profile' | 'analytics'>('bookings')
 
   const [user, setUser] = useState<UserData | null>(null)
   const [artist, setArtist] = useState<ArtistData | null>(null)
@@ -150,6 +155,10 @@ export default function DashboardPage() {
   const [newBlockDate, setNewBlockDate] = useState('')
   const [newBlockReason, setNewBlockReason] = useState('')
   const [blockingDate, setBlockingDate] = useState(false)
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState<any>(null)
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false)
 
   // Load user + artist profile
   useEffect(() => {
@@ -246,11 +255,36 @@ export default function DashboardPage() {
     }
   }
 
+  // Fetch Analytics
+  const fetchAnalytics = async () => {
+    setLoadingAnalytics(true)
+    try {
+      const res = await fetch('/api/dashboard/analytics')
+      const data = await res.json()
+      if (res.ok) {
+        setAnalytics(data)
+      }
+    } catch (err) {
+      console.error('Failed to load analytics', err)
+    } finally {
+      setLoadingAnalytics(false)
+    }
+  }
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (activeTab === 'bookings') fetchBookings()
     if (activeTab === 'leads') fetchLeads()
     if (activeTab === 'availability') fetchAvailability()
+    if (activeTab === 'analytics') fetchAnalytics()
   }, [activeTab])
+
+  // Fetch bookings + leads on initial load for stats
+  useEffect(() => {
+    fetchBookings()
+    fetchLeads()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+  }, [])
 
   // Handle Booking Accept / Decline / Complete
   const handleBookingAction = async (id: number, action: string, reason?: string) => {
@@ -564,6 +598,12 @@ export default function DashboardPage() {
                 <polyline points="15 3 21 3 21 9" />
                 <line x1="10" y1="14" x2="21" y2="3" />
               </svg>
+              </Link>
+            <Link
+              href="/subscription"
+              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-brand/5 px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10"
+            >
+              Plans &amp; Visibility
             </Link>
             <button
               onClick={async () => {
@@ -576,6 +616,41 @@ export default function DashboardPage() {
               Log Out
             </button>
           </div>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="mb-8! grid grid-cols-2 gap-4! md:grid-cols-4">
+          {[
+            {
+              label: 'Pending Requests',
+              value: bookings.filter((b) => b.status === 'artist_pending' || b.status === 'requested').length,
+              color: 'text-brand',
+              bg: 'bg-brand/5',
+            },
+            {
+              label: 'Active Bookings',
+              value: bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_progress').length,
+              color: 'text-green',
+              bg: 'bg-green/5',
+            },
+            {
+              label: 'New Leads',
+              value: leads.filter((l) => !l.myQuote).length,
+              color: 'text-amber-600',
+              bg: 'bg-amber-50',
+            },
+            {
+              label: 'Completed',
+              value: bookings.filter((b) => b.status === 'completed').length,
+              color: 'text-ink',
+              bg: 'bg-cream',
+            },
+          ].map((stat) => (
+            <div key={stat.label} className={`rounded-2xl border border-line ${stat.bg} p-4!`}>
+              <p className="text-xs font-medium text-ink-muted">{stat.label}</p>
+              <p className={`mt-1! text-2xl! font-display font-semibold ${stat.color}`}>{stat.value}</p>
+            </div>
+          ))}
         </div>
 
         {/* Navigation Tabs */}
@@ -629,6 +704,18 @@ export default function DashboardPage() {
             }`}
           >
             <span>Profile & Portfolio</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'analytics'
+                ? 'bg-brand text-white shadow-soft'
+                : 'bg-white text-ink-soft hover:bg-cream/70'
+            }`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <span>Analytics</span>
           </button>
         </div>
 
@@ -1052,7 +1139,7 @@ export default function DashboardPage() {
                         rows={2}
                         value={quoteForm.message}
                         onChange={(e) => setQuoteForm({ ...quoteForm, message: e.target.value })}
-                        placeholder="Detail what is included (e.g. Bridal organic mehndi cones, heavy forearm design, travel to Vastrapur included)..."
+                        placeholder="Detail what is included (e.g. Travel to venue, materials, setup time, consultation)..."
                         className="w-full rounded-xl border border-line bg-cream/50 px-3! py-2! text-xs text-ink outline-none focus:border-brand resize-none"
                       />
                     </div>
@@ -1366,7 +1453,7 @@ export default function DashboardPage() {
 
               {/* Styles */}
               <div className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-7!">
-                <h3 className="font-display text-lg! font-semibold text-ink">Mehndi Styles</h3>
+                <h3 className="font-display text-lg! font-semibold text-ink">Service Styles</h3>
                 <p className="mt-1! text-sm text-ink-soft">Select the styles you offer</p>
                 <div className="mt-4! flex flex-wrap gap-2!">
                   {STYLE_OPTIONS.map((style) => (
@@ -1445,6 +1532,197 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 5: ANALYTICS */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-8!">
+            {loadingAnalytics ? (
+              <div className="flex items-center justify-center py-20!">
+                <div className="h-8! w-8! animate-spin rounded-full border-2 border-brand border-t-transparent" />
+              </div>
+            ) : analytics ? (
+              <>
+                {/* KPI Cards */}
+                <div className="grid grid-cols-2 gap-4! md:grid-cols-4">
+                  {[
+                    { label: 'Total Earnings', value: `₹${(analytics.stats.totalEarnings || 0).toLocaleString('en-IN')}`, color: 'text-green', bg: 'bg-green/5' },
+                    { label: 'Profile Views', value: analytics.stats.profileViews || 0, color: 'text-brand', bg: 'bg-brand/5' },
+                    { label: 'Conversion Rate', value: `${analytics.stats.conversionRate || 0}%`, color: 'text-amber-600', bg: 'bg-amber-50' },
+                    { label: 'Avg Response', value: `${analytics.stats.avgResponseHours || 0}h`, color: 'text-ink', bg: 'bg-cream' },
+                  ].map((stat) => (
+                    <div key={stat.label} className={`rounded-2xl border border-line ${stat.bg} p-4!`}>
+                      <p className="text-xs font-medium text-ink-muted">{stat.label}</p>
+                      <p className={`mt-1! text-2xl! font-display font-semibold ${stat.color}`}>{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Revenue Trend */}
+                <div className="rounded-2xl border border-line bg-white p-6!">
+                  <h3 className="mb-4! text-sm font-semibold text-ink">Revenue Trend (6 Months)</h3>
+                  <div className="h-72!">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={analytics.revenueByMonth}>
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ec6783" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#ec6783" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1d9dc" />
+                        <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#7e8aa3' }} />
+                        <YAxis tick={{ fontSize: 12, fill: '#7e8aa3' }} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+                        <Tooltip
+                          contentStyle={{ borderRadius: 12, border: '1px solid #f1d9dc', fontSize: 13 }}
+                          formatter={(value) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue']}
+                        />
+                        <Area type="monotone" dataKey="revenue" stroke="#ec6783" strokeWidth={2} fill="url(#colorRevenue)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="grid gap-6! md:grid-cols-2">
+                  {/* Bookings by Status */}
+                  <div className="rounded-2xl border border-line bg-white p-6!">
+                    <h3 className="mb-4! text-sm font-semibold text-ink">Bookings by Status</h3>
+                    <div className="h-64!">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(analytics.bookingsByStatus).map(([key, val]) => ({
+                          name: key.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+                          count: val as number,
+                        })).filter((d) => d.count > 0)}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f1d9dc" />
+                          <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#7e8aa3' }} angle={-20} textAnchor="end" height={60} />
+                          <YAxis tick={{ fontSize: 12, fill: '#7e8aa3' }} allowDecimals={false} />
+                          <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #f1d9dc', fontSize: 13 }} />
+                          <Bar dataKey="count" fill="#ec6783" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Event Types */}
+                  <div className="rounded-2xl border border-line bg-white p-6!">
+                    <h3 className="mb-4! text-sm font-semibold text-ink">Event Types</h3>
+                    <div className="h-64!">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={analytics.eventTypes}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={90}
+                            paddingAngle={3}
+                            dataKey="value"
+                            nameKey="name"
+                          >
+                            {analytics.eventTypes.map((_: any, i: number) => (
+                              <Cell key={i} fill={['#ec6783', '#d14a68', '#04224B', '#f6a6b8', '#c77e90', '#17856b', '#7e8aa3'][i % 7]} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #f1d9dc', fontSize: 13 }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-2! flex flex-wrap gap-3!">
+                      {analytics.eventTypes.slice(0, 5).map((et: any, i: number) => (
+                        <span key={et.name} className="flex items-center gap-1.5! text-xs text-ink-muted">
+                          <span className="inline-block h-2.5! w-2.5! rounded-full" style={{ backgroundColor: ['#ec6783', '#d14a68', '#04224B', '#f6a6b8', '#c77e90'][i % 5] }} />
+                          {et.name} ({et.value})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-6! md:grid-cols-2">
+                  {/* Conversion Funnel */}
+                  <div className="rounded-2xl border border-line bg-white p-6!">
+                    <h3 className="mb-4! text-sm font-semibold text-ink">Conversion Funnel</h3>
+                    <div className="space-y-3!">
+                      {[
+                        { label: 'Leads Received', value: analytics.funnel.leads, pct: 100 },
+                        { label: 'Quotes Sent', value: analytics.funnel.quotes, pct: analytics.funnel.leads > 0 ? Math.round((analytics.funnel.quotes / analytics.funnel.leads) * 100) : 0 },
+                        { label: 'Quotes Accepted', value: analytics.funnel.accepted, pct: analytics.funnel.leads > 0 ? Math.round((analytics.funnel.accepted / analytics.funnel.leads) * 100) : 0 },
+                        { label: 'Bookings Completed', value: analytics.funnel.bookings, pct: analytics.funnel.leads > 0 ? Math.round((analytics.funnel.bookings / analytics.funnel.leads) * 100) : 0 },
+                      ].map((step, i) => (
+                        <div key={step.label}>
+                          <div className="mb-1! flex items-center justify-between text-sm">
+                            <span className="text-ink-soft">{step.label}</span>
+                            <span className="font-semibold text-ink">{step.value}</span>
+                          </div>
+                          <div className="h-3! overflow-hidden rounded-full bg-cream">
+                            <div
+                              className="h-full! rounded-full transition-all duration-500"
+                              style={{
+                                width: `${step.pct}%`,
+                                backgroundColor: ['#ec6783', '#d14a68', '#04224B', '#17856b'][i],
+                              }}
+                            />
+                          </div>
+                          <p className="mt-0.5! text-right text-xs text-ink-muted">{step.pct}%</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Rating Distribution */}
+                  <div className="rounded-2xl border border-line bg-white p-6!">
+                    <h3 className="mb-4! text-sm font-semibold text-ink">Rating Distribution</h3>
+                    <div className="space-y-2.5!">
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const count = analytics.ratingDistribution[star - 1] || 0
+                        const total = analytics.ratingDistribution.reduce((a: number, b: number) => a + b, 0)
+                        const pct = total > 0 ? Math.round((count / total) * 100) : 0
+                        return (
+                          <div key={star} className="flex items-center gap-3!">
+                            <span className="w-8! text-right text-sm text-ink-muted">{star}★</span>
+                            <div className="h-3! flex-1 overflow-hidden rounded-full bg-cream">
+                              <div
+                                className="h-full! rounded-full bg-amber-400 transition-all duration-500"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="w-8! text-sm text-ink-muted">{count}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="mt-4! border-t border-line pt-4! text-center">
+                      <p className="text-3xl! font-display font-semibold text-ink">{analytics.stats.rating || '—'}</p>
+                      <p className="text-xs text-ink-muted">{analytics.stats.reviewCount || 0} reviews</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quote Performance */}
+                <div className="rounded-2xl border border-line bg-white p-6!">
+                  <h3 className="mb-4! text-sm font-semibold text-ink">Quote Performance</h3>
+                  <div className="grid grid-cols-3 gap-4! text-center">
+                    <div>
+                      <p className="text-3xl! font-display font-semibold text-brand">{analytics.stats.totalQuotes}</p>
+                      <p className="text-xs text-ink-muted">Quotes Sent</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl! font-display font-semibold text-green">{analytics.stats.acceptedQuotes}</p>
+                      <p className="text-xs text-ink-muted">Accepted</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl! font-display font-semibold text-ink">{analytics.stats.conversionRate || 0}%</p>
+                      <p className="text-xs text-ink-muted">Win Rate</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-2xl border border-line bg-white p-12! text-center">
+                <p className="text-ink-muted">No analytics data yet. Complete bookings to see your performance insights.</p>
+              </div>
+            )}
           </div>
         )}
       </div>

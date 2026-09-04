@@ -24,9 +24,11 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }>
 }
 
 const EVENT_LABELS: Record<string, string> = {
-  bridal: 'Bridal Mehndi',
-  engagement: 'Engagement Mehndi',
+  wedding: 'Legacy Booking',
+  engagement: 'Engagement',
   'baby-shower': 'Baby Shower',
+  birthday: 'Birthday',
+  corporate: 'Corporate Event',
   'family-function': 'Family Function',
   festival: 'Festival',
   other: 'Other',

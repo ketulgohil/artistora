@@ -29,12 +29,12 @@ function Eyebrow({ children, tone = 'brand' }: { children: React.ReactNode; tone
   return (
     <p
       className={`mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${
-        tone === 'light' ? 'text-gold' : 'text-brand'
+        tone === 'light' ? 'text-brand-light' : 'text-brand'
       }`}
     >
       <span
         aria-hidden="true"
-        className={`h-px w-8 ${tone === 'light' ? 'bg-gold/60' : 'bg-brand/50'}`}
+        className={`h-px w-8 ${tone === 'light' ? 'bg-brand-light/60' : 'bg-brand/50'}`}
       />
       {children}
     </p>
@@ -102,9 +102,6 @@ const serviceImages: Record<string, string> = {
   'Makeup Artists': '/services/makeup.jpg',
   'Decor & Event Planners': '/services/decor.jpg',
   'Mehndi Artists': '/api/media/file/Bridal.webp',
-  'Bridal Mehndi': '/api/media/file/Bridal.webp',
-  'Engagement Mehndi': '/api/media/file/Bridal.webp',
-  'Baby Shower Mehndi': '/api/media/file/Bridal.webp',
 }
 
 // Filter to show only main service categories
@@ -200,7 +197,7 @@ export default async function ServicesPage() {
     getFAQs(),
   ])
 
-  const bookingUrl = '/book'
+  const bookingUrl = '/get-quote'
 
   return (
     <>
@@ -489,7 +486,7 @@ export default async function ServicesPage() {
               <span aria-hidden="true" className="h-px w-8 bg-gradient-to-l from-transparent to-brand/60" />
             </p>
             <h3 className="font-display text-xl! leading-snug font-semibold text-ink md:text-2xl!">
-              Plan your mehndi booking with the details that matter most.
+              Plan your event booking with the details that matter most.
             </h3>
             <p className="mt-3! text-sm leading-relaxed text-ink-soft">
               Clients often like to confirm service area coverage, booking lead
@@ -551,14 +548,14 @@ export default async function ServicesPage() {
             />
             <div className="relative mx-auto max-w-2xl! text-center">
               <h2 className="font-display text-3xl! leading-snug font-semibold text-white md:text-[2.4rem]!">
-                Ready to Book Your Session?
+                Ready to Get Started?
               </h2>
               <p className="mt-4! text-sm leading-relaxed text-cream/60 md:text-[0.95rem]">
-                Reach out with your date and design preferences.
+                Share your event details and receive quotes from verified artists.
               </p>
               <div className="mt-8! flex flex-wrap justify-center gap-3!">
                 <a className={BTN_LIGHT} href={bookingUrl} target="_blank" rel="noreferrer">
-                  Book Your Session
+                  Get a Free Quote
                 </a>
                 <Link
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border border-white/25 bg-white/10 px-7! py-3! text-sm font-semibold text-white backdrop-blur transition-colors duration-200 hover:bg-white/20"

@@ -20,7 +20,9 @@ export default function BookingPolicyPage() {
             Booking Policy
           </h1>
           <p className="mt-6! max-w-2xl! text-[0.95rem] leading-relaxed text-ink-soft">
-            By booking a mehndi session through Artistora, you agree to the following terms and conditions.
+            Artistora helps customers discover and contact independent artists and
+            event professionals. By using the enquiry or booking flow, you agree
+            to the following marketplace terms.
           </p>
         </div>
       </section>
@@ -34,9 +36,11 @@ export default function BookingPolicyPage() {
                 Booking Confirmation
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                Bookings are confirmed once the date, occasion, and details are discussed and agreed upon.
-                Verbal or written confirmation through WhatsApp, phone, or the booking form serves as confirmation.
-                A booking is considered final only after both parties have acknowledged the schedule and scope of work.
+                A quote request or booking request is not a confirmed booking.
+                The booking becomes confirmed only after the assigned professional
+                accepts it and the customer and professional agree on the date,
+                scope, location, timing, and price. Artistora may assist with
+                matching and coordination, including through phone or WhatsApp.
               </p>
             </div>
 
@@ -45,10 +49,14 @@ export default function BookingPolicyPage() {
                 Payment &amp; Cancellation
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                A non-refundable deposit may be required to secure your booking for high-demand dates.
-                Full payment is due on or before the day of the service unless otherwise agreed.
-                Cancellations made at least 48 hours in advance may be rescheduled subject to availability.
-                Late cancellations or no-shows may result in forfeiture of the deposit and affect future booking eligibility.
+                During the current pilot, customers generally pay the professional
+                directly using the method agreed between them. Artistora does not
+                currently require a platform advance or hold service payments for
+                every category. Any deposit, balance, cancellation charge, or
+                rescheduling arrangement must be clearly agreed with the
+                professional before confirmation. Artistora will record booking
+                status and help resolve communication issues, but does not create
+                terms that were never agreed by the parties.
               </p>
             </div>
 
@@ -57,9 +65,11 @@ export default function BookingPolicyPage() {
                 Service Area
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                Home service is available across Ahmedabad and select surrounding areas.
-                Locations outside the usual service area may be accommodated at an additional travel charge — please check availability before booking.
-                For events outside the city, separate travel and accommodation arrangements must be discussed in advance.
+                Availability, travel radius, studio or home service, and travel
+                charges vary by professional and category. Confirm the service
+                address and any travel or accommodation charges before accepting a
+                quote. Artistora currently operates primarily in Ahmedabad and
+                nearby areas, subject to the professional&apos;s availability.
               </p>
             </div>
 
@@ -68,10 +78,25 @@ export default function BookingPolicyPage() {
                 Timing
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                The artist will arrive at the agreed location at the scheduled time.
-                Clients are requested to ensure the space is ready and the client is prepared at the time of arrival.
-                Delays on the client&apos;s side may affect the service duration and design coverage.
-                Extended sessions beyond the agreed time may incur additional charges.
+                The professional and customer should agree on arrival time, setup
+                requirements, service duration, and deliverables before the booking
+                is confirmed. Delays, scope changes, or additional time may affect
+                the agreed price and should be discussed directly as soon as
+                possible.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="font-display text-2xl! leading-snug font-semibold text-ink">
+                Independent Professionals
+              </h2>
+              <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
+                Professionals listed on Artistora operate independently. Profiles,
+                reviews, and verification signals are provided to help customers
+                make informed choices, but customers should confirm the final
+                service details directly with the professional. Artistora does not
+                guarantee a particular creative result or replace the customer&apos;s
+                agreement with the professional.
               </p>
             </div>
 
@@ -80,21 +105,15 @@ export default function BookingPolicyPage() {
                 Contact
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                For any questions, changes, or clarifications regarding your booking, please reach out to our support team at{' '}
+                For questions or changes regarding a booking, contact the
+                professional first and reach Artistora at{' '}
                 <a
                   href="tel:+917405387720"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
                   +91 74053 87720
                 </a>{' '}
-                or email{' '}
-                <a
-                  href="mailto:bookings@artistora.com"
-                  className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
-                >
-                  bookings@artistora.com
-                </a>
-                . We are happy to assist you.
+                . We can help with marketplace coordination and status questions.
               </p>
             </div>
           </div>

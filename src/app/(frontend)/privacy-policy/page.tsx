@@ -20,9 +20,9 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p className="mt-6! max-w-2xl! text-[0.95rem] leading-relaxed text-ink-soft">
-            Artistora respects your privacy. This policy outlines how we
-            collect, use, and protect your information when you use our platform,
-            website, or services.
+            Artistora is a marketplace that helps customers discover independent
+            professionals. This policy explains what information we collect and
+            how we use it across our website, enquiry, booking, and artist services.
           </p>
         </div>
       </section>
@@ -36,11 +36,13 @@ export default function PrivacyPolicyPage() {
                 Information We Collect
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                We may collect personal information such as your name, phone number,
-                email address, and event details when you fill out our booking form
-                or contact us through the website. We also collect non-personal data
-                such as browser type and usage patterns to improve our website
-                experience.
+                We may collect your name, phone number, optional email address,
+                event details, location, service preferences, budget, and messages
+                when you request a quote, make a booking enquiry, contact us, or
+                communicate through WhatsApp. For professionals, we may collect
+                profile, portfolio, service-area, pricing, verification, and
+                account information. We may also receive basic device and usage
+                information needed to operate and improve the website.
               </p>
             </div>
 
@@ -49,10 +51,13 @@ export default function PrivacyPolicyPage() {
                 How We Use It
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                Your information is used solely to respond to your inquiries,
-                connect you with verified mehndi artists, confirm bookings, and
-                improve our offerings. We do not sell or share your data with third
-                parties for marketing purposes.
+                We use information to respond to enquiries, match customers with
+                relevant professionals, share the details needed to prepare a
+                quote, coordinate bookings, support reviews, maintain artist
+                verification, prevent misuse, and improve Artistora. We do not
+                sell personal information. We may share relevant details with the
+                professionals a customer asks us to contact and with service
+                providers that help us operate the platform.
               </p>
             </div>
 
@@ -74,11 +79,13 @@ export default function PrivacyPolicyPage() {
                 Third-Party Services
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                We may use third-party service providers, such as payment
-                processors and analytics tools, to support our website and business
-                operations. These third parties have their own privacy policies and
-                may collect data necessary to perform their functions. We encourage
-                you to review their policies for more information.
+                We may use hosting, database, storage, email, analytics, and
+                messaging providers to operate Artistora. During the current
+                pilot, customers generally arrange payment directly with the
+                independent professional; Artistora does not require online
+                payment for every booking. If online payments or subscriptions
+                are introduced, this policy and the relevant payment terms will be
+                updated before that feature is used.
               </p>
             </div>
 
@@ -87,13 +94,13 @@ export default function PrivacyPolicyPage() {
                 Contact
               </h2>
               <p className="mt-4! text-[0.95rem] leading-relaxed text-ink-soft">
-                If you have questions about this policy or how your data is
-                handled, please contact us at{' '}
+                If you have questions, want to correct your information, or want
+                to ask about deletion, please contact Artistora at{' '}
                 <a
-                  href="mailto:support@artistora.com"
+                  href="mailto:gohilketul5@gmail.com"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  support@artistora.com
+                  gohilketul5@gmail.com
                 </a>
                 .
               </p>

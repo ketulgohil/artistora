@@ -29,15 +29,6 @@ function MapPinIcon() {
   )
 }
 
-function ArrowUpRightIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="7" y1="17" x2="17" y2="7" />
-      <polyline points="7 7 17 7 17 17" />
-    </svg>
-  )
-}
-
 function Eyebrow({
   children,
   center = false,
@@ -49,12 +40,12 @@ function Eyebrow({
   tone?: 'brand' | 'light'
   className?: string
 }) {
-  const dash = tone === 'light' ? 'bg-gold/60' : 'bg-brand/50'
+  const dash = tone === 'light' ? 'bg-brand-light/60' : 'bg-brand/50'
   return (
     <p
       className={`flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${
         center ? 'justify-center' : ''
-      } ${tone === 'light' ? 'text-gold' : 'text-brand'} ${className}`}
+      } ${tone === 'light' ? 'text-brand-light' : 'text-brand'} ${className}`}
     >
       <span aria-hidden="true" className={`h-px w-8 shrink-0 ${dash}`} />
       {children}
@@ -68,8 +59,6 @@ const SECTION = 'py-16! md:py-24!'
 
 const BTN_PRIMARY =
   'inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift'
-const BTN_OUTLINE =
-  'inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-transparent px-7! py-3! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10'
 const BTN_LIGHT =
   'inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full bg-cream px-7! py-3! text-sm font-bold text-brand-deep shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift'
 const BTN_GHOST =
@@ -83,21 +72,9 @@ export default async function ContactPage() {
 
   const businessName = settings.businessName || 'Artistora'
   const phone = settings.phone || '+91 7405387720'
-  const email = settings.email || ''
+  const email = 'support@artistora.com'
   const address = settings.address || ''
-  const bookingUrl = '/book'
   const whatsappNumber = settings.whatsappNumber || '917405387720'
-  const googleMapUrl = settings.googleMapUrl || ''
-
-  const mapSrc = googleMapUrl || 'https://maps.google.com/maps?q=Ahmedabad%2C%20Gujarat%2C%20India&z=11&output=embed'
-
-  const bookingInfo = [
-    'Your event date',
-    'Location in Ahmedabad',
-    'Occasion type',
-    'Approximate number of people',
-    'Preferred service',
-  ]
 
   return (
     <>
@@ -115,13 +92,6 @@ export default async function ContactPage() {
               <p className="mt-4! max-w-xl! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
                 Whether you are planning a wedding, engagement, baby shower, family event, or any special occasion, Artistora makes it easy to book a verified artist in Ahmedabad through direct call, WhatsApp, or the booking form. Artists on the platform regularly serve areas like Gota, Ghatlodiya, Sola, and Science City along with home service across Ahmedabad.
               </p>
-
-              {bookingUrl && (
-                <div className="mt-6! rounded-2xl border border-brand/15 bg-brand/5 px-5! py-4!">
-                  <strong className="text-sm font-bold text-ink">For a faster reply, share:</strong>
-                  <span className="mt-1! block text-sm text-ink-muted">{bookingInfo.join(', ')}.</span>
-                </div>
-              )}
 
               <div className="mt-7! space-y-3!">
                 <div className="flex items-center gap-4! rounded-2xl border border-line bg-white p-4! shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift">
@@ -176,13 +146,7 @@ export default async function ContactPage() {
               </div>
 
               <div className="mt-8! flex flex-wrap gap-3!">
-                {bookingUrl && (
-                  <a className={BTN_PRIMARY} href={bookingUrl} target="_blank" rel="noreferrer">
-                    Open Booking Form
-                    <ArrowUpRightIcon />
-                  </a>
-                )}
-                <a className={BTN_OUTLINE} href={`tel:${phone}`}>
+                <a className={BTN_PRIMARY} href={`tel:${phone}`}>
                   Call Directly
                 </a>
               </div>
@@ -203,62 +167,6 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      {/* ── Booking form ── */}
-      <section className={`${SECTION} bg-white/60`}>
-        <div className={CONTAINER}>
-          <div className="text-center">
-            <Eyebrow center>Booking Form</Eyebrow>
-            <h2 className="font-display mt-2! text-2xl! font-semibold text-ink md:text-[2rem]!">
-              Send your inquiry directly from the website.
-            </h2>
-            <p className="mx-auto mt-3! max-w-2xl! text-sm leading-relaxed text-ink-soft">
-              Fill out the booking form below. Your responses will be saved securely and can be reviewed for availability and follow-up.
-            </p>
-          </div>
-          <div className="mt-10! rounded-[2rem] border border-line bg-white p-2.5! shadow-lift">
-            <a href="/book" className="flex min-h-[20rem] items-center justify-center rounded-[1.6rem] bg-cream/60 transition-colors hover:bg-cream">
-              <div className="text-center">
-                <p className="font-display text-xl! font-semibold text-ink">Ready to Book?</p>
-                <p className="mt-2! text-sm text-ink-soft">Fill in your details and we&apos;ll confirm availability.</p>
-                <span className="mt-4! inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift">
-                  Open Booking Form
-                </span>
-              </div>
-            </a>
-          </div>
-          <div className="mx-auto mt-8! max-w-2xl! text-center">
-            <p className="text-sm leading-relaxed text-ink-soft">
-              After submitting the form, you will see a confirmation message. We will then contact you on call or WhatsApp to discuss availability and booking details.
-            </p>
-            <p className="mt-1! text-sm text-ink-soft">
-              After your form is submitted, you can also continue here for confirmation details:
-            </p>
-            <a
-              href="/thank-you"
-              className="mt-2! inline-flex cursor-pointer items-center gap-1.5! font-semibold text-brand underline decoration-brand/40 underline-offset-4 transition-colors duration-200 hover:text-brand-deep hover:decoration-brand-deep"
-            >
-              https://www.artistora.com/thank-you
-              <ArrowUpRightIcon />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Map ── */}
-      <section className={SECTION}>
-        <div className={CONTAINER}>
-          <div className="overflow-hidden rounded-[2rem] border border-line bg-white p-2.5! shadow-soft">
-            <iframe
-              title={`${businessName} location`}
-              src={mapSrc}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="h-[24rem] w-full rounded-[1.6rem] border-0 md:h-[30rem]"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* ── WhatsApp CTA ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
@@ -269,11 +177,11 @@ export default async function ContactPage() {
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-gold/20 blur-2xl"
+              className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-brand-light/20 blur-2xl"
             />
             <div className="relative">
               <Eyebrow center tone="light">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="text-gold">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="text-brand-light">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
                 WhatsApp

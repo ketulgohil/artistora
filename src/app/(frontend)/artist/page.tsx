@@ -14,11 +14,11 @@ function Eyebrow({
   tone?: 'brand' | 'light'
   className?: string
 }) {
-  const dash = tone === 'light' ? 'bg-gold/60' : 'bg-brand/50'
+  const dash = tone === 'light' ? 'bg-brand-light/60' : 'bg-brand/50'
   return (
     <p
       className={`mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${
-        tone === 'light' ? 'text-gold' : 'text-brand'
+        tone === 'light' ? 'text-brand-light' : 'text-brand'
       } ${className}`}
     >
       <span aria-hidden="true" className={`h-px w-8 shrink-0 ${dash}`} />
@@ -35,7 +35,7 @@ function Sparkle({ className = '' }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="currentColor"
       aria-hidden="true"
-      className={`text-gold/70 ${className}`}
+      className={`text-brand-light/70 ${className}`}
     >
       <path d="M12 0c1.1 4.5 3.4 7.2 12 8.1-8.6.9-10.9 3.6-12 8.1-1.1-4.5-3.4-7.2-12-8.1C8.6 7.2 10.9 4.5 12 0Z" />
     </svg>
@@ -57,7 +57,7 @@ const CARD =
 
 export default async function ArtistPage() {
   const settings = (await getSiteSettings()) as any
-  const bookingUrl = '/book'
+  const bookingUrl = '/get-quote'
 
   const highlights = [
     {
@@ -110,7 +110,7 @@ export default async function ArtistPage() {
                 />
               </div>
               <Sparkle className="absolute -top-5 right-6 h-6 w-6" />
-              <Sparkle className="absolute -bottom-4 left-10 h-4 w-4 text-gold/40" />
+              <Sparkle className="absolute -bottom-4 left-10 h-4 w-4 text-brand-light/40" />
             </div>
 
             {/* Platform copy */}

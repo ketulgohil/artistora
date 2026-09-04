@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getArtistBySlug, mediaUrl } from '@/lib/payload'
+import { getArtistBySlug, mediaUrl, getPayloadClient } from '@/lib/payload'
 import SectionHeading from '@/components/SectionHeading'
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
@@ -15,16 +15,18 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Star({ filled = true }: { filled?: boolean }) {
+function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
   return (
-    <svg
-      className={filled ? 'h-4 w-4 text-gold' : 'h-4 w-4 text-line'}
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
-    </svg>
+    <span className="inline-flex" role="img" aria-label={label || (filled ? 'Filled star' : 'Empty star')}>
+      <svg
+        className={filled ? 'h-4 w-4 text-gold' : 'h-4 w-4 text-line'}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
+      </svg>
+    </span>
   )
 }
 
@@ -78,6 +80,18 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
 
   if (!artist) notFound()
 
+  // Increment profile views (fire-and-forget, don't block rendering)
+  try {
+    const payload = await getPayloadClient()
+    await payload.update({
+      collection: 'artists',
+      id: artist.id,
+      data: { profileViews: (artist.profileViews || 0) + 1 },
+    })
+  } catch {
+    // Non-critical — ignore errors
+  }
+
   const phone = artist.whatsappNumber || artist.phone
   const whatsappUrl = phone ? `https://wa.me/91${phone.replace(/\D/g, '').replace(/^91/, '')}` : ''
   const phoneUrl = phone ? `tel:+91${phone.replace(/\D/g, '').replace(/^91/, '')}` : ''
@@ -116,7 +130,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
             {/* Info */}
             <div>
               <div className="flex flex-wrap items-center gap-3!">
-                <Eyebrow>Mehndi Artist</Eyebrow>
+                <Eyebrow>Artist</Eyebrow>
                 {artist.verified && <VerifiedBadge />}
               </div>
 
@@ -136,6 +150,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                   {typeof artist.reviewCount === 'number' && artist.reviewCount > 0 && (
                     <span className="text-sm text-ink-muted">({artist.reviewCount} reviews)</span>
                   )}
+                  <span className="sr-only">{artist.rating.toFixed(1)} out of 5 stars, {artist.reviewCount || 0} reviews</span>
                 </div>
               )}
 
@@ -196,7 +211,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                   </a>
                 )}
                 <Link
-                  href="/contact"
+                  href="/get-quote"
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border border-line bg-white px-7! py-3! text-sm font-semibold text-ink-soft shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
                 >
                   Get a Quote
@@ -214,7 +229,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
             {/* Styles */}
             {Boolean(artist.styles && artist.styles.length > 0) && (
               <div className="rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift md:p-8!">
-                <Eyebrow>Mehndi Styles</Eyebrow>
+                <Eyebrow>Styles</Eyebrow>
                 <h3 className="font-display text-xl! font-semibold text-ink">Design specializations</h3>
                 <div className="mt-5! flex flex-wrap gap-2!">
                   {artist.styles!.map((s: any, i: number) => (

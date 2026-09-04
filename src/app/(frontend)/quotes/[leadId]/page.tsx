@@ -89,7 +89,7 @@ export default function QuotesPage() {
             Compare Artist Quotes
           </h1>
           <p className="mt-2! text-sm text-ink-soft">
-            Review and select the best quote for your mehndi event.
+            Review and select the best quote for your event.
           </p>
         </div>
 

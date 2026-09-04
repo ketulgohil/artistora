@@ -114,11 +114,14 @@ export async function getStaticPage(slug: string) {
 // ── Artists ──
 export async function getArtists(city?: string) {
   const payload = await getPayloadClient()
-  const where: Where = city ? { city: { equals: city } } : {}
+  const where: Where = {
+    approvalStatus: { equals: 'approved' },
+    ...(city ? { city: { equals: city } } : {}),
+  }
   const { docs } = await payload.find({
     collection: 'artists',
-    where: Object.keys(where).length > 0 ? where : undefined,
-    sort: 'order',
+    where,
+    sort: '-isFeatured,-searchRank,order',
     depth: 1,
   })
   return docs
@@ -128,7 +131,12 @@ export async function getArtistBySlug(slug: string) {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'artists',
-    where: { slug: { equals: slug } },
+    where: {
+      and: [
+        { slug: { equals: slug } },
+        { approvalStatus: { equals: 'approved' } },
+      ],
+    },
     depth: 2,
     limit: 1,
   })

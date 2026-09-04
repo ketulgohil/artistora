@@ -100,7 +100,9 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString,
-      max: 2,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
       ssl: isRemoteDb ? { rejectUnauthorized: false } : false,
     },
   }),

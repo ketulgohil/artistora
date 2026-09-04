@@ -33,7 +33,7 @@ export default function ThankYouPage() {
           </h1>
           <div
             aria-hidden="true"
-            className="mx-auto mt-5! h-px w-20 bg-gradient-to-r from-transparent via-gold/70 to-transparent"
+            className="mx-auto mt-5! h-px w-20 bg-gradient-to-r from-transparent via-brand/70 to-transparent"
           />
           <p className="mx-auto mt-5! max-w-sm! text-[0.95rem] leading-relaxed text-ink-soft">
             Your inquiry has been received. We&apos;ll get back to you shortly to confirm the details.

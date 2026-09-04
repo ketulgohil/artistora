@@ -11,12 +11,25 @@ import type {} from '@payloadcms/db-postgres'
 import { pgTable, index, uniqueIndex, foreignKey, integer, varchar, timestamp, serial, numeric, boolean, jsonb, type AnyPgColumn, pgEnum } from '@payloadcms/db-postgres/drizzle/pg-core'
 import { sql, relations } from '@payloadcms/db-postgres/drizzle'
 export const enum_users_role = pgEnum('enum_users_role', ['customer', 'artist', 'admin'])
-export const enum_leads_event_type = pgEnum('enum_leads_event_type', ['bridal', 'engagement', 'baby-shower', 'family-function', 'festival', 'other'])
+export const enum_portfolio_items_service_category = pgEnum('enum_portfolio_items_service_category', ['mehndi', 'photography', 'makeup', 'decor', 'other'])
+export const enum_artists_price_type = pgEnum('enum_artists_price_type', ['package', 'hourly', 'per_person', 'custom_quote'])
+export const enum_artists_approval_status = pgEnum('enum_artists_approval_status', ['pending', 'approved', 'rejected', 'suspended'])
+export const enum_artists_verification_status = pgEnum('enum_artists_verification_status', ['unverified', 'verified'])
+export const enum_artists_subscription_plan = pgEnum('enum_artists_subscription_plan', ['free', 'basic', 'premium'])
+export const enum_artists_subscription_status = pgEnum('enum_artists_subscription_status', ['active', 'trialing', 'past_due', 'cancelled', 'expired'])
+export const enum_leads_event_type = pgEnum('enum_leads_event_type', ['wedding', 'engagement', 'birthday', 'baby-shower', 'corporate', 'festival', 'bridal', 'family-function', 'other'])
 export const enum_leads_budget_range = pgEnum('enum_leads_budget_range', ['under-2000', '2000-5000', '5000-10000', '10000-20000', '20000-50000', 'above-50000', 'unsure'])
-export const enum_leads_status = pgEnum('enum_leads_status', ['new', 'quotes-sent', 'accepted', 'booked', 'closed'])
+export const enum_leads_status = pgEnum('enum_leads_status', ['new', 'reviewing', 'artists_matched', 'quotes_received', 'customer_contacted', 'artist_selected', 'booking_pending', 'booked', 'lost', 'closed'])
+export const enum_quotes_price_type = pgEnum('enum_quotes_price_type', ['package', 'hourly', 'per_person', 'custom_quote'])
 export const enum_quotes_status = pgEnum('enum_quotes_status', ['pending', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'withdrawn'])
-export const enum_bookings_event_type = pgEnum('enum_bookings_event_type', ['bridal', 'engagement', 'baby-shower', 'family-function', 'festival', 'other'])
-export const enum_bookings_status = pgEnum('enum_bookings_status', ['new', 'contacted', 'confirmed', 'completed', 'cancelled'])
+export const enum_bookings_assigned_artists_role = pgEnum('enum_bookings_assigned_artists_role', ['lead', 'assistant', 'member'])
+export const enum_bookings_assigned_artists_status = pgEnum('enum_bookings_assigned_artists_status', ['pending', 'accepted', 'declined'])
+export const enum_bookings_event_type = pgEnum('enum_bookings_event_type', ['wedding', 'engagement', 'birthday', 'baby-shower', 'corporate', 'festival', 'bridal', 'family-function', 'other'])
+export const enum_bookings_payment_status = pgEnum('enum_bookings_payment_status', ['unpaid', 'pending', 'partially_paid', 'paid', 'refunded'])
+export const enum_bookings_payment_method = pgEnum('enum_bookings_payment_method', ['cash', 'upi', 'bank_transfer', 'online'])
+export const enum_bookings_status = pgEnum('enum_bookings_status', ['requested', 'artist_pending', 'confirmed', 'in_progress', 'completed', 'declined', 'cancelled'])
+export const enum_bookings_cancelled_by = pgEnum('enum_bookings_cancelled_by', ['customer', 'artist', 'admin', 'system'])
+export const enum_bookings_refund_status = pgEnum('enum_bookings_refund_status', ['pending', 'processing', 'refunded', 'denied'])
 
 export const users_sessions = pgTable('users_sessions', {
   _order: integer('_order').notNull(),
@@ -127,6 +140,10 @@ export const portfolio_items = pgTable('portfolio_items', {
   category: integer('category_id').notNull().references(() => portfolio_categories.id, {
       onDelete: 'set null'
   }),
+  serviceCategory: enum_portfolio_items_service_category('service_category').notNull().default("mehndi"),
+  artist: integer('artist_id').references(() => artists.id, {
+      onDelete: 'set null'
+  }),
   altText: varchar('alt_text').notNull().default("Mehndi design image"),
   featured: boolean('featured').default(false),
   description: varchar('description'),
@@ -134,7 +151,7 @@ export const portfolio_items = pgTable('portfolio_items', {
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
-    index('portfolio_items_image_idx').on(columns.image), index('portfolio_items_category_idx').on(columns.category), index('portfolio_items_updated_at_idx').on(columns.updatedAt), index('portfolio_items_created_at_idx').on(columns.createdAt),
+    index('portfolio_items_image_idx').on(columns.image), index('portfolio_items_category_idx').on(columns.category), index('portfolio_items_artist_idx').on(columns.artist), index('portfolio_items_updated_at_idx').on(columns.updatedAt), index('portfolio_items_created_at_idx').on(columns.createdAt),
 ]
 )
 
@@ -203,6 +220,22 @@ export const static_pages = pgTable('static_pages', {
 )
 
 
+export const artists_unavailable_dates = pgTable('artists_unavailable_dates', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  id: varchar('id').primaryKey(),
+  date: timestamp('date', {mode: 'string',withTimezone: true,precision: 3}).notNull(),
+  reason: varchar('reason'),
+}, (columns) => [
+    index('artists_unavailable_dates_order_idx').on(columns._order), index('artists_unavailable_dates_parent_id_idx').on(columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [artists.id],
+      name: 'artists_unavailable_dates_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const artists_styles = pgTable('artists_styles', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -253,10 +286,28 @@ export const artists = pgTable('artists', {
   city: varchar('city').notNull().default("Ahmedabad"),
   area: varchar('area'),
   yearsOfExperience: numeric('years_of_experience', {mode: 'number'}),
+  priceType: enum_artists_price_type('price_type').default("package"),
   startingPrice: numeric('starting_price', {mode: 'number'}),
   verified: boolean('verified').default(false),
+  approvalStatus: enum_artists_approval_status('approval_status').default("pending"),
+  verificationStatus: enum_artists_verification_status('verification_status').default("unverified"),
   rating: numeric('rating', {mode: 'number'}).default(0),
   reviewCount: numeric('review_count', {mode: 'number'}).default(0),
+  searchRank: numeric('search_rank', {mode: 'number'}).default(0),
+  isFeatured: boolean('is_featured').default(false),
+  featuredUntil: timestamp('featured_until', {mode: 'string',withTimezone: true,precision: 3}),
+  subscriptionPlan: enum_artists_subscription_plan('subscription_plan').default("free"),
+  subscriptionExpiresAt: timestamp('subscription_expires_at', {mode: 'string',withTimezone: true,precision: 3}),
+  subscriptionStatus: enum_artists_subscription_status('subscription_status').default("active"),
+  subscriptionStartedAt: timestamp('subscription_started_at', {mode: 'string',withTimezone: true,precision: 3}),
+  subscriptionRenewsAt: timestamp('subscription_renews_at', {mode: 'string',withTimezone: true,precision: 3}),
+  subscriptionCancelledAt: timestamp('subscription_cancelled_at', {mode: 'string',withTimezone: true,precision: 3}),
+  maxPortfolioItems: numeric('max_portfolio_items', {mode: 'number'}).default(10),
+  profileViews: numeric('profile_views', {mode: 'number'}).default(0),
+  leadsReceived: numeric('leads_received', {mode: 'number'}).default(0),
+  quotesSent: numeric('quotes_sent', {mode: 'number'}).default(0),
+  bookingsWon: numeric('bookings_won', {mode: 'number'}).default(0),
+  totalEarnings: numeric('total_earnings', {mode: 'number'}).default(0),
   order: numeric('order', {mode: 'number'}),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
@@ -305,10 +356,14 @@ export const leads = pgTable('leads', {
       onDelete: 'set null'
   }),
   status: enum_leads_status('status').default("new"),
+  lostReason: varchar('lost_reason'),
+  assignedAdmin: integer('assigned_admin_id').references(() => users.id, {
+      onDelete: 'set null'
+  }),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
-    index('leads_service_type_idx').on(columns.serviceType), index('leads_accepted_quote_idx').on(columns.acceptedQuote), index('leads_updated_at_idx').on(columns.updatedAt), index('leads_created_at_idx').on(columns.createdAt),
+    index('leads_service_type_idx').on(columns.serviceType), index('leads_accepted_quote_idx').on(columns.acceptedQuote), index('leads_assigned_admin_idx').on(columns.assignedAdmin), index('leads_updated_at_idx').on(columns.updatedAt), index('leads_created_at_idx').on(columns.createdAt),
 ]
 )
 
@@ -341,6 +396,9 @@ export const quotes = pgTable('quotes', {
   artist: integer('artist_id').notNull().references(() => artists.id, {
       onDelete: 'set null'
   }),
+  priceType: enum_quotes_price_type('price_type').default("package"),
+  unitRate: numeric('unit_rate', {mode: 'number'}),
+  units: numeric('units', {mode: 'number'}),
   amount: numeric('amount', {mode: 'number'}).notNull(),
   message: varchar('message'),
   estimatedHours: numeric('estimated_hours', {mode: 'number'}),
@@ -356,6 +414,27 @@ export const quotes = pgTable('quotes', {
 )
 
 
+export const bookings_assigned_artists = pgTable('bookings_assigned_artists', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  id: varchar('id').primaryKey(),
+  artist: integer('artist_id').notNull().references(() => artists.id, {
+      onDelete: 'set null'
+  }),
+  role: enum_bookings_assigned_artists_role('role').default("lead"),
+  status: enum_bookings_assigned_artists_status('status').default("pending"),
+  declineReason: varchar('decline_reason'),
+  fee: numeric('fee', {mode: 'number'}),
+}, (columns) => [
+    index('bookings_assigned_artists_order_idx').on(columns._order), index('bookings_assigned_artists_parent_id_idx').on(columns._parentID), index('bookings_assigned_artists_artist_idx').on(columns.artist), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [bookings.id],
+      name: 'bookings_assigned_artists_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const bookings = pgTable('bookings', {
   id: serial('id').primaryKey(),
   name: varchar('name').notNull(),
@@ -367,14 +446,59 @@ export const bookings = pgTable('bookings', {
   guestCount: numeric('guest_count', {mode: 'number'}),
   designStyle: varchar('design_style'),
   message: varchar('message'),
+  lead: integer('lead_id').references(() => leads.id, {
+      onDelete: 'set null'
+  }),
+  quote: integer('quote_id').references(() => quotes.id, {
+      onDelete: 'set null'
+  }),
   artist: integer('artist_id').references(() => artists.id, {
       onDelete: 'set null'
   }),
-  status: enum_bookings_status('status').default("new"),
+  totalAmount: numeric('total_amount', {mode: 'number'}),
+  advanceAmount: numeric('advance_amount', {mode: 'number'}),
+  remainingAmount: numeric('remaining_amount', {mode: 'number'}),
+  platformFee: numeric('platform_fee', {mode: 'number'}),
+  artistAmount: numeric('artist_amount', {mode: 'number'}),
+  paymentStatus: enum_bookings_payment_status('payment_status').default("unpaid"),
+  paymentMethod: enum_bookings_payment_method('payment_method'),
+  paymentReference: varchar('payment_reference'),
+  status: enum_bookings_status('status').default("requested"),
+  declineReason: varchar('decline_reason'),
+  cancelledBy: enum_bookings_cancelled_by('cancelled_by'),
+  cancellationReason: varchar('cancellation_reason'),
+  cancelledAt: timestamp('cancelled_at', {mode: 'string',withTimezone: true,precision: 3}),
+  refundAmount: numeric('refund_amount', {mode: 'number'}),
+  refundStatus: enum_bookings_refund_status('refund_status').default("pending"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
-    index('bookings_artist_idx').on(columns.artist), index('bookings_updated_at_idx').on(columns.updatedAt), index('bookings_created_at_idx').on(columns.createdAt),
+    index('bookings_lead_idx').on(columns.lead), index('bookings_quote_idx').on(columns.quote), index('bookings_artist_idx').on(columns.artist), index('bookings_updated_at_idx').on(columns.updatedAt), index('bookings_created_at_idx').on(columns.createdAt),
+]
+)
+
+
+export const reviews = pgTable('reviews', {
+  id: serial('id').primaryKey(),
+  user: integer('user_id').notNull().references(() => users.id, {
+      onDelete: 'set null'
+  }),
+  customerName: varchar('customer_name').notNull(),
+  booking: integer('booking_id').notNull().references(() => bookings.id, {
+      onDelete: 'set null'
+  }),
+  artist: integer('artist_id').notNull().references(() => artists.id, {
+      onDelete: 'set null'
+  }),
+  rating: numeric('rating', {mode: 'number'}).notNull(),
+  title: varchar('title'),
+  text: varchar('text').notNull(),
+  verifiedBooking: boolean('verified_booking').default(false),
+  helpfulCount: numeric('helpful_count', {mode: 'number'}).default(0),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
+}, (columns) => [
+    index('reviews_user_idx').on(columns.user), index('reviews_booking_idx').on(columns.booking), index('reviews_artist_idx').on(columns.artist), index('reviews_updated_at_idx').on(columns.updatedAt), index('reviews_created_at_idx').on(columns.createdAt),
 ]
 )
 
@@ -418,8 +542,9 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
   leadsID: integer('leads_id'),
   quotesID: integer('quotes_id'),
   bookingsID: integer('bookings_id'),
+  reviewsID: integer('reviews_id'),
 }, (columns) => [
-    index('payload_locked_documents_rels_order_idx').on(columns.order), index('payload_locked_documents_rels_parent_idx').on(columns.parent), index('payload_locked_documents_rels_path_idx').on(columns.path), index('payload_locked_documents_rels_users_id_idx').on(columns.usersID), index('payload_locked_documents_rels_media_id_idx').on(columns.mediaID), index('payload_locked_documents_rels_services_id_idx').on(columns.servicesID), index('payload_locked_documents_rels_portfolio_categories_id_idx').on(columns['portfolio-categoriesID']), index('payload_locked_documents_rels_portfolio_items_id_idx').on(columns['portfolio-itemsID']), index('payload_locked_documents_rels_testimonials_id_idx').on(columns.testimonialsID), index('payload_locked_documents_rels_faq_id_idx').on(columns.faqID), index('payload_locked_documents_rels_youtube_videos_id_idx').on(columns['youtube-videosID']), index('payload_locked_documents_rels_static_pages_id_idx').on(columns['static-pagesID']), index('payload_locked_documents_rels_artists_id_idx').on(columns.artistsID), index('payload_locked_documents_rels_leads_id_idx').on(columns.leadsID), index('payload_locked_documents_rels_quotes_id_idx').on(columns.quotesID), index('payload_locked_documents_rels_bookings_id_idx').on(columns.bookingsID), foreignKey({
+    index('payload_locked_documents_rels_order_idx').on(columns.order), index('payload_locked_documents_rels_parent_idx').on(columns.parent), index('payload_locked_documents_rels_path_idx').on(columns.path), index('payload_locked_documents_rels_users_id_idx').on(columns.usersID), index('payload_locked_documents_rels_media_id_idx').on(columns.mediaID), index('payload_locked_documents_rels_services_id_idx').on(columns.servicesID), index('payload_locked_documents_rels_portfolio_categories_id_idx').on(columns['portfolio-categoriesID']), index('payload_locked_documents_rels_portfolio_items_id_idx').on(columns['portfolio-itemsID']), index('payload_locked_documents_rels_testimonials_id_idx').on(columns.testimonialsID), index('payload_locked_documents_rels_faq_id_idx').on(columns.faqID), index('payload_locked_documents_rels_youtube_videos_id_idx').on(columns['youtube-videosID']), index('payload_locked_documents_rels_static_pages_id_idx').on(columns['static-pagesID']), index('payload_locked_documents_rels_artists_id_idx').on(columns.artistsID), index('payload_locked_documents_rels_leads_id_idx').on(columns.leadsID), index('payload_locked_documents_rels_quotes_id_idx').on(columns.quotesID), index('payload_locked_documents_rels_bookings_id_idx').on(columns.bookingsID), index('payload_locked_documents_rels_reviews_id_idx').on(columns.reviewsID), foreignKey({
       columns: [columns['parent']],
       foreignColumns: [payload_locked_documents.id],
       name: 'payload_locked_documents_rels_parent_fk'
@@ -475,6 +600,10 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
       columns: [columns['bookingsID']],
       foreignColumns: [bookings.id],
       name: 'payload_locked_documents_rels_bookings_fk'
+    }).onDelete('cascade'), foreignKey({
+      columns: [columns['reviewsID']],
+      foreignColumns: [reviews.id],
+      name: 'payload_locked_documents_rels_reviews_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -526,20 +655,20 @@ export const payload_migrations = pgTable('payload_migrations', {
 
 export const site_settings = pgTable('site_settings', {
   id: serial('id').primaryKey(),
-  businessName: varchar('business_name').notNull().default("Shiva Mehndi Art"),
-  founderName: varchar('founder_name').notNull().default("Bhumi Chanpura"),
-  phone: varchar('phone').notNull().default("+91 8469662012"),
-  email: varchar('email').notNull().default("bhumichanpura1234@gmail.com"),
-  address: varchar('address').notNull().default("C-206 Neelkanth Homes, Chandlodiya, Ahmedabad 382481"),
-  tagline: varchar('tagline').default("Premium Mehndi Artist – Ahmedabad"),
-  facebookUrl: varchar('facebook_url').default("https://facebook.com/"),
-  instagramUrl: varchar('instagram_url').default("https://instagram.com/"),
-  youtubeUrl: varchar('youtube_url').default("https://youtube.com/"),
-  googleMapUrl: varchar('google_map_url').default("https://maps.google.com/"),
-  bookingFormUrl: varchar('booking_form_url').notNull().default("https://docs.google.com/forms/d/e/1FAIpQLSeE8i0kMqjmb8jjVLc_YgNGR8q413ZdgEXQbzNZdULpf9r8MA/viewform"),
-  whatsappNumber: varchar('whatsapp_number').default("+918469662012"),
-  defaultMetaTitle: varchar('default_meta_title').default("Shiva Mehndi Art — Premium Mehndi Artist in Ahmedabad"),
-  defaultMetaDescription: varchar('default_meta_description').default("Shiva Mehndi Art by Bhumi Chanpura offers premium bridal, engagement, and festive mehndi in Ahmedabad. Home service available."),
+  businessName: varchar('business_name').notNull().default("Artistora"),
+  founderName: varchar('founder_name').notNull().default("Ketul Gohil"),
+  phone: varchar('phone').notNull().default("+91 7405387720"),
+  email: varchar('email').notNull().default("support@artistora.com"),
+  address: varchar('address').notNull().default("Ahmedabad, Gujarat, India"),
+  tagline: varchar('tagline').default("Verified Artist Marketplace – Ahmedabad"),
+  facebookUrl: varchar('facebook_url').default(""),
+  instagramUrl: varchar('instagram_url').default(""),
+  youtubeUrl: varchar('youtube_url').default(""),
+  googleMapUrl: varchar('google_map_url').default("https://www.google.com/maps/search/?api=1&query=Ahmedabad%2C%20Gujarat%2C%20India"),
+  bookingFormUrl: varchar('booking_form_url').notNull().default("/book"),
+  whatsappNumber: varchar('whatsapp_number').default("+917405387720"),
+  defaultMetaTitle: varchar('default_meta_title').default("Artistora — Book Verified Artists in Ahmedabad"),
+  defaultMetaDescription: varchar('default_meta_description').default("Artistora connects you with verified mehndi artists in Ahmedabad. Compare quotes from top bridal, engagement, and festive mehndi artists — book in minutes."),
   defaultOgImage: integer('default_og_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
@@ -588,8 +717,8 @@ export const header_footer = pgTable('header_footer', {
   logo: integer('logo_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  footerTagline: varchar('footer_tagline').default("Premium mehndi artistry by Bhumi Chanpura, based in Chandlodiya, Ahmedabad. Bridal, engagement, festive, and home-service mehndi across the city."),
-  copyrightText: varchar('copyright_text').default("© Shiva Mehndi Art. All rights reserved."),
+  footerTagline: varchar('footer_tagline').default("Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, music, and more."),
+  copyrightText: varchar('copyright_text').default("© Artistora. All rights reserved."),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }, (columns) => [
@@ -599,7 +728,7 @@ export const header_footer = pgTable('header_footer', {
 
 export const relations_users_sessions = relations(users_sessions, ({ one }) => ({
   _parentID: one(users, {
-    
+
     fields: [users_sessions._parentID],
     references: [users.id],
     relationName: 'sessions',
@@ -611,11 +740,11 @@ export const relations_users = relations(users, ({ many }) => ({
     }),
       }))
 export const relations_media = relations(media, () => ({
-  
+
       }))
 export const relations_services_points = relations(services_points, ({ one }) => ({
   _parentID: one(services, {
-    
+
     fields: [services_points._parentID],
     references: [services.id],
     relationName: 'points',
@@ -623,7 +752,7 @@ export const relations_services_points = relations(services_points, ({ one }) =>
       }))
 export const relations_services = relations(services, ({ one, many }) => ({
   image: one(media, {
-    
+
     fields: [services.image],
     references: [media.id],
     relationName: 'image',
@@ -633,36 +762,42 @@ export const relations_services = relations(services, ({ one, many }) => ({
     }),
       }))
 export const relations_portfolio_categories = relations(portfolio_categories, () => ({
-  
+
       }))
 export const relations_portfolio_items = relations(portfolio_items, ({ one }) => ({
   image: one(media, {
-    
+
     fields: [portfolio_items.image],
     references: [media.id],
     relationName: 'image',
     }),
     category: one(portfolio_categories, {
-    
+
     fields: [portfolio_items.category],
     references: [portfolio_categories.id],
     relationName: 'category',
     }),
+    artist: one(artists, {
+
+    fields: [portfolio_items.artist],
+    references: [artists.id],
+    relationName: 'artist',
+    }),
       }))
 export const relations_testimonials = relations(testimonials, ({ one }) => ({
   image: one(media, {
-    
+
     fields: [testimonials.image],
     references: [media.id],
     relationName: 'image',
     }),
       }))
 export const relations_faq = relations(faq, () => ({
-  
+
       }))
 export const relations_youtube_videos = relations(youtube_videos, ({ one }) => ({
   thumbnail: one(media, {
-    
+
     fields: [youtube_videos.thumbnail],
     references: [media.id],
     relationName: 'thumbnail',
@@ -670,15 +805,23 @@ export const relations_youtube_videos = relations(youtube_videos, ({ one }) => (
       }))
 export const relations_static_pages = relations(static_pages, ({ one }) => ({
   ogImage: one(media, {
-    
+
     fields: [static_pages.ogImage],
     references: [media.id],
     relationName: 'ogImage',
     }),
       }))
+export const relations_artists_unavailable_dates = relations(artists_unavailable_dates, ({ one }) => ({
+  _parentID: one(artists, {
+
+    fields: [artists_unavailable_dates._parentID],
+    references: [artists.id],
+    relationName: 'unavailableDates',
+    }),
+      }))
 export const relations_artists_styles = relations(artists_styles, ({ one }) => ({
   _parentID: one(artists, {
-    
+
     fields: [artists_styles._parentID],
     references: [artists.id],
     relationName: 'styles',
@@ -686,13 +829,13 @@ export const relations_artists_styles = relations(artists_styles, ({ one }) => (
       }))
 export const relations_artists_portfolio_images = relations(artists_portfolio_images, ({ one }) => ({
   _parentID: one(artists, {
-    
+
     fields: [artists_portfolio_images._parentID],
     references: [artists.id],
     relationName: 'portfolioImages',
     }),
     image: one(media, {
-    
+
     fields: [artists_portfolio_images.image],
     references: [media.id],
     relationName: 'image',
@@ -700,13 +843,13 @@ export const relations_artists_portfolio_images = relations(artists_portfolio_im
       }))
 export const relations_artists_rels = relations(artists_rels, ({ one }) => ({
   parent: one(artists, {
-    
+
     fields: [artists_rels.parent],
     references: [artists.id],
     relationName: '_rels',
     }),
     servicesID: one(services, {
-    
+
     fields: [artists_rels.servicesID],
     references: [services.id],
     relationName: 'services',
@@ -714,16 +857,19 @@ export const relations_artists_rels = relations(artists_rels, ({ one }) => ({
       }))
 export const relations_artists = relations(artists, ({ one, many }) => ({
   user: one(users, {
-    
+
     fields: [artists.user],
     references: [users.id],
     relationName: 'user',
     }),
     profilePhoto: one(media, {
-    
+
     fields: [artists.profilePhoto],
     references: [media.id],
     relationName: 'profilePhoto',
+    }),
+    unavailableDates: many(artists_unavailable_dates, {
+            relationName: 'unavailableDates',
     }),
     styles: many(artists_styles, {
             relationName: 'styles',
@@ -737,13 +883,13 @@ export const relations_artists = relations(artists, ({ one, many }) => ({
       }))
 export const relations_leads_rels = relations(leads_rels, ({ one }) => ({
   parent: one(leads, {
-    
+
     fields: [leads_rels.parent],
     references: [leads.id],
     relationName: '_rels',
     }),
     artistsID: one(artists, {
-    
+
     fields: [leads_rels.artistsID],
     references: [artists.id],
     relationName: 'artists',
@@ -751,16 +897,22 @@ export const relations_leads_rels = relations(leads_rels, ({ one }) => ({
       }))
 export const relations_leads = relations(leads, ({ one, many }) => ({
   serviceType: one(services, {
-    
+
     fields: [leads.serviceType],
     references: [services.id],
     relationName: 'serviceType',
     }),
     acceptedQuote: one(quotes, {
-    
+
     fields: [leads.acceptedQuote],
     references: [quotes.id],
     relationName: 'acceptedQuote',
+    }),
+    assignedAdmin: one(users, {
+
+    fields: [leads.assignedAdmin],
+    references: [users.id],
+    relationName: 'assignedAdmin',
     }),
     _rels: many(leads_rels, {
             relationName: '_rels',
@@ -768,113 +920,168 @@ export const relations_leads = relations(leads, ({ one, many }) => ({
       }))
 export const relations_quotes = relations(quotes, ({ one }) => ({
   lead: one(leads, {
-    
+
     fields: [quotes.lead],
     references: [leads.id],
     relationName: 'lead',
     }),
     artist: one(artists, {
-    
+
     fields: [quotes.artist],
     references: [artists.id],
     relationName: 'artist',
     }),
       }))
-export const relations_bookings = relations(bookings, ({ one }) => ({
-  artist: one(artists, {
-    
+export const relations_bookings_assigned_artists = relations(bookings_assigned_artists, ({ one }) => ({
+  _parentID: one(bookings, {
+
+    fields: [bookings_assigned_artists._parentID],
+    references: [bookings.id],
+    relationName: 'assignedArtists',
+    }),
+    artist: one(artists, {
+
+    fields: [bookings_assigned_artists.artist],
+    references: [artists.id],
+    relationName: 'artist',
+    }),
+      }))
+export const relations_bookings = relations(bookings, ({ one, many }) => ({
+  lead: one(leads, {
+
+    fields: [bookings.lead],
+    references: [leads.id],
+    relationName: 'lead',
+    }),
+    quote: one(quotes, {
+
+    fields: [bookings.quote],
+    references: [quotes.id],
+    relationName: 'quote',
+    }),
+    artist: one(artists, {
+
     fields: [bookings.artist],
+    references: [artists.id],
+    relationName: 'artist',
+    }),
+    assignedArtists: many(bookings_assigned_artists, {
+            relationName: 'assignedArtists',
+    }),
+      }))
+export const relations_reviews = relations(reviews, ({ one }) => ({
+  user: one(users, {
+
+    fields: [reviews.user],
+    references: [users.id],
+    relationName: 'user',
+    }),
+    booking: one(bookings, {
+
+    fields: [reviews.booking],
+    references: [bookings.id],
+    relationName: 'booking',
+    }),
+    artist: one(artists, {
+
+    fields: [reviews.artist],
     references: [artists.id],
     relationName: 'artist',
     }),
       }))
 export const relations_payload_kv = relations(payload_kv, () => ({
-  
+
       }))
 export const relations_payload_locked_documents_rels = relations(payload_locked_documents_rels, ({ one }) => ({
   parent: one(payload_locked_documents, {
-    
+
     fields: [payload_locked_documents_rels.parent],
     references: [payload_locked_documents.id],
     relationName: '_rels',
     }),
     usersID: one(users, {
-    
+
     fields: [payload_locked_documents_rels.usersID],
     references: [users.id],
     relationName: 'users',
     }),
     mediaID: one(media, {
-    
+
     fields: [payload_locked_documents_rels.mediaID],
     references: [media.id],
     relationName: 'media',
     }),
     servicesID: one(services, {
-    
+
     fields: [payload_locked_documents_rels.servicesID],
     references: [services.id],
     relationName: 'services',
     }),
     'portfolio-categoriesID': one(portfolio_categories, {
-    
+
     fields: [payload_locked_documents_rels['portfolio-categoriesID']],
     references: [portfolio_categories.id],
     relationName: 'portfolio-categories',
     }),
     'portfolio-itemsID': one(portfolio_items, {
-    
+
     fields: [payload_locked_documents_rels['portfolio-itemsID']],
     references: [portfolio_items.id],
     relationName: 'portfolio-items',
     }),
     testimonialsID: one(testimonials, {
-    
+
     fields: [payload_locked_documents_rels.testimonialsID],
     references: [testimonials.id],
     relationName: 'testimonials',
     }),
     faqID: one(faq, {
-    
+
     fields: [payload_locked_documents_rels.faqID],
     references: [faq.id],
     relationName: 'faq',
     }),
     'youtube-videosID': one(youtube_videos, {
-    
+
     fields: [payload_locked_documents_rels['youtube-videosID']],
     references: [youtube_videos.id],
     relationName: 'youtube-videos',
     }),
     'static-pagesID': one(static_pages, {
-    
+
     fields: [payload_locked_documents_rels['static-pagesID']],
     references: [static_pages.id],
     relationName: 'static-pages',
     }),
     artistsID: one(artists, {
-    
+
     fields: [payload_locked_documents_rels.artistsID],
     references: [artists.id],
     relationName: 'artists',
     }),
     leadsID: one(leads, {
-    
+
     fields: [payload_locked_documents_rels.leadsID],
     references: [leads.id],
     relationName: 'leads',
     }),
     quotesID: one(quotes, {
-    
+
     fields: [payload_locked_documents_rels.quotesID],
     references: [quotes.id],
     relationName: 'quotes',
     }),
     bookingsID: one(bookings, {
-    
+
     fields: [payload_locked_documents_rels.bookingsID],
     references: [bookings.id],
     relationName: 'bookings',
+    }),
+    reviewsID: one(reviews, {
+
+    fields: [payload_locked_documents_rels.reviewsID],
+    references: [reviews.id],
+    relationName: 'reviews',
     }),
       }))
 export const relations_payload_locked_documents = relations(payload_locked_documents, ({ many }) => ({
@@ -884,13 +1091,13 @@ export const relations_payload_locked_documents = relations(payload_locked_docum
       }))
 export const relations_payload_preferences_rels = relations(payload_preferences_rels, ({ one }) => ({
   parent: one(payload_preferences, {
-    
+
     fields: [payload_preferences_rels.parent],
     references: [payload_preferences.id],
     relationName: '_rels',
     }),
     usersID: one(users, {
-    
+
     fields: [payload_preferences_rels.usersID],
     references: [users.id],
     relationName: 'users',
@@ -902,11 +1109,11 @@ export const relations_payload_preferences = relations(payload_preferences, ({ m
     }),
       }))
 export const relations_payload_migrations = relations(payload_migrations, () => ({
-  
+
       }))
 export const relations_site_settings = relations(site_settings, ({ one }) => ({
   defaultOgImage: one(media, {
-    
+
     fields: [site_settings.defaultOgImage],
     references: [media.id],
     relationName: 'defaultOgImage',
@@ -914,7 +1121,7 @@ export const relations_site_settings = relations(site_settings, ({ one }) => ({
       }))
 export const relations_header_footer_nav_links = relations(header_footer_nav_links, ({ one }) => ({
   _parentID: one(header_footer, {
-    
+
     fields: [header_footer_nav_links._parentID],
     references: [header_footer.id],
     relationName: 'navLinks',
@@ -922,7 +1129,7 @@ export const relations_header_footer_nav_links = relations(header_footer_nav_lin
       }))
 export const relations_header_footer_footer_links = relations(header_footer_footer_links, ({ one }) => ({
   _parentID: one(header_footer, {
-    
+
     fields: [header_footer_footer_links._parentID],
     references: [header_footer.id],
     relationName: 'footerLinks',
@@ -930,7 +1137,7 @@ export const relations_header_footer_footer_links = relations(header_footer_foot
       }))
 export const relations_header_footer = relations(header_footer, ({ one, many }) => ({
   logo: one(media, {
-    
+
     fields: [header_footer.logo],
     references: [media.id],
     relationName: 'logo',
@@ -945,12 +1152,25 @@ export const relations_header_footer = relations(header_footer, ({ one, many }) 
 
 type DatabaseSchema = {
   enum_users_role: typeof enum_users_role
+  enum_portfolio_items_service_category: typeof enum_portfolio_items_service_category
+  enum_artists_price_type: typeof enum_artists_price_type
+  enum_artists_approval_status: typeof enum_artists_approval_status
+  enum_artists_verification_status: typeof enum_artists_verification_status
+  enum_artists_subscription_plan: typeof enum_artists_subscription_plan
+  enum_artists_subscription_status: typeof enum_artists_subscription_status
   enum_leads_event_type: typeof enum_leads_event_type
   enum_leads_budget_range: typeof enum_leads_budget_range
   enum_leads_status: typeof enum_leads_status
+  enum_quotes_price_type: typeof enum_quotes_price_type
   enum_quotes_status: typeof enum_quotes_status
+  enum_bookings_assigned_artists_role: typeof enum_bookings_assigned_artists_role
+  enum_bookings_assigned_artists_status: typeof enum_bookings_assigned_artists_status
   enum_bookings_event_type: typeof enum_bookings_event_type
+  enum_bookings_payment_status: typeof enum_bookings_payment_status
+  enum_bookings_payment_method: typeof enum_bookings_payment_method
   enum_bookings_status: typeof enum_bookings_status
+  enum_bookings_cancelled_by: typeof enum_bookings_cancelled_by
+  enum_bookings_refund_status: typeof enum_bookings_refund_status
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media
@@ -962,6 +1182,7 @@ type DatabaseSchema = {
   faq: typeof faq
   youtube_videos: typeof youtube_videos
   static_pages: typeof static_pages
+  artists_unavailable_dates: typeof artists_unavailable_dates
   artists_styles: typeof artists_styles
   artists_portfolio_images: typeof artists_portfolio_images
   artists: typeof artists
@@ -969,7 +1190,9 @@ type DatabaseSchema = {
   leads: typeof leads
   leads_rels: typeof leads_rels
   quotes: typeof quotes
+  bookings_assigned_artists: typeof bookings_assigned_artists
   bookings: typeof bookings
+  reviews: typeof reviews
   payload_kv: typeof payload_kv
   payload_locked_documents: typeof payload_locked_documents
   payload_locked_documents_rels: typeof payload_locked_documents_rels
@@ -991,6 +1214,7 @@ type DatabaseSchema = {
   relations_faq: typeof relations_faq
   relations_youtube_videos: typeof relations_youtube_videos
   relations_static_pages: typeof relations_static_pages
+  relations_artists_unavailable_dates: typeof relations_artists_unavailable_dates
   relations_artists_styles: typeof relations_artists_styles
   relations_artists_portfolio_images: typeof relations_artists_portfolio_images
   relations_artists_rels: typeof relations_artists_rels
@@ -998,7 +1222,9 @@ type DatabaseSchema = {
   relations_leads_rels: typeof relations_leads_rels
   relations_leads: typeof relations_leads
   relations_quotes: typeof relations_quotes
+  relations_bookings_assigned_artists: typeof relations_bookings_assigned_artists
   relations_bookings: typeof relations_bookings
+  relations_reviews: typeof relations_reviews
   relations_payload_kv: typeof relations_payload_kv
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels
   relations_payload_locked_documents: typeof relations_payload_locked_documents
@@ -1010,11 +1236,10 @@ type DatabaseSchema = {
   relations_header_footer_footer_links: typeof relations_header_footer_footer_links
   relations_header_footer: typeof relations_header_footer
 }
-    
+
 
 declare module '@payloadcms/db-postgres' {
   export interface GeneratedDatabaseSchema {
     schema: DatabaseSchema
   }
 }
-    

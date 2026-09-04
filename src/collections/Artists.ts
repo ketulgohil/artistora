@@ -274,6 +274,9 @@ export const Artists: CollectionConfig = {
           name: 'featuredUntil',
           type: 'date',
           label: 'Featured Until',
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
           admin: {
             condition: (_, siblingData) => siblingData?.isFeatured === true,
             date: {
@@ -288,7 +291,7 @@ export const Artists: CollectionConfig = {
           label: 'Subscription Plan',
           options: [
             { label: 'Free', value: 'free' },
-            { label: 'Basic', value: 'basic' },
+            { label: 'Pro', value: 'basic' },
             { label: 'Premium', value: 'premium' },
           ],
           access: {
@@ -299,6 +302,9 @@ export const Artists: CollectionConfig = {
           name: 'subscriptionExpiresAt',
           type: 'date',
           label: 'Subscription Expires',
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
           admin: {
             condition: (_, siblingData) => siblingData?.subscriptionPlan !== 'free',
             date: {
@@ -307,12 +313,55 @@ export const Artists: CollectionConfig = {
           },
         },
         {
+          name: 'subscriptionStatus',
+          type: 'select',
+          defaultValue: 'active',
+          label: 'Subscription Status',
+          options: [
+            { label: 'Active', value: 'active' },
+            { label: 'Trialing', value: 'trialing' },
+            { label: 'Past Due', value: 'past_due' },
+            { label: 'Cancelled', value: 'cancelled' },
+            { label: 'Expired', value: 'expired' },
+          ],
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
+        },
+        {
+          name: 'subscriptionStartedAt',
+          type: 'date',
+          label: 'Subscription Started',
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
+        },
+        {
+          name: 'subscriptionRenewsAt',
+          type: 'date',
+          label: 'Renews At',
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
+        },
+        {
+          name: 'subscriptionCancelledAt',
+          type: 'date',
+          label: 'Cancelled At',
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
+        },
+        {
           name: 'maxPortfolioItems',
           type: 'number',
           label: 'Max Portfolio Items',
           defaultValue: 10,
+          access: {
+            update: ({ req }) => req.user?.role === 'admin',
+          },
           admin: {
-            description: 'Free: 10, Basic: 25, Premium: 50',
+            description: 'Free: 10, Pro: 25, Premium: 50',
           },
         },
       ],

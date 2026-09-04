@@ -234,9 +234,99 @@ export interface PortfolioItem {
   id: number;
   image: number | Media;
   category: number | PortfolioCategory;
+  /**
+   * Broad service category used for the public portfolio filter
+   */
+  serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other';
+  /**
+   * The artist whose work is shown in this portfolio item
+   */
+  artist?: (number | null) | Artist;
   altText: string;
   featured?: boolean | null;
   description?: string | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "artists".
+ */
+export interface Artist {
+  id: number;
+  displayName: string;
+  slug?: string | null;
+  user?: (number | null) | User;
+  profilePhoto?: (number | null) | Media;
+  phone: string;
+  whatsappNumber?: string | null;
+  email?: string | null;
+  bio: string;
+  city: string;
+  area?: string | null;
+  yearsOfExperience?: number | null;
+  /**
+   * Default pricing model
+   */
+  priceType?: ('package' | 'hourly' | 'per_person' | 'custom_quote') | null;
+  /**
+   * Starting price in INR for public display (e.g. 2000)
+   */
+  startingPrice?: number | null;
+  /**
+   * Dates when this artist is unavailable for bookings
+   */
+  unavailableDates?:
+    | {
+        date: string;
+        reason?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  services?: (number | Service)[] | null;
+  styles?:
+    | {
+        style: string;
+        id?: string | null;
+      }[]
+    | null;
+  portfolioImages?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  verified?: boolean | null;
+  approvalStatus?: ('pending' | 'approved' | 'rejected' | 'suspended') | null;
+  verificationStatus?: ('unverified' | 'verified') | null;
+  rating?: number | null;
+  reviewCount?: number | null;
+  /**
+   * Auto-calculated score based on rating, reviews, completed bookings, and profile completeness
+   */
+  searchRank?: number | null;
+  isFeatured?: boolean | null;
+  featuredUntil?: string | null;
+  subscriptionPlan?: ('free' | 'basic' | 'premium') | null;
+  subscriptionExpiresAt?: string | null;
+  subscriptionStatus?: ('active' | 'trialing' | 'past_due' | 'cancelled' | 'expired') | null;
+  subscriptionStartedAt?: string | null;
+  subscriptionRenewsAt?: string | null;
+  subscriptionCancelledAt?: string | null;
+  /**
+   * Free: 10, Pro: 25, Premium: 50
+   */
+  maxPortfolioItems?: number | null;
+  profileViews?: number | null;
+  leadsReceived?: number | null;
+  quotesSent?: number | null;
+  bookingsWon?: number | null;
+  /**
+   * Total earnings in INR from completed bookings
+   */
+  totalEarnings?: number | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -331,80 +421,6 @@ export interface StaticPage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "artists".
- */
-export interface Artist {
-  id: number;
-  displayName: string;
-  slug?: string | null;
-  user?: (number | null) | User;
-  profilePhoto?: (number | null) | Media;
-  phone: string;
-  whatsappNumber?: string | null;
-  email?: string | null;
-  bio: string;
-  city: string;
-  area?: string | null;
-  yearsOfExperience?: number | null;
-  /**
-   * Default pricing model
-   */
-  priceType?: ('package' | 'hourly' | 'per_person' | 'custom_quote') | null;
-  /**
-   * Starting price in INR for public display (e.g. 2000)
-   */
-  startingPrice?: number | null;
-  /**
-   * Dates when this artist is unavailable for bookings
-   */
-  unavailableDates?:
-    | {
-        date: string;
-        reason?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  services?: (number | Service)[] | null;
-  styles?:
-    | {
-        style: string;
-        id?: string | null;
-      }[]
-    | null;
-  portfolioImages?:
-    | {
-        image: number | Media;
-        caption?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  verified?: boolean | null;
-  approvalStatus?: ('pending' | 'approved' | 'rejected' | 'suspended') | null;
-  verificationStatus?: ('unverified' | 'verified') | null;
-  rating?: number | null;
-  reviewCount?: number | null;
-  isFeatured?: boolean | null;
-  featuredUntil?: string | null;
-  subscriptionPlan?: ('free' | 'basic' | 'premium') | null;
-  subscriptionExpiresAt?: string | null;
-  /**
-   * Free: 10, Basic: 25, Premium: 50
-   */
-  maxPortfolioItems?: number | null;
-  profileViews?: number | null;
-  leadsReceived?: number | null;
-  quotesSent?: number | null;
-  bookingsWon?: number | null;
-  /**
-   * Total earnings in INR from completed bookings
-   */
-  totalEarnings?: number | null;
-  order?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "leads".
  */
 export interface Lead {
@@ -412,7 +428,16 @@ export interface Lead {
   customerName: string;
   customerPhone: string;
   customerEmail?: string | null;
-  eventType: 'bridal' | 'engagement' | 'baby-shower' | 'family-function' | 'festival' | 'other';
+  eventType:
+    | 'wedding'
+    | 'engagement'
+    | 'birthday'
+    | 'baby-shower'
+    | 'corporate'
+    | 'festival'
+    | 'bridal'
+    | 'family-function'
+    | 'other';
   eventDate: string;
   eventLocation: string;
   guestCount?: number | null;
@@ -473,7 +498,16 @@ export interface Booking {
   name: string;
   phone: string;
   email?: string | null;
-  eventType: 'bridal' | 'engagement' | 'baby-shower' | 'family-function' | 'festival' | 'other';
+  eventType:
+    | 'wedding'
+    | 'engagement'
+    | 'birthday'
+    | 'baby-shower'
+    | 'corporate'
+    | 'festival'
+    | 'bridal'
+    | 'family-function'
+    | 'other';
   eventDate: string;
   location: string;
   guestCount?: number | null;
@@ -738,6 +772,8 @@ export interface PortfolioCategoriesSelect<T extends boolean = true> {
 export interface PortfolioItemsSelect<T extends boolean = true> {
   image?: T;
   category?: T;
+  serviceCategory?: T;
+  artist?: T;
   altText?: T;
   featured?: T;
   description?: T;
@@ -839,10 +875,15 @@ export interface ArtistsSelect<T extends boolean = true> {
   verificationStatus?: T;
   rating?: T;
   reviewCount?: T;
+  searchRank?: T;
   isFeatured?: T;
   featuredUntil?: T;
   subscriptionPlan?: T;
   subscriptionExpiresAt?: T;
+  subscriptionStatus?: T;
+  subscriptionStartedAt?: T;
+  subscriptionRenewsAt?: T;
+  subscriptionCancelledAt?: T;
   maxPortfolioItems?: T;
   profileViews?: T;
   leadsReceived?: T;

@@ -2,6 +2,10 @@ import type { CollectionConfig } from 'payload'
 
 export const Quotes: CollectionConfig = {
   slug: 'quotes',
+  labels: {
+    singular: 'Artist Quote',
+    plural: 'Artist Quotes',
+  },
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['lead', 'artist', 'amount', 'priceType', 'status', 'createdAt'],

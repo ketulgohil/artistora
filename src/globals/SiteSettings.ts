@@ -34,7 +34,7 @@ export const SiteSettings: GlobalConfig = {
               name: 'email',
               type: 'email',
               required: true,
-              defaultValue: 'hello@artistora.com',
+              defaultValue: 'support@artistora.com',
             },
             {
               name: 'address',

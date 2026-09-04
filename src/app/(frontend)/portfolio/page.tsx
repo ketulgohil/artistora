@@ -20,19 +20,26 @@ interface PortfolioItem {
     title: string
     slug: string
   }
+  serviceCategory?: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'music' | 'other'
+  artist?: {
+    id: string
+    displayName: string
+    slug: string
+  }
 }
 
-interface Category {
-  id: string
-  title: string
-  slug: string
-}
+const SERVICE_CATEGORIES = [
+  { value: 'mehndi', label: 'Mehndi' },
+  { value: 'photography', label: 'Photography' },
+  { value: 'makeup', label: 'Makeup' },
+  { value: 'decor', label: 'Decor & Planning' },
+  { value: 'other', label: 'Other' },
+] as const
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 
 export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
   const [activeCategory, setActiveCategory] = useState('all')
   const [loading, setLoading] = useState(true)
   const [fullImage, setFullImage] = useState<{
@@ -45,13 +52,8 @@ export default function PortfolioPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [catRes, itemsRes] = await Promise.all([
-          fetch('/api/portfolio-categories?limit=20&sort=order'),
-          fetch('/api/portfolio-items?limit=100&depth=2&sort=order'),
-        ])
-        const catData = await catRes.json()
+        const itemsRes = await fetch('/api/portfolio-items?limit=100&depth=2&sort=order')
         const itemsData = await itemsRes.json()
-        setCategories(catData.docs || [])
         setItems(itemsData.docs || [])
       } catch (err) {
         console.error('Failed to load portfolio:', err)
@@ -83,7 +85,7 @@ export default function PortfolioPage() {
   const filteredItems =
     activeCategory === 'all'
       ? items
-      : items.filter((item) => item.category?.slug === activeCategory)
+      : items.filter((item) => item.serviceCategory === activeCategory)
 
   function imgUrl(item: PortfolioItem): string {
     return item.image?.url || mediaFileUrl(item.image?.filename || (item.image as any))
@@ -100,7 +102,7 @@ export default function PortfolioPage() {
   return (
     <section className="py-16! md:py-24!">
       <div className={CONTAINER}>
-        <SectionHeading title="Portfolio Gallery" subtitle="Designs In Focus" />
+        <SectionHeading title="Portfolio Gallery" subtitle="Work In Focus" />
 
         {loading ? (
           <div className="flex justify-center py-24!">
@@ -115,8 +117,8 @@ export default function PortfolioPage() {
         ) : (
           <>
             <p className="mx-auto mb-10! max-w-2xl! text-center text-sm leading-relaxed text-ink-soft">
-              Explore bridal, festive, and event mehndi designs crafted with detail,
-              balance, and a refined finishing touch.
+              Explore work from Artistora professionals across the services you need —
+              from Photography to Makeup, Decor, and Entertainment.
             </p>
 
             {/* Category filter */}
@@ -129,25 +131,25 @@ export default function PortfolioPage() {
                     : 'border-line bg-white text-ink-soft hover:border-brand/50 hover:text-brand-deep'
                 }`}
               >
-                All Designs
+                All Work
               </button>
-              {categories.map((cat) => (
+              {SERVICE_CATEGORIES.map((service) => (
                 <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.slug)}
+                  key={service.value}
+                  onClick={() => setActiveCategory(service.value)}
                   className={`cursor-pointer rounded-full border px-5! py-2.5! text-sm font-semibold transition-all duration-200 ${
-                    activeCategory === cat.slug
+                    activeCategory === service.value
                       ? 'border-brand bg-gradient-to-r from-brand to-brand-dark text-white shadow-soft'
                       : 'border-line bg-white text-ink-soft hover:border-brand/50 hover:text-brand-deep'
                   }`}
                 >
-                  {cat.title}
+                  {service.label}
                 </button>
               ))}
             </div>
 
             {filteredItems.length === 0 ? (
-              <p className="py-16! text-center text-ink-muted">No designs found in this category.</p>
+              <p className="py-16! text-center text-ink-muted">No work found in this category yet.</p>
             ) : (
               <div className="grid grid-cols-2 gap-3! md:grid-cols-3 md:gap-4! lg:grid-cols-4">
                 {filteredItems.map((item) => (
@@ -158,23 +160,24 @@ export default function PortfolioPage() {
                         src: imgUrl(item),
                         width: imgWidth(item),
                         height: imgHeight(item),
-                        alt: item.altText || 'Mehndi design by artists on Artistora',
+                        alt: item.altText || 'Portfolio work by an Artistora professional',
                       })
                     }
                     type="button"
-                    aria-label={`Open ${item.altText || 'mehndi design'} in full view`}
+                    aria-label={`Open ${item.altText || 'portfolio work'} in full view`}
                     className="group relative cursor-zoom-in overflow-hidden rounded-2xl border border-line/70 bg-white p-0 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
                   >
                     <img
                       src={imgUrl(item)}
-                      alt={item.altText || 'Mehndi design by artists on Artistora'}
+                      alt={item.altText || 'Portfolio work by an Artistora professional'}
                       width={imgWidth(item)}
                       height={imgHeight(item)}
                       className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"
                     />
                     <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-coal/70 to-transparent px-3! pt-8! pb-2! text-left text-[0.72rem] font-medium text-white/0 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:text-white/90 group-hover:opacity-100">
-                      {item.category?.title}
+                      <span>{SERVICE_CATEGORIES.find((service) => service.value === item.serviceCategory)?.label || item.category?.title}</span>
+                      {item.artist?.displayName && <span className="mt-0.5! block text-white/65">by {item.artist.displayName}</span>}
                     </span>
                   </button>
                 ))}

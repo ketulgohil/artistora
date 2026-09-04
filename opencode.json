@@ -1,4 +1,40 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "deepseek/deepseek-v4-flash"
+  "model": "omniroute/auto",
+  "provider": {
+    "omniroute": {
+      "name": "OmniRoute",
+      "options": {
+        "baseURL": "http://localhost:20128/v1",
+        "apiKey": "sk-863d23f3616ba87f-e2dcec-bd5b65da"
+      },
+      "models": {
+        "auto": {
+          "name": "OmniRoute Auto",
+          "tool_call": true,
+          "limit": { "context": 128000, "output": 8192 }
+        },
+        "auto/best-free": {
+          "name": "Best Free Model",
+          "tool_call": true,
+          "limit": { "context": 128000, "output": 8192 }
+        },
+        "auto/best-coding": {
+          "name": "Best Coding Model",
+          "tool_call": true,
+          "limit": { "context": 128000, "output": 8192 }
+        },
+        "auto/best-reasoning": {
+          "name": "Best Reasoning Model",
+          "tool_call": true,
+          "limit": { "context": 128000, "output": 8192 }
+        },
+        "auto/best-fast": {
+          "name": "Best Fast Model",
+          "tool_call": true,
+          "limit": { "context": 128000, "output": 8192 }
+        }
+      }
+    }
+  }
 }

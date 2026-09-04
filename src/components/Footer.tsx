@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-const BOOKING_URL = '/book'
+const BOOKING_URL = '/get-quote'
 
 const popularBookings = [
   { label: 'Artists', to: '/services' },
@@ -59,7 +59,7 @@ export default function Footer() {
                 className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-cream px-7! py-3! text-sm font-bold text-brand-deep shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
                 href={BOOKING_URL}
               >
-                Book Session
+                Get Quote
               </a>
               <a
                 className="inline-flex min-h-12 cursor-pointer items-center justify-center gap-2! rounded-full border border-cream/40 px-7! py-3! text-sm font-semibold text-cream transition-colors duration-200 hover:border-cream/70 hover:bg-white/10"
@@ -90,6 +90,12 @@ export default function Footer() {
             <p className="mt-2! max-w-xs! text-sm leading-relaxed text-cream/55">
               India&apos;s curated artist marketplace — discover, compare, and book verified photography, makeup, decor, and event artists for every celebration.
             </p>
+            <Link
+              href="/subscription"
+              className="mt-4! inline-flex items-center gap-2! text-sm font-semibold text-cream/75 transition-colors hover:text-white"
+            >
+              Artist plans &amp; visibility <ArrowIcon />
+            </Link>
           </div>
 
           {/* Popular Bookings */}
@@ -99,7 +105,7 @@ export default function Footer() {
             </p>
             <ul className="flex flex-col gap-2.5!">
               {popularBookings.map((item) => (
-                <li key={item.to}>
+                <li key={`${item.to}-${item.label}`}>
                   <Link
                     href={item.to}
                     className="group inline-flex items-center gap-2! text-sm text-cream/65 transition-colors duration-200 hover:text-cream"

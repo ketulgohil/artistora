@@ -11,8 +11,8 @@ export async function sendBookingConfirmation(to: string, data: {
   location: string
 }) {
   const eventLabels: Record<string, string> = {
-    bridal: 'Bridal Mehndi',
-    engagement: 'Engagement Mehndi',
+    bridal: 'Legacy Booking',
+    engagement: 'Engagement',
     'baby-shower': 'Baby Shower',
     'family-function': 'Family Function',
     festival: 'Festival',
@@ -70,8 +70,8 @@ export async function sendBookingNotification(data: {
   message?: string
 }) {
   const eventLabels: Record<string, string> = {
-    bridal: 'Bridal Mehndi',
-    engagement: 'Engagement Mehndi',
+    bridal: 'Legacy Booking',
+    engagement: 'Engagement',
     'baby-shower': 'Baby Shower',
     'family-function': 'Family Function',
     festival: 'Festival',
@@ -123,11 +123,11 @@ export async function sendCustomerWelcome(to: string, name: string) {
       <div style="background: #ffffff; padding: 32px; border: 1px solid #f1d9dc; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="margin: 0 0 16px; font-size: 15px;">Hi <strong>${name}</strong>,</p>
         <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #41506b;">
-          Your account has been created successfully. You can now browse our portfolio, explore mehndi services, and book sessions directly.
+          Your account has been created successfully. You can now browse our portfolio, explore artist services, and request quotes directly.
         </p>
         <div style="background: #fdeeee; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <p style="margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #ec6783; font-weight: 600;">Quick Links</p>
-          <p style="margin: 4px 0; font-size: 14px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'}/book" style="color: #d14a68; text-decoration: none; font-weight: 600;">Book a Session</a></p>
+          <p style="margin: 4px 0; font-size: 14px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'}/get-quote" style="color: #d14a68; text-decoration: none; font-weight: 600;">Get a Quote</a></p>
           <p style="margin: 4px 0; font-size: 14px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'}/portfolio" style="color: #d14a68; text-decoration: none; font-weight: 600;">View Portfolio</a></p>
           <p style="margin: 4px 0; font-size: 14px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'}/services" style="color: #d14a68; text-decoration: none; font-weight: 600;">Explore Services</a></p>
         </div>
@@ -190,11 +190,13 @@ export async function sendArtistWelcome(to: string, name: string) {
 }
 
 const EVENT_LABELS: Record<string, string> = {
-  bridal: 'Bridal Mehndi',
-  engagement: 'Engagement Mehndi',
+  wedding: 'Wedding',
+  engagement: 'Engagement',
   'baby-shower': 'Baby Shower',
-  'family-function': 'Family Function',
+  birthday: 'Birthday',
+  corporate: 'Corporate Event',
   festival: 'Festival',
+  'family-function': 'Family Function',
   other: 'Other',
 }
 
@@ -223,7 +225,7 @@ export async function sendQuoteConfirmation(to: string, data: {
       <div style="background: #ffffff; padding: 32px; border: 1px solid #f1d9dc; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="margin: 0 0 16px; font-size: 15px;">Hi <strong>${data.customerName}</strong>,</p>
         <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #41506b;">
-          Thank you for your quote request! We've received your details and will match you with up to <strong>3 verified mehndi artists</strong> who fit your event.
+          Thank you for your quote request! We've received your details and will match you with up to <strong>3 verified artists</strong> who fit your event.
         </p>
         <div style="background: #fdeeee; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <p style="margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #ec6783; font-weight: 600;">Request Details</p>
@@ -372,11 +374,14 @@ export async function sendArtistAcceptedEmail(to: string, data: {
   eventLocation: string
 }) {
   const EVENT_LABELS: Record<string, string> = {
-    bridal: 'Bridal Mehndi',
-    engagement: 'Engagement Mehndi',
+    wedding: 'Wedding',
+    engagement: 'Engagement',
     'baby-shower': 'Baby Shower',
-    'family-function': 'Family Function',
+    birthday: 'Birthday',
+    corporate: 'Corporate Event',
     festival: 'Festival',
+    'family-function': 'Family Function',
+    bridal: 'Legacy Booking',
     other: 'Other',
   }
 
@@ -425,11 +430,14 @@ export async function sendArtistDeclinedEmail(to: string, data: {
   reason?: string
 }) {
   const EVENT_LABELS: Record<string, string> = {
-    bridal: 'Bridal Mehndi',
-    engagement: 'Engagement Mehndi',
+    wedding: 'Wedding',
+    engagement: 'Engagement',
     'baby-shower': 'Baby Shower',
-    'family-function': 'Family Function',
+    birthday: 'Birthday',
+    corporate: 'Corporate Event',
     festival: 'Festival',
+    'family-function': 'Family Function',
+    bridal: 'Legacy Booking',
     other: 'Other',
   }
 
@@ -472,11 +480,14 @@ export async function sendBookingCancelledEmail(to: string, data: {
   reason?: string
 }) {
   const EVENT_LABELS: Record<string, string> = {
-    bridal: 'Bridal Mehndi',
-    engagement: 'Engagement Mehndi',
+    wedding: 'Wedding',
+    engagement: 'Engagement',
     'baby-shower': 'Baby Shower',
-    'family-function': 'Family Function',
+    birthday: 'Birthday',
+    corporate: 'Corporate Event',
     festival: 'Festival',
+    'family-function': 'Family Function',
+    bridal: 'Legacy Booking',
     other: 'Other',
   }
 
@@ -522,11 +533,14 @@ export async function sendReviewRequestEmail(to: string, data: {
   bookingId: number
 }) {
   const EVENT_LABELS: Record<string, string> = {
-    bridal: 'Bridal Mehndi',
-    engagement: 'Engagement Mehndi',
+    wedding: 'Wedding',
+    engagement: 'Engagement',
     'baby-shower': 'Baby Shower',
-    'family-function': 'Family Function',
+    birthday: 'Birthday',
+    corporate: 'Corporate Event',
     festival: 'Festival',
+    'family-function': 'Family Function',
+    bridal: 'Legacy Booking',
     other: 'Other',
   }
 

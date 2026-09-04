@@ -71,15 +71,60 @@ function GoldCheck({ className = '' }: { className?: string }) {
   )
 }
 
-function Star({ filled = true }: { filled?: boolean }) {
+function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
   return (
-    <svg
-      className={filled ? 'h-4 w-4 text-gold' : 'h-4 w-4 text-line'}
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
+    <span className="inline-flex" role="img" aria-label={label || (filled ? 'Filled star' : 'Empty star')}>
+      <svg
+        className={filled ? 'h-4 w-4 text-gold' : 'h-4 w-4 text-line'}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
+      </svg>
+    </span>
+  )
+}
+
+function ServiceIcon({ type }: { type: 'camera' | 'makeup' | 'decor' | 'mehndi' }) {
+  if (type === 'camera') {
+    return (
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M4 7h3l1.4-2h7.2L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
+        <circle cx="12" cy="13" r="3.5" />
+        <path d="M18 10h.01" />
+      </svg>
+    )
+  }
+
+  if (type === 'makeup') {
+    return (
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="m14.5 4.5 5 5" />
+        <path d="m13 6 5 5" />
+        <path d="m3 21 7.5-7.5" />
+        <path d="m10 3 11 11-4 4L6 7l4-4Z" />
+        <path d="M5 15 3 13" />
+      </svg>
+    )
+  }
+
+  if (type === 'decor') {
+    return (
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 20h18" />
+        <path d="M5 20v-8h14v8" />
+        <path d="M4 12c1.2-4.5 3.9-7 8-7s6.8 2.5 8 7" />
+        <path d="M8 12V9M12 12V7M16 12V9" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3c1.5 2.5 2.5 5 2.5 8a2.5 2.5 0 1 1-5 0c0-3 1-5.5 2.5-8Z" />
+      <path d="M12 13c2 2.5 2.2 5 .5 7M12 13c-2 2.5-2.2 5-.5 7" />
+      <path d="M8.5 6.5c-2 .8-3.4 2.2-3.4 4.4 0 2.8 3 4.1 3.4 4.1M15.5 6.5c2 .8 3.4 2.2 3.4 4.4 0 2.8-3 4.1-3.4 4.1" />
     </svg>
   )
 }
@@ -93,21 +138,20 @@ export default async function HomePage() {
   ])
 
   const bookingUrl = '/get-quote'
-  const mapUrl = settings.googleMapUrl || ''
   const phone = settings.phone || '+91 7405387720'
 
   const signatureServices = [
-    { title: 'Photographers', text: 'Compare wedding, event, and portrait photographers with portfolios you can browse before you book.' },
-    { title: 'Makeup Artists', text: 'Find bridal, reception, and occasion makeup artists — trial-ready, hygiene-first, and camera-friendly.' },
-    { title: 'Decor & Event Planners', text: 'Stage, mandap, floral, and themed decor — matched to your event style and budget.' },
-    { title: 'Mehndi Artists', text: 'Book bridal, engagement, and festive mehndi specialists with premium portfolios and home service availability.' },
+    { title: 'Photographers', type: 'camera' as const, text: 'Compare wedding, event, and portrait photographers with portfolios you can browse before you book.' },
+    { title: 'Makeup Artists', type: 'makeup' as const, text: 'Find bridal, reception, and occasion makeup artists — trial-ready, hygiene-first, and camera-friendly.' },
+    { title: 'Decor & Event Planners', type: 'decor' as const, text: 'Stage, mandap, floral, and themed decor — matched to your event style and budget.' },
+    { title: 'Mehndi Artists', type: 'mehndi' as const, text: 'Book bridal, engagement, and festive mehndi specialists with premium portfolios and home service availability.' },
   ]
 
   const trustStats = [
     { value: '3+', label: 'Free Quotes' },
-    { value: '24h', label: 'Quote Response' },
-    { value: 'Verified', label: 'Artists Only' },
-    { value: 'Across', label: 'Ahmedabad Home Service' },
+    { value: '24h', label: 'Response Time' },
+    { value: '100%', label: 'Verified Artists' },
+    { value: '50+', label: 'Areas Covered' },
   ]
 
   const galleryImages = ['Bridal.webp', 'Baby_shower.webp', 'engagement.webp', 'deveshaa.webp']
@@ -170,7 +214,7 @@ export default async function HomePage() {
               <div className="relative rounded-[2.4rem] bg-white/85 p-2.5! shadow-lift ring-1 ring-line/70">
                 <img
                   src={mediaFileUrl('Bridal.webp')}
-                  alt="Bridal mehndi work by a verified artist on Artistora"
+                  alt="Event artistry work by a verified artist on Artistora"
                   width={1400}
                   height={933}
                   className="aspect-[4/5] w-full rounded-[2rem] object-cover"
@@ -188,6 +232,7 @@ export default async function HomePage() {
                 <p className="mt-1.5! text-sm font-bold text-ink">
                   Trusted by Ahmedabad clients
                 </p>
+                <p className="sr-only">5 out of 5 stars</p>
               </div>
 
               {/* Floating service card */}
@@ -242,13 +287,7 @@ export default async function HomePage() {
                   className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-gold via-brand to-gold opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 />
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/10 text-brand-deep transition-colors duration-300 group-hover:bg-brand group-hover:text-white">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 3c1.5 2.5 2.5 5 2.5 8a2.5 2.5 0 1 1-5 0c0-3 1-5.5 2.5-8Z" />
-                    <path d="M12 13c2 2.5 2.2 5 .5 7" />
-                    <path d="M12 13c-2 2.5-2.2 5-.5 7" />
-                    <path d="M8.5 6.5c-2 .8-3.4 2.2-3.4 4.4 0 2.8 3 4.1 3.4 4.1.6 0 2-.3 3-1.5" />
-                    <path d="M15.5 6.5c2 .8 3.4 2.2 3.4 4.4 0 2.8-3 4.1-3.4 4.1-.6 0-2-.3-3-1.5" />
-                  </svg>
+                  <ServiceIcon type={service.type} />
                 </span>
                 <h3 className="font-display mt-5! text-xl! font-semibold text-ink">{service.title}</h3>
                 <p className="mt-2.5! text-sm leading-relaxed text-ink-soft">{service.text}</p>
@@ -268,7 +307,7 @@ export default async function HomePage() {
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-gold/20 blur-2xl"
+              className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-brand-light/20 blur-2xl"
             />
             <div className="relative flex flex-col gap-10! lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl!">
@@ -292,6 +331,10 @@ export default async function HomePage() {
                   <span aria-hidden="true" className="text-white/25">/</span>
                   <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/get-quote">
                     Get a Quote
+                  </Link>
+                  <span aria-hidden="true" className="text-white/25">/</span>
+                  <Link className="underline decoration-gold/60 underline-offset-4 hover:text-white" href="/subscription">
+                    Artist Plans
                   </Link>
                 </div>
               </div>
@@ -320,7 +363,7 @@ export default async function HomePage() {
               <figure className="group relative overflow-hidden rounded-2xl shadow-soft" key={img}>
                 <img
                   src={mediaFileUrl(img)}
-                  alt="Mehndi design by artists on Artistora"
+                  alt="Artist work showcased on Artistora"
                   width={600}
                   height={800}
                   className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -354,13 +397,14 @@ export default async function HomePage() {
                 key={t.id}
                 className="relative flex flex-col rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
               >
-                <div aria-hidden="true" className="font-display absolute -top-2 right-6 text-6xl! leading-none text-gold/25">
+                <div aria-hidden="true" className="font-display absolute -top-2 right-6 text-6xl! leading-none text-brand-light/25">
                   &ldquo;
                 </div>
                 <div className="mb-4! flex items-center gap-1!">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star key={i} filled={i < (t.rating || 5)} />
                   ))}
+                  <span className="sr-only">{t.rating || 5} out of 5 stars</span>
                 </div>
                 <p className="flex-1 text-[0.92rem] leading-relaxed text-ink-soft italic">
                   &ldquo;{t.text}&rdquo;
@@ -433,16 +477,21 @@ export default async function HomePage() {
                   <span>Ahmedabad, Gujarat</span>
                 </div>
               </div>
-              <div className="flex shrink-0 flex-col gap-3! sm:flex-row lg:flex-col xl:flex-row">
-                <a className={BTN_LIGHT} href={mapUrl} target="_blank" rel="noreferrer">
-                  View Map Location
-                </a>
+              <div className="flex shrink-0 flex-col gap-3! sm:flex-row">
                 <Link
                   className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border border-white/25 bg-white/10 px-7! py-3! text-sm font-semibold text-white backdrop-blur transition-colors duration-200 hover:bg-white/20"
                   href="/contact"
                 >
                   See Contact Details
                 </Link>
+                <a
+                  className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-white px-7! py-3! text-sm font-bold text-brand-deep shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
+                  href="https://wa.me/917405387720"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  WhatsApp Us
+                </a>
               </div>
             </div>
           </div>

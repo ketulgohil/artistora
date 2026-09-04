@@ -22,6 +22,8 @@ const ARTISTS = [
     yearsOfExperience: 8,
     startingPrice: 3000,
     verified: true,
+    approvalStatus: 'approved',
+    verificationStatus: 'verified',
     rating: 5.0,
     reviewCount: 114,
     order: 1,
@@ -43,6 +45,8 @@ const ARTISTS = [
     yearsOfExperience: 5,
     startingPrice: 2000,
     verified: true,
+    approvalStatus: 'approved',
+    verificationStatus: 'verified',
     rating: 4.8,
     reviewCount: 42,
     order: 2,
@@ -63,6 +67,8 @@ const ARTISTS = [
     yearsOfExperience: 6,
     startingPrice: 2500,
     verified: true,
+    approvalStatus: 'approved',
+    verificationStatus: 'verified',
     rating: 4.9,
     reviewCount: 67,
     order: 3,
@@ -88,6 +94,19 @@ async function main() {
     })
 
     if (existing.docs.length > 0) {
+      // Keep the bundled sample artists visible after approval became an
+      // explicit marketplace status. Real artist profiles remain unchanged.
+      const existingArtist = existing.docs[0] as any
+      if (existingArtist.approvalStatus !== 'approved' && existingArtist.verified === true) {
+        await payload.update({
+          collection: 'artists',
+          id: existingArtist.id,
+          data: {
+            approvalStatus: 'approved',
+            verificationStatus: 'verified',
+          } as any,
+        })
+      }
       console.log(`  ⏭  "${artist.displayName}" already exists`)
       continue
     }
