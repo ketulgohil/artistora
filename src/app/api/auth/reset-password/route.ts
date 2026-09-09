@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { rateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 
 const MIN_PASSWORD_LENGTH = 6
 const MAX_PASSWORD_LENGTH = 128
@@ -9,7 +9,7 @@ const MAX_PASSWORD_LENGTH = 128
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request)
-    const limiter = rateLimit(ip, RATE_LIMITS.resetPassword, 'resetPassword')
+    const limiter = await rateLimitAsync(ip, RATE_LIMITS.resetPassword, 'resetPassword')
     if (!limiter.allowed) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },

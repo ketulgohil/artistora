@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sendPasswordResetEmail } from '@/lib/email'
-import { rateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
 
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request)
-    const limiter = rateLimit(ip, RATE_LIMITS.forgotPassword, 'forgotPassword')
+    const limiter = await rateLimitAsync(ip, RATE_LIMITS.forgotPassword, 'forgotPassword')
     if (!limiter.allowed) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
