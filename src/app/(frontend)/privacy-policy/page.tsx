@@ -1,5 +1,15 @@
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 
+export const metadata = {
+  title: 'Privacy Policy',
+  description:
+    'Read Artistora\'s privacy policy to understand how we collect, use, and protect your personal information.',
+  robots: { index: true },
+  alternates: {
+    canonical: 'https://www.artistora.com/privacy-policy',
+  },
+}
+
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] text-brand uppercase">

@@ -1,5 +1,15 @@
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 
+export const metadata = {
+  title: 'Booking Policy',
+  description:
+    'Understand Artistora\'s booking terms, cancellation policies, and payment guidelines for hiring verified artists in Ahmedabad.',
+  robots: { index: true },
+  alternates: {
+    canonical: 'https://www.artistora.com/booking-policy',
+  },
+}
+
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] text-brand uppercase">

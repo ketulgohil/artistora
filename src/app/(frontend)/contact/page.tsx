@@ -1,7 +1,14 @@
-'use server'
-
 import SectionHeading from '@/components/SectionHeading'
 import { getSiteSettings } from '@/lib/payload'
+
+export const metadata = {
+  title: 'Contact Us — Get in Touch with Artistora',
+  description:
+    'Have questions about Artistora? Reach out to our team for support with bookings, artist inquiries, or partnership opportunities in Ahmedabad.',
+  alternates: {
+    canonical: 'https://www.artistora.com/contact',
+  },
+}
 
 function PhoneIcon() {
   return (

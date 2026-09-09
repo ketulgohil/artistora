@@ -58,5 +58,37 @@ export const Services: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    // ── SEO Fields ──
+    {
+      type: 'collapsible',
+      label: 'SEO',
+      fields: [
+        {
+          name: 'metaTitle',
+          type: 'text',
+          label: 'Meta Title',
+          admin: {
+            description: 'Override the page title for this service. Falls back to "{Title} | Artistora".',
+          },
+        },
+        {
+          name: 'metaDescription',
+          type: 'textarea',
+          label: 'Meta Description',
+          admin: {
+            description: 'Override the meta description for this service page.',
+          },
+        },
+        {
+          name: 'ogImage',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'OG Image',
+          admin: {
+            description: 'Override the Open Graph image for social sharing.',
+          },
+        },
+      ],
+    },
   ],
 }

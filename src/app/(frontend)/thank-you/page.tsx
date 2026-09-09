@@ -1,5 +1,10 @@
 import Link from 'next/link'
 
+export const metadata = {
+  title: 'Thank You',
+  robots: { index: false },
+}
+
 export default function ThankYouPage() {
   return (
     <section className="relative overflow-hidden py-20! md:py-28!">

@@ -344,6 +344,18 @@ export interface Service {
       }[]
     | null;
   order?: number | null;
+  /**
+   * Override the page title for this service. Falls back to "{Title} | Artistora".
+   */
+  metaTitle?: string | null;
+  /**
+   * Override the meta description for this service page.
+   */
+  metaDescription?: string | null;
+  /**
+   * Override the Open Graph image for social sharing.
+   */
+  ogImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -425,6 +437,18 @@ export interface Artist {
    */
   totalEarnings?: number | null;
   order?: number | null;
+  /**
+   * Override the page title for this artist profile. Falls back to "{Name} — Verified Artist in {City} | Artistora".
+   */
+  metaTitle?: string | null;
+  /**
+   * Override the meta description. Falls back to a snippet from the artist bio.
+   */
+  metaDescription?: string | null;
+  /**
+   * Override the Open Graph image for social sharing. Falls back to profile photo.
+   */
+  ogImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -901,6 +925,9 @@ export interface ServicesSelect<T extends boolean = true> {
         id?: T;
       };
   order?: T;
+  metaTitle?: T;
+  metaDescription?: T;
+  ogImage?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1041,6 +1068,9 @@ export interface ArtistsSelect<T extends boolean = true> {
   bookingsWon?: T;
   totalEarnings?: T;
   order?: T;
+  metaTitle?: T;
+  metaDescription?: T;
+  ogImage?: T;
   updatedAt?: T;
   createdAt?: T;
 }

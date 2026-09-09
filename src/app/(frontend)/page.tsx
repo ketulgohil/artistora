@@ -1,5 +1,3 @@
-'use server'
-
 import Link from 'next/link'
 import SectionHeading from '@/components/SectionHeading'
 import { mediaFileUrl } from '@/lib/media-url'
@@ -11,6 +9,21 @@ import {
   getFeaturedArtists,
 } from '@/lib/payload'
 import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
+
+export const metadata = {
+  title: 'Book Verified Artists in Ahmedabad — Mehndi, Photography, Makeup & Decor',
+  description:
+    'Artistora connects you with verified artists in Ahmedabad for weddings, events, and celebrations. Compare quotes from mehndi, photography, makeup, and decor professionals.',
+  alternates: {
+    canonical: 'https://www.artistora.com',
+  },
+  openGraph: {
+    title: 'Artistora — Book Verified Artists in Ahmedabad',
+    description:
+      'Compare quotes from verified mehndi, photography, makeup, and decor artists in Ahmedabad.',
+    url: 'https://www.artistora.com',
+  },
+}
 
 function renderLexicalText(data: unknown): string {
   if (!data) return ''
@@ -157,6 +170,57 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* ── JSON-LD Structured Data ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'LocalBusiness',
+            name: 'Artistora',
+            description: 'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+            url: 'https://www.artistora.com',
+            telephone: '+917405387720',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Ahmedabad',
+              addressRegion: 'Gujarat',
+              addressCountry: 'IN',
+            },
+            areaServed: {
+              '@type': 'City',
+              name: 'Ahmedabad',
+            },
+            sameAs: [
+              'https://www.instagram.com/artistora',
+              'https://www.facebook.com/artistora',
+            ],
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '4.9',
+              reviewCount: '150',
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: faqs.slice(0, 6).map((faq) => ({
+              '@type': 'Question',
+              name: faq.question,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: renderLexicalText(faq.answer),
+              },
+            })),
+          }),
+        }}
+      />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-cream">
         <div
@@ -352,7 +416,7 @@ export default async function HomePage() {
                   <div className="flex flex-col items-center p-6!">
                     <div className="relative mb-4!">
                       <img
-                        src={artist.profilePhoto?.filename ? `/api/media/file/${artist.profilePhoto.filename}` : '/artistora/og.png'}
+                        src={artist.profilePhoto?.filename ? `/api/media/file/${artist.profilePhoto.filename}` : '/artistora/social-profile-1000x1000.png'}
                         alt={artist.displayName}
                         width={80}
                         height={80}

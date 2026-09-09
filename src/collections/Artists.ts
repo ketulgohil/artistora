@@ -409,6 +409,41 @@ export const Artists: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    // ── SEO Fields ──
+    {
+      type: 'collapsible',
+      label: 'SEO',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'metaTitle',
+          type: 'text',
+          label: 'Meta Title',
+          admin: {
+            description: 'Override the page title for this artist profile. Falls back to "{Name} — Verified Artist in {City} | Artistora".',
+          },
+        },
+        {
+          name: 'metaDescription',
+          type: 'textarea',
+          label: 'Meta Description',
+          admin: {
+            description: 'Override the meta description. Falls back to a snippet from the artist bio.',
+          },
+        },
+        {
+          name: 'ogImage',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'OG Image',
+          admin: {
+            description: 'Override the Open Graph image for social sharing. Falls back to profile photo.',
+          },
+        },
+      ],
+    },
   ],
   timestamps: true,
 }

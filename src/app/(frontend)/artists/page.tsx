@@ -3,6 +3,15 @@ import { getArtists, getSiteSettings, mediaUrl } from '@/lib/payload'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistsGrid from './ArtistsGrid'
 
+export const metadata = {
+  title: 'Verified Artists in Ahmedabad — Find & Book Top Professionals',
+  description:
+    'Discover verified mehndi artists, photographers, makeup artists, and decor professionals in Ahmedabad. Read reviews, compare quotes, and book instantly.',
+  alternates: {
+    canonical: 'https://www.artistora.com/artists',
+  },
+}
+
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
 

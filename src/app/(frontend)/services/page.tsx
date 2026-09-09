@@ -3,6 +3,15 @@ import { getServices, getSiteSettings, getFAQs, mediaUrl, mediaDimensions } from
 import { mediaFileUrl } from '@/lib/media-url'
 import SectionHeading from '@/components/SectionHeading'
 
+export const metadata = {
+  title: 'Services — Photography, Mehndi, Makeup, Decor & More in Ahmedabad',
+  description:
+    'Browse verified artist services on Artistora — wedding photography, bridal mehndi, makeup artists, event decor, and entertainment in Ahmedabad.',
+  alternates: {
+    canonical: 'https://www.artistora.com/services',
+  },
+}
+
 function extractLexicalText(richText: any): string {
   if (!richText || !richText.root) return ''
   const paragraphs: string[] = []
@@ -201,6 +210,35 @@ export default async function ServicesPage() {
 
   return (
     <>
+      {/* ── JSON-LD Structured Data ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: 'Artistora Services',
+            description: 'Professional artist services in Ahmedabad — photography, makeup, decor, mehndi, and more.',
+            itemListElement: services.map((service, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              item: {
+                '@type': 'Service',
+                name: service.title,
+                provider: {
+                  '@type': 'Organization',
+                  name: 'Artistora',
+                },
+                areaServed: {
+                  '@type': 'City',
+                  name: 'Ahmedabad',
+                },
+              },
+            })),
+          }),
+        }}
+      />
+
       {/* ── Page Intro: Services + editorial hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
         <div

@@ -2,6 +2,37 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getArtistBySlug, mediaUrl, getPayloadClient } from '@/lib/payload'
 import SectionHeading from '@/components/SectionHeading'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const artist = await getArtistBySlug(slug)
+  if (!artist) return { title: 'Artist Not Found' }
+  const name = artist.displayName || 'Artist'
+  const service = (artist.services?.[0] as any)?.title || ''
+  const location = artist.city || 'Ahmedabad'
+  const title = (artist as any).metaTitle
+    || (service
+      ? `${name} — ${service} in ${location} | Artistora`
+      : `${name} — Verified Artist in ${location} | Artistora`)
+  const description = (artist as any).metaDescription
+    || artist.bio?.slice(0, 160)
+    || `Book ${name} for ${service || 'events'} in ${location}. ${artist.yearsOfExperience || 0}+ years experience. Verified on Artistora.`
+  const ogImage = (artist as any).ogImage
+    ? mediaUrl((artist as any).ogImage)
+    : artist.profilePhoto
+      ? mediaUrl(artist.profilePhoto)
+      : undefined
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : [],
+    },
+  }
+}
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
@@ -98,6 +129,40 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
 
   return (
     <>
+      {/* ── JSON-LD Structured Data ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            name: name,
+            description: artist.bio?.slice(0, 300) || `${name} — Verified artist on Artistora in ${location}`,
+            url: `https://www.artistora.com/artists/${slug}`,
+            image: artist.profilePhoto ? mediaUrl(artist.profilePhoto) : undefined,
+            telephone: phone ? `+91${phone.replace(/\D/g, '').replace(/^91/, '')}` : undefined,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: artist.city || 'Ahmedabad',
+              addressRegion: 'Gujarat',
+              addressCountry: 'IN',
+            },
+            areaServed: {
+              '@type': 'City',
+              name: artist.city || 'Ahmedabad',
+            },
+            aggregateRating: typeof artist.rating === 'number' && artist.rating > 0 ? {
+              '@type': 'AggregateRating',
+              ratingValue: artist.rating.toString(),
+              reviewCount: (artist.reviewCount || 0).toString(),
+              bestRating: '5',
+              worstRating: '1',
+            } : undefined,
+            priceRange: artist.startingPrice ? `₹${artist.startingPrice.toLocaleString('en-IN')}+` : undefined,
+          }),
+        }}
+      />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
         <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />

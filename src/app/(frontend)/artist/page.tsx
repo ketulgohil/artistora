@@ -5,6 +5,15 @@ import SectionHeading from '@/components/SectionHeading'
 import { getSiteSettings } from '@/lib/payload'
 import { mediaFileUrl } from '@/lib/media-url'
 
+export const metadata = {
+  title: 'About Artistora — Ahmedabad\'s Trusted Artist Marketplace',
+  description:
+    'Artistora connects customers with verified artists in Ahmedabad for weddings, events, and celebrations. Learn about our mission, values, and how we ensure quality.',
+  alternates: {
+    canonical: 'https://www.artistora.com/artist',
+  },
+}
+
 function Eyebrow({
   children,
   tone = 'brand',

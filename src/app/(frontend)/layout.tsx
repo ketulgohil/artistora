@@ -17,6 +17,9 @@ export const metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
+  other: {
+    'theme-color': '#ec6783',
+  },
   openGraph: {
     title: 'Artistora — Book Verified Artists in Ahmedabad',
     description:
