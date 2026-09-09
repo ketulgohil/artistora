@@ -63,6 +63,7 @@ const connectionString = dbUrl
 const isProd = process.env.NODE_ENV === 'production'
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com',
   admin: {
     user: Users.slug,
     importMap: {
