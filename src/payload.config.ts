@@ -68,20 +68,28 @@ const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Artistora <hello@artistora.
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com',
-  email: {
-    fromName: 'Artistora',
-    fromAddress: FROM_EMAIL,
-    transport: async ({ email }) => {
-      const from = email.from || `${FROM_EMAIL}`
-      await resend.emails.send({
-        from: typeof from === 'string' ? from : `${from.name} <${from.address}>`,
-        to: Array.isArray(email.to) ? email.to.map((a: any) => typeof a === 'string' ? a : a.address).join(',') : typeof email.to === 'string' ? email.to : (email.to as any)?.address || '',
-        subject: email.subject || '',
-        html: (typeof email.html === 'string' ? email.html : '') as string,
-        text: email.text as string | undefined,
+  email: ({ payload }) => ({
+    name: 'resend',
+    defaultFromAddress: FROM_EMAIL,
+    defaultFromName: 'Artistora',
+    sendEmail: async (message) => {
+      const from = message.from
+        ? (typeof message.from === 'string' ? message.from : `${(message.from as any).name} <${(message.from as any).address}>`)
+        : FROM_EMAIL
+      const to = Array.isArray(message.to)
+        ? message.to.map((a: any) => typeof a === 'string' ? a : a.address).join(',')
+        : typeof message.to === 'string'
+          ? message.to
+          : (message.to as any)?.address || ''
+      return resend.emails.send({
+        from,
+        to,
+        subject: message.subject || '',
+        html: typeof message.html === 'string' ? message.html : '',
+        text: typeof message.text === 'string' ? message.text : undefined,
       })
     },
-  } as any,
+  }),
   admin: {
     user: Users.slug,
     importMap: {
