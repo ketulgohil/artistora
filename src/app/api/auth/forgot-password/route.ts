@@ -3,8 +3,10 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+import { generateToken, hashToken } from '@/lib/token'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
+const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000 // 1 hour
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,16 +46,25 @@ export async function POST(request: NextRequest) {
 
     const user = users[0]
 
-    // Generate reset token via Payload's built-in method
-    const token = await payload.forgotPassword({
+    // Generate reset token manually (avoids Payload's email adapter requirement)
+    const rawToken = generateToken()
+    const tokenHash = hashToken(rawToken)
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MS).toISOString()
+
+    // Store hashed token on user record
+    await payload.update({
       collection: 'users',
-      data: { email: user.email },
+      id: user.id,
+      data: {
+        resetPasswordToken: tokenHash,
+        resetPasswordExpiration: expiresAt,
+      } as any,
     })
 
-    // Build reset URL
-    const resetUrl = `${SITE_URL}/reset-password?token=${token}`
+    // Build reset URL with raw token (user clicks this link)
+    const resetUrl = `${SITE_URL}/reset-password?token=${rawToken}`
 
-    // Send email (non-blocking)
+    // Send email via Resend (non-blocking)
     sendPasswordResetEmail(user.email, {
       name: (user as any).name || 'there',
       resetUrl,
