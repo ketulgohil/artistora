@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -16,6 +17,19 @@ export default function RegisterPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) {
+          router.replace(data.user.role === 'artist' ? '/dashboard' : '/')
+        } else {
+          setCheckingAuth(false)
+        }
+      })
+      .catch(() => setCheckingAuth(false))
+  }, [router])
 
   const isCustomer = form.role === 'customer'
 
@@ -49,6 +63,16 @@ export default function RegisterPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingAuth) {
+    return (
+      <section className="py-16! md:py-24!">
+        <div className="mx-auto max-w-lg! px-4! md:px-6! text-center text-ink-soft">
+          Checking...
+        </div>
+      </section>
+    )
   }
 
   return (

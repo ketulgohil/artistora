@@ -56,6 +56,9 @@ export const Quotes: CollectionConfig = {
       relationTo: 'leads',
       required: true,
       label: 'Lead',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'artist',
@@ -63,6 +66,9 @@ export const Quotes: CollectionConfig = {
       relationTo: 'artists',
       required: true,
       label: 'Artist',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'priceType',
@@ -146,6 +152,9 @@ export const Quotes: CollectionConfig = {
         { label: 'Expired', value: 'expired' },
         { label: 'Withdrawn', value: 'withdrawn' },
       ],
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
       },

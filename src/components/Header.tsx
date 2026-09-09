@@ -22,11 +22,11 @@ export default function Header() {
   const [user, setUser] = useState<{ id: number; name: string; role: string } | null>(null)
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'include' })
       .then((r) => r.json())
-      .then((d) => { if (d.user) setUser(d.user) })
-      .catch(() => {})
-  }, [])
+      .then((d) => { if (d.user) setUser(d.user); else setUser(null) })
+      .catch(() => setUser(null))
+  }, [pathname])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -155,12 +155,7 @@ export default function Header() {
                     Dashboard
                   </Link>
                 ) : (
-                  <Link
-                    className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-2.5! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(236,103,131,0.45)]"
-                    href="/get-quote"
-                  >
-                    Get Quote
-                  </Link>
+                  <span className="text-sm text-ink-soft">Welcome, {user.name}</span>
                 )
               ) : (
                 <Link
@@ -210,13 +205,7 @@ export default function Header() {
                       Dashboard
                     </Link>
                   ) : (
-                    <Link
-                      className="flex w-full min-h-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-6! py-3! text-sm font-semibold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-transform duration-200 hover:-translate-y-0.5"
-                      href="/get-quote"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Get Quote
-                    </Link>
+                    <p className="text-center text-sm text-ink-soft">Welcome, {user.name}</p>
                   )
                 ) : (
                   <Link

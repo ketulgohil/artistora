@@ -14,7 +14,6 @@ export const enum_users_role = pgEnum('enum_users_role', ['customer', 'artist', 
 export const enum_portfolio_items_service_category = pgEnum('enum_portfolio_items_service_category', ['mehndi', 'photography', 'makeup', 'decor', 'other'])
 export const enum_artists_price_type = pgEnum('enum_artists_price_type', ['package', 'hourly', 'per_person', 'custom_quote'])
 export const enum_artists_approval_status = pgEnum('enum_artists_approval_status', ['pending', 'approved', 'rejected', 'suspended'])
-export const enum_artists_verification_status = pgEnum('enum_artists_verification_status', ['unverified', 'verified'])
 export const enum_artists_subscription_plan = pgEnum('enum_artists_subscription_plan', ['free', 'basic', 'premium'])
 export const enum_artists_subscription_status = pgEnum('enum_artists_subscription_status', ['active', 'trialing', 'past_due', 'cancelled', 'expired'])
 export const enum_leads_event_type = pgEnum('enum_leads_event_type', ['wedding', 'engagement', 'birthday', 'baby-shower', 'corporate', 'festival', 'bridal', 'family-function', 'other'])
@@ -68,7 +67,10 @@ export const users = pgTable('users', {
 
 export const media = pgTable('media', {
   id: serial('id').primaryKey(),
-  alt: varchar('alt').notNull(),
+  alt: varchar('alt').default(""),
+  uploadedBy: integer('uploaded_by_id').references(() => users.id, {
+      onDelete: 'set null'
+  }),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   url: varchar('url'),
@@ -80,8 +82,52 @@ export const media = pgTable('media', {
   height: numeric('height', {mode: 'number'}),
   focalX: numeric('focal_x', {mode: 'number'}),
   focalY: numeric('focal_y', {mode: 'number'}),
+  sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+  sizes_thumbnail_width: numeric('sizes_thumbnail_width', {mode: 'number'}),
+  sizes_thumbnail_height: numeric('sizes_thumbnail_height', {mode: 'number'}),
+  sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+  sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', {mode: 'number'}),
+  sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+  sizes_card_url: varchar('sizes_card_url'),
+  sizes_card_width: numeric('sizes_card_width', {mode: 'number'}),
+  sizes_card_height: numeric('sizes_card_height', {mode: 'number'}),
+  sizes_card_mimeType: varchar('sizes_card_mime_type'),
+  sizes_card_filesize: numeric('sizes_card_filesize', {mode: 'number'}),
+  sizes_card_filename: varchar('sizes_card_filename'),
 }, (columns) => [
-    index('media_updated_at_idx').on(columns.updatedAt), index('media_created_at_idx').on(columns.createdAt), uniqueIndex('media_filename_idx').on(columns.filename),
+    index('media_uploaded_by_idx').on(columns.uploadedBy), index('media_updated_at_idx').on(columns.updatedAt), index('media_created_at_idx').on(columns.createdAt), uniqueIndex('media_filename_idx').on(columns.filename), index('media_sizes_thumbnail_sizes_thumbnail_filename_idx').on(columns.sizes_thumbnail_filename), index('media_sizes_card_sizes_card_filename_idx').on(columns.sizes_card_filename),
+]
+)
+
+
+export const private_media = pgTable('private_media', {
+  id: serial('id').primaryKey(),
+  alt: varchar('alt').default(""),
+  uploadedBy: integer('uploaded_by_id').references(() => users.id, {
+      onDelete: 'set null'
+  }),
+  leadId: integer('lead_id_id').references(() => leads.id, {
+      onDelete: 'set null'
+  }),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
+  url: varchar('url'),
+  thumbnailURL: varchar('thumbnail_u_r_l'),
+  filename: varchar('filename'),
+  mimeType: varchar('mime_type'),
+  filesize: numeric('filesize', {mode: 'number'}),
+  width: numeric('width', {mode: 'number'}),
+  height: numeric('height', {mode: 'number'}),
+  focalX: numeric('focal_x', {mode: 'number'}),
+  focalY: numeric('focal_y', {mode: 'number'}),
+  sizes_thumbnail_url: varchar('sizes_thumbnail_url'),
+  sizes_thumbnail_width: numeric('sizes_thumbnail_width', {mode: 'number'}),
+  sizes_thumbnail_height: numeric('sizes_thumbnail_height', {mode: 'number'}),
+  sizes_thumbnail_mimeType: varchar('sizes_thumbnail_mime_type'),
+  sizes_thumbnail_filesize: numeric('sizes_thumbnail_filesize', {mode: 'number'}),
+  sizes_thumbnail_filename: varchar('sizes_thumbnail_filename'),
+}, (columns) => [
+    index('private_media_uploaded_by_idx').on(columns.uploadedBy), index('private_media_lead_id_idx').on(columns.leadId), index('private_media_updated_at_idx').on(columns.updatedAt), index('private_media_created_at_idx').on(columns.createdAt), uniqueIndex('private_media_filename_idx').on(columns.filename), index('private_media_sizes_thumbnail_sizes_thumbnail_filename_idx').on(columns.sizes_thumbnail_filename),
 ]
 )
 
@@ -290,7 +336,6 @@ export const artists = pgTable('artists', {
   startingPrice: numeric('starting_price', {mode: 'number'}),
   verified: boolean('verified').default(false),
   approvalStatus: enum_artists_approval_status('approval_status').default("pending"),
-  verificationStatus: enum_artists_verification_status('verification_status').default("unverified"),
   rating: numeric('rating', {mode: 'number'}).default(0),
   reviewCount: numeric('review_count', {mode: 'number'}).default(0),
   searchRank: numeric('search_rank', {mode: 'number'}).default(0),
@@ -337,11 +382,31 @@ export const artists_rels = pgTable('artists_rels', {
 )
 
 
+export const leads_reference_images = pgTable('leads_reference_images', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  id: varchar('id').primaryKey(),
+  image: integer('image_id').notNull().references(() => media.id, {
+      onDelete: 'set null'
+  }),
+}, (columns) => [
+    index('leads_reference_images_order_idx').on(columns._order), index('leads_reference_images_parent_id_idx').on(columns._parentID), index('leads_reference_images_image_idx').on(columns.image), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [leads.id],
+      name: 'leads_reference_images_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const leads = pgTable('leads', {
   id: serial('id').primaryKey(),
   customerName: varchar('customer_name').notNull(),
   customerPhone: varchar('customer_phone').notNull(),
   customerEmail: varchar('customer_email'),
+  userId: integer('user_id_id').references(() => users.id, {
+      onDelete: 'set null'
+  }),
   eventType: enum_leads_event_type('event_type').notNull(),
   eventDate: timestamp('event_date', {mode: 'string',withTimezone: true,precision: 3}).notNull(),
   eventLocation: varchar('event_location').notNull(),
@@ -360,10 +425,15 @@ export const leads = pgTable('leads', {
   assignedAdmin: integer('assigned_admin_id').references(() => users.id, {
       onDelete: 'set null'
   }),
+  viewTokenHash: varchar('view_token_hash'),
+  viewTokenExpiresAt: timestamp('view_token_expires_at', {mode: 'string',withTimezone: true,precision: 3}),
+  viewTokenRevokedAt: timestamp('view_token_revoked_at', {mode: 'string',withTimezone: true,precision: 3}),
+  bookingAccessTokenHash: varchar('booking_access_token_hash'),
+  bookingAccessTokenExpiresAt: timestamp('booking_access_token_expires_at', {mode: 'string',withTimezone: true,precision: 3}),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
-    index('leads_service_type_idx').on(columns.serviceType), index('leads_accepted_quote_idx').on(columns.acceptedQuote), index('leads_assigned_admin_idx').on(columns.assignedAdmin), index('leads_updated_at_idx').on(columns.updatedAt), index('leads_created_at_idx').on(columns.createdAt),
+    index('leads_user_id_idx').on(columns.userId), index('leads_service_type_idx').on(columns.serviceType), index('leads_accepted_quote_idx').on(columns.acceptedQuote), index('leads_assigned_admin_idx').on(columns.assignedAdmin), uniqueIndex('leads_view_token_hash_idx').on(columns.viewTokenHash), index('leads_updated_at_idx').on(columns.updatedAt), index('leads_created_at_idx').on(columns.createdAt),
 ]
 )
 
@@ -463,6 +533,9 @@ export const bookings = pgTable('bookings', {
   paymentStatus: enum_bookings_payment_status('payment_status').default("unpaid"),
   paymentMethod: enum_bookings_payment_method('payment_method'),
   paymentReference: varchar('payment_reference'),
+  userId: integer('user_id_id').references(() => users.id, {
+      onDelete: 'set null'
+  }),
   status: enum_bookings_status('status').default("requested"),
   declineReason: varchar('decline_reason'),
   cancelledBy: enum_bookings_cancelled_by('cancelled_by'),
@@ -473,7 +546,7 @@ export const bookings = pgTable('bookings', {
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
-    index('bookings_lead_idx').on(columns.lead), index('bookings_quote_idx').on(columns.quote), index('bookings_artist_idx').on(columns.artist), index('bookings_updated_at_idx').on(columns.updatedAt), index('bookings_created_at_idx').on(columns.createdAt),
+    index('bookings_lead_idx').on(columns.lead), index('bookings_quote_idx').on(columns.quote), index('bookings_artist_idx').on(columns.artist), index('bookings_user_id_idx').on(columns.userId), index('bookings_updated_at_idx').on(columns.updatedAt), index('bookings_created_at_idx').on(columns.createdAt),
 ]
 )
 
@@ -531,6 +604,7 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
   path: varchar('path').notNull(),
   usersID: integer('users_id'),
   mediaID: integer('media_id'),
+  'private-mediaID': integer('private_media_id'),
   servicesID: integer('services_id'),
   'portfolio-categoriesID': integer('portfolio_categories_id'),
   'portfolio-itemsID': integer('portfolio_items_id'),
@@ -544,7 +618,7 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
   bookingsID: integer('bookings_id'),
   reviewsID: integer('reviews_id'),
 }, (columns) => [
-    index('payload_locked_documents_rels_order_idx').on(columns.order), index('payload_locked_documents_rels_parent_idx').on(columns.parent), index('payload_locked_documents_rels_path_idx').on(columns.path), index('payload_locked_documents_rels_users_id_idx').on(columns.usersID), index('payload_locked_documents_rels_media_id_idx').on(columns.mediaID), index('payload_locked_documents_rels_services_id_idx').on(columns.servicesID), index('payload_locked_documents_rels_portfolio_categories_id_idx').on(columns['portfolio-categoriesID']), index('payload_locked_documents_rels_portfolio_items_id_idx').on(columns['portfolio-itemsID']), index('payload_locked_documents_rels_testimonials_id_idx').on(columns.testimonialsID), index('payload_locked_documents_rels_faq_id_idx').on(columns.faqID), index('payload_locked_documents_rels_youtube_videos_id_idx').on(columns['youtube-videosID']), index('payload_locked_documents_rels_static_pages_id_idx').on(columns['static-pagesID']), index('payload_locked_documents_rels_artists_id_idx').on(columns.artistsID), index('payload_locked_documents_rels_leads_id_idx').on(columns.leadsID), index('payload_locked_documents_rels_quotes_id_idx').on(columns.quotesID), index('payload_locked_documents_rels_bookings_id_idx').on(columns.bookingsID), index('payload_locked_documents_rels_reviews_id_idx').on(columns.reviewsID), foreignKey({
+    index('payload_locked_documents_rels_order_idx').on(columns.order), index('payload_locked_documents_rels_parent_idx').on(columns.parent), index('payload_locked_documents_rels_path_idx').on(columns.path), index('payload_locked_documents_rels_users_id_idx').on(columns.usersID), index('payload_locked_documents_rels_media_id_idx').on(columns.mediaID), index('payload_locked_documents_rels_private_media_id_idx').on(columns['private-mediaID']), index('payload_locked_documents_rels_services_id_idx').on(columns.servicesID), index('payload_locked_documents_rels_portfolio_categories_id_idx').on(columns['portfolio-categoriesID']), index('payload_locked_documents_rels_portfolio_items_id_idx').on(columns['portfolio-itemsID']), index('payload_locked_documents_rels_testimonials_id_idx').on(columns.testimonialsID), index('payload_locked_documents_rels_faq_id_idx').on(columns.faqID), index('payload_locked_documents_rels_youtube_videos_id_idx').on(columns['youtube-videosID']), index('payload_locked_documents_rels_static_pages_id_idx').on(columns['static-pagesID']), index('payload_locked_documents_rels_artists_id_idx').on(columns.artistsID), index('payload_locked_documents_rels_leads_id_idx').on(columns.leadsID), index('payload_locked_documents_rels_quotes_id_idx').on(columns.quotesID), index('payload_locked_documents_rels_bookings_id_idx').on(columns.bookingsID), index('payload_locked_documents_rels_reviews_id_idx').on(columns.reviewsID), foreignKey({
       columns: [columns['parent']],
       foreignColumns: [payload_locked_documents.id],
       name: 'payload_locked_documents_rels_parent_fk'
@@ -556,6 +630,10 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
       columns: [columns['mediaID']],
       foreignColumns: [media.id],
       name: 'payload_locked_documents_rels_media_fk'
+    }).onDelete('cascade'), foreignKey({
+      columns: [columns['private-mediaID']],
+      foreignColumns: [private_media.id],
+      name: 'payload_locked_documents_rels_private_media_fk'
     }).onDelete('cascade'), foreignKey({
       columns: [columns['servicesID']],
       foreignColumns: [services.id],
@@ -728,7 +806,7 @@ export const header_footer = pgTable('header_footer', {
 
 export const relations_users_sessions = relations(users_sessions, ({ one }) => ({
   _parentID: one(users, {
-
+    
     fields: [users_sessions._parentID],
     references: [users.id],
     relationName: 'sessions',
@@ -739,12 +817,31 @@ export const relations_users = relations(users, ({ many }) => ({
             relationName: 'sessions',
     }),
       }))
-export const relations_media = relations(media, () => ({
-
+export const relations_media = relations(media, ({ one }) => ({
+  uploadedBy: one(users, {
+    
+    fields: [media.uploadedBy],
+    references: [users.id],
+    relationName: 'uploadedBy',
+    }),
+      }))
+export const relations_private_media = relations(private_media, ({ one }) => ({
+  uploadedBy: one(users, {
+    
+    fields: [private_media.uploadedBy],
+    references: [users.id],
+    relationName: 'uploadedBy',
+    }),
+    leadId: one(leads, {
+    
+    fields: [private_media.leadId],
+    references: [leads.id],
+    relationName: 'leadId',
+    }),
       }))
 export const relations_services_points = relations(services_points, ({ one }) => ({
   _parentID: one(services, {
-
+    
     fields: [services_points._parentID],
     references: [services.id],
     relationName: 'points',
@@ -752,7 +849,7 @@ export const relations_services_points = relations(services_points, ({ one }) =>
       }))
 export const relations_services = relations(services, ({ one, many }) => ({
   image: one(media, {
-
+    
     fields: [services.image],
     references: [media.id],
     relationName: 'image',
@@ -762,23 +859,23 @@ export const relations_services = relations(services, ({ one, many }) => ({
     }),
       }))
 export const relations_portfolio_categories = relations(portfolio_categories, () => ({
-
+  
       }))
 export const relations_portfolio_items = relations(portfolio_items, ({ one }) => ({
   image: one(media, {
-
+    
     fields: [portfolio_items.image],
     references: [media.id],
     relationName: 'image',
     }),
     category: one(portfolio_categories, {
-
+    
     fields: [portfolio_items.category],
     references: [portfolio_categories.id],
     relationName: 'category',
     }),
     artist: one(artists, {
-
+    
     fields: [portfolio_items.artist],
     references: [artists.id],
     relationName: 'artist',
@@ -786,18 +883,18 @@ export const relations_portfolio_items = relations(portfolio_items, ({ one }) =>
       }))
 export const relations_testimonials = relations(testimonials, ({ one }) => ({
   image: one(media, {
-
+    
     fields: [testimonials.image],
     references: [media.id],
     relationName: 'image',
     }),
       }))
 export const relations_faq = relations(faq, () => ({
-
+  
       }))
 export const relations_youtube_videos = relations(youtube_videos, ({ one }) => ({
   thumbnail: one(media, {
-
+    
     fields: [youtube_videos.thumbnail],
     references: [media.id],
     relationName: 'thumbnail',
@@ -805,7 +902,7 @@ export const relations_youtube_videos = relations(youtube_videos, ({ one }) => (
       }))
 export const relations_static_pages = relations(static_pages, ({ one }) => ({
   ogImage: one(media, {
-
+    
     fields: [static_pages.ogImage],
     references: [media.id],
     relationName: 'ogImage',
@@ -813,7 +910,7 @@ export const relations_static_pages = relations(static_pages, ({ one }) => ({
       }))
 export const relations_artists_unavailable_dates = relations(artists_unavailable_dates, ({ one }) => ({
   _parentID: one(artists, {
-
+    
     fields: [artists_unavailable_dates._parentID],
     references: [artists.id],
     relationName: 'unavailableDates',
@@ -821,7 +918,7 @@ export const relations_artists_unavailable_dates = relations(artists_unavailable
       }))
 export const relations_artists_styles = relations(artists_styles, ({ one }) => ({
   _parentID: one(artists, {
-
+    
     fields: [artists_styles._parentID],
     references: [artists.id],
     relationName: 'styles',
@@ -829,13 +926,13 @@ export const relations_artists_styles = relations(artists_styles, ({ one }) => (
       }))
 export const relations_artists_portfolio_images = relations(artists_portfolio_images, ({ one }) => ({
   _parentID: one(artists, {
-
+    
     fields: [artists_portfolio_images._parentID],
     references: [artists.id],
     relationName: 'portfolioImages',
     }),
     image: one(media, {
-
+    
     fields: [artists_portfolio_images.image],
     references: [media.id],
     relationName: 'image',
@@ -843,13 +940,13 @@ export const relations_artists_portfolio_images = relations(artists_portfolio_im
       }))
 export const relations_artists_rels = relations(artists_rels, ({ one }) => ({
   parent: one(artists, {
-
+    
     fields: [artists_rels.parent],
     references: [artists.id],
     relationName: '_rels',
     }),
     servicesID: one(services, {
-
+    
     fields: [artists_rels.servicesID],
     references: [services.id],
     relationName: 'services',
@@ -857,13 +954,13 @@ export const relations_artists_rels = relations(artists_rels, ({ one }) => ({
       }))
 export const relations_artists = relations(artists, ({ one, many }) => ({
   user: one(users, {
-
+    
     fields: [artists.user],
     references: [users.id],
     relationName: 'user',
     }),
     profilePhoto: one(media, {
-
+    
     fields: [artists.profilePhoto],
     references: [media.id],
     relationName: 'profilePhoto',
@@ -881,35 +978,58 @@ export const relations_artists = relations(artists, ({ one, many }) => ({
             relationName: '_rels',
     }),
       }))
+export const relations_leads_reference_images = relations(leads_reference_images, ({ one }) => ({
+  _parentID: one(leads, {
+    
+    fields: [leads_reference_images._parentID],
+    references: [leads.id],
+    relationName: 'referenceImages',
+    }),
+    image: one(media, {
+    
+    fields: [leads_reference_images.image],
+    references: [media.id],
+    relationName: 'image',
+    }),
+      }))
 export const relations_leads_rels = relations(leads_rels, ({ one }) => ({
   parent: one(leads, {
-
+    
     fields: [leads_rels.parent],
     references: [leads.id],
     relationName: '_rels',
     }),
     artistsID: one(artists, {
-
+    
     fields: [leads_rels.artistsID],
     references: [artists.id],
     relationName: 'artists',
     }),
       }))
 export const relations_leads = relations(leads, ({ one, many }) => ({
-  serviceType: one(services, {
-
+  userId: one(users, {
+    
+    fields: [leads.userId],
+    references: [users.id],
+    relationName: 'userId',
+    }),
+    serviceType: one(services, {
+    
     fields: [leads.serviceType],
     references: [services.id],
     relationName: 'serviceType',
     }),
+    referenceImages: many(leads_reference_images, {
+            relationName: 'referenceImages',
+    }),
     acceptedQuote: one(quotes, {
-
+    
     fields: [leads.acceptedQuote],
     references: [quotes.id],
     relationName: 'acceptedQuote',
     }),
     assignedAdmin: one(users, {
-
+    
     fields: [leads.assignedAdmin],
     references: [users.id],
     relationName: 'assignedAdmin',
@@ -920,13 +1040,13 @@ export const relations_leads = relations(leads, ({ one, many }) => ({
       }))
 export const relations_quotes = relations(quotes, ({ one }) => ({
   lead: one(leads, {
-
+    
     fields: [quotes.lead],
     references: [leads.id],
     relationName: 'lead',
     }),
     artist: one(artists, {
-
+    
     fields: [quotes.artist],
     references: [artists.id],
     relationName: 'artist',
@@ -934,13 +1054,13 @@ export const relations_quotes = relations(quotes, ({ one }) => ({
       }))
 export const relations_bookings_assigned_artists = relations(bookings_assigned_artists, ({ one }) => ({
   _parentID: one(bookings, {
-
+    
     fields: [bookings_assigned_artists._parentID],
     references: [bookings.id],
     relationName: 'assignedArtists',
     }),
     artist: one(artists, {
-
+    
     fields: [bookings_assigned_artists.artist],
     references: [artists.id],
     relationName: 'artist',
@@ -948,19 +1068,19 @@ export const relations_bookings_assigned_artists = relations(bookings_assigned_a
       }))
 export const relations_bookings = relations(bookings, ({ one, many }) => ({
   lead: one(leads, {
-
+    
     fields: [bookings.lead],
     references: [leads.id],
     relationName: 'lead',
     }),
     quote: one(quotes, {
-
+    
     fields: [bookings.quote],
     references: [quotes.id],
     relationName: 'quote',
     }),
     artist: one(artists, {
-
+    
     fields: [bookings.artist],
     references: [artists.id],
     relationName: 'artist',
@@ -968,117 +1088,129 @@ export const relations_bookings = relations(bookings, ({ one, many }) => ({
     assignedArtists: many(bookings_assigned_artists, {
             relationName: 'assignedArtists',
     }),
+    userId: one(users, {
+    
+    fields: [bookings.userId],
+    references: [users.id],
+    relationName: 'userId',
+    }),
       }))
 export const relations_reviews = relations(reviews, ({ one }) => ({
   user: one(users, {
-
+    
     fields: [reviews.user],
     references: [users.id],
     relationName: 'user',
     }),
     booking: one(bookings, {
-
+    
     fields: [reviews.booking],
     references: [bookings.id],
     relationName: 'booking',
     }),
     artist: one(artists, {
-
+    
     fields: [reviews.artist],
     references: [artists.id],
     relationName: 'artist',
     }),
       }))
 export const relations_payload_kv = relations(payload_kv, () => ({
-
+  
       }))
 export const relations_payload_locked_documents_rels = relations(payload_locked_documents_rels, ({ one }) => ({
   parent: one(payload_locked_documents, {
-
+    
     fields: [payload_locked_documents_rels.parent],
     references: [payload_locked_documents.id],
     relationName: '_rels',
     }),
     usersID: one(users, {
-
+    
     fields: [payload_locked_documents_rels.usersID],
     references: [users.id],
     relationName: 'users',
     }),
     mediaID: one(media, {
-
+    
     fields: [payload_locked_documents_rels.mediaID],
     references: [media.id],
     relationName: 'media',
     }),
+    'private-mediaID': one(private_media, {
+    
+    fields: [payload_locked_documents_rels['private-mediaID']],
+    references: [private_media.id],
+    relationName: 'private-media',
+    }),
     servicesID: one(services, {
-
+    
     fields: [payload_locked_documents_rels.servicesID],
     references: [services.id],
     relationName: 'services',
     }),
     'portfolio-categoriesID': one(portfolio_categories, {
-
+    
     fields: [payload_locked_documents_rels['portfolio-categoriesID']],
     references: [portfolio_categories.id],
     relationName: 'portfolio-categories',
     }),
     'portfolio-itemsID': one(portfolio_items, {
-
+    
     fields: [payload_locked_documents_rels['portfolio-itemsID']],
     references: [portfolio_items.id],
     relationName: 'portfolio-items',
     }),
     testimonialsID: one(testimonials, {
-
+    
     fields: [payload_locked_documents_rels.testimonialsID],
     references: [testimonials.id],
     relationName: 'testimonials',
     }),
     faqID: one(faq, {
-
+    
     fields: [payload_locked_documents_rels.faqID],
     references: [faq.id],
     relationName: 'faq',
     }),
     'youtube-videosID': one(youtube_videos, {
-
+    
     fields: [payload_locked_documents_rels['youtube-videosID']],
     references: [youtube_videos.id],
     relationName: 'youtube-videos',
     }),
     'static-pagesID': one(static_pages, {
-
+    
     fields: [payload_locked_documents_rels['static-pagesID']],
     references: [static_pages.id],
     relationName: 'static-pages',
     }),
     artistsID: one(artists, {
-
+    
     fields: [payload_locked_documents_rels.artistsID],
     references: [artists.id],
     relationName: 'artists',
     }),
     leadsID: one(leads, {
-
+    
     fields: [payload_locked_documents_rels.leadsID],
     references: [leads.id],
     relationName: 'leads',
     }),
     quotesID: one(quotes, {
-
+    
     fields: [payload_locked_documents_rels.quotesID],
     references: [quotes.id],
     relationName: 'quotes',
     }),
     bookingsID: one(bookings, {
-
+    
     fields: [payload_locked_documents_rels.bookingsID],
     references: [bookings.id],
     relationName: 'bookings',
     }),
     reviewsID: one(reviews, {
-
+    
     fields: [payload_locked_documents_rels.reviewsID],
     references: [reviews.id],
     relationName: 'reviews',
@@ -1091,13 +1223,13 @@ export const relations_payload_locked_documents = relations(payload_locked_docum
       }))
 export const relations_payload_preferences_rels = relations(payload_preferences_rels, ({ one }) => ({
   parent: one(payload_preferences, {
-
+    
     fields: [payload_preferences_rels.parent],
     references: [payload_preferences.id],
     relationName: '_rels',
     }),
     usersID: one(users, {
-
+    
     fields: [payload_preferences_rels.usersID],
     references: [users.id],
     relationName: 'users',
@@ -1109,11 +1241,11 @@ export const relations_payload_preferences = relations(payload_preferences, ({ m
     }),
       }))
 export const relations_payload_migrations = relations(payload_migrations, () => ({
-
+  
       }))
 export const relations_site_settings = relations(site_settings, ({ one }) => ({
   defaultOgImage: one(media, {
-
+    
     fields: [site_settings.defaultOgImage],
     references: [media.id],
     relationName: 'defaultOgImage',
@@ -1121,7 +1253,7 @@ export const relations_site_settings = relations(site_settings, ({ one }) => ({
       }))
 export const relations_header_footer_nav_links = relations(header_footer_nav_links, ({ one }) => ({
   _parentID: one(header_footer, {
-
+    
     fields: [header_footer_nav_links._parentID],
     references: [header_footer.id],
     relationName: 'navLinks',
@@ -1129,7 +1261,7 @@ export const relations_header_footer_nav_links = relations(header_footer_nav_lin
       }))
 export const relations_header_footer_footer_links = relations(header_footer_footer_links, ({ one }) => ({
   _parentID: one(header_footer, {
-
+    
     fields: [header_footer_footer_links._parentID],
     references: [header_footer.id],
     relationName: 'footerLinks',
@@ -1137,7 +1269,7 @@ export const relations_header_footer_footer_links = relations(header_footer_foot
       }))
 export const relations_header_footer = relations(header_footer, ({ one, many }) => ({
   logo: one(media, {
-
+    
     fields: [header_footer.logo],
     references: [media.id],
     relationName: 'logo',
@@ -1155,7 +1287,6 @@ type DatabaseSchema = {
   enum_portfolio_items_service_category: typeof enum_portfolio_items_service_category
   enum_artists_price_type: typeof enum_artists_price_type
   enum_artists_approval_status: typeof enum_artists_approval_status
-  enum_artists_verification_status: typeof enum_artists_verification_status
   enum_artists_subscription_plan: typeof enum_artists_subscription_plan
   enum_artists_subscription_status: typeof enum_artists_subscription_status
   enum_leads_event_type: typeof enum_leads_event_type
@@ -1174,6 +1305,7 @@ type DatabaseSchema = {
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media
+  private_media: typeof private_media
   services_points: typeof services_points
   services: typeof services
   portfolio_categories: typeof portfolio_categories
@@ -1187,6 +1319,7 @@ type DatabaseSchema = {
   artists_portfolio_images: typeof artists_portfolio_images
   artists: typeof artists
   artists_rels: typeof artists_rels
+  leads_reference_images: typeof leads_reference_images
   leads: typeof leads
   leads_rels: typeof leads_rels
   quotes: typeof quotes
@@ -1206,6 +1339,7 @@ type DatabaseSchema = {
   relations_users_sessions: typeof relations_users_sessions
   relations_users: typeof relations_users
   relations_media: typeof relations_media
+  relations_private_media: typeof relations_private_media
   relations_services_points: typeof relations_services_points
   relations_services: typeof relations_services
   relations_portfolio_categories: typeof relations_portfolio_categories
@@ -1219,6 +1353,7 @@ type DatabaseSchema = {
   relations_artists_portfolio_images: typeof relations_artists_portfolio_images
   relations_artists_rels: typeof relations_artists_rels
   relations_artists: typeof relations_artists
+  relations_leads_reference_images: typeof relations_leads_reference_images
   relations_leads_rels: typeof relations_leads_rels
   relations_leads: typeof relations_leads
   relations_quotes: typeof relations_quotes
@@ -1236,10 +1371,11 @@ type DatabaseSchema = {
   relations_header_footer_footer_links: typeof relations_header_footer_footer_links
   relations_header_footer: typeof relations_header_footer
 }
-
+    
 
 declare module '@payloadcms/db-postgres' {
   export interface GeneratedDatabaseSchema {
     schema: DatabaseSchema
   }
 }
+    

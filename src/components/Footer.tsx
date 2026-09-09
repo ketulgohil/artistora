@@ -3,10 +3,10 @@ import Link from 'next/link'
 const BOOKING_URL = '/get-quote'
 
 const popularBookings = [
-  { label: 'Artists', to: '/services' },
-  { label: 'Photographers', to: '/artists' },
-  { label: 'Makeup Artists', to: '/artists' },
-  { label: 'Decor & Planning', to: '/artists' },
+  { label: 'Artists', to: '/artists' },
+  { label: 'Photographers', to: '/services' },
+  { label: 'Makeup Artists', to: '/services' },
+  { label: 'Decor & Planning', to: '/services' },
 ]
 
 const trustLinks = [

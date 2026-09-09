@@ -114,7 +114,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                       alt={artist.displayName}
                       width={400}
                       height={400}
-                      className="aspect-square w-full max-w-[340px] rounded-[1.7rem] object-cover"
+                      className="aspect-square w-full max-w-[340px] rounded-[1.7rem] object-contain"
                     />
                   ) : (
                     <div className="flex aspect-square w-full max-w-[340px] items-center justify-center rounded-[1.7rem] bg-cream-deep">

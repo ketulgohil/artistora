@@ -115,7 +115,10 @@ export async function getStaticPage(slug: string) {
 export async function getArtists(city?: string) {
   const payload = await getPayloadClient()
   const where: Where = {
-    approvalStatus: { equals: 'approved' },
+    or: [
+      { approvalStatus: { equals: 'approved' } },
+      { verified: { equals: true } },
+    ],
     ...(city ? { city: { equals: city } } : {}),
   }
   const { docs } = await payload.find({
@@ -127,6 +130,28 @@ export async function getArtists(city?: string) {
   return docs
 }
 
+export async function getFeaturedArtists(limit = 4) {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'artists',
+    where: {
+      and: [
+        {
+          or: [
+            { approvalStatus: { equals: 'approved' } },
+            { verified: { equals: true } },
+          ],
+        },
+        { isFeatured: { equals: true } },
+      ],
+    },
+    sort: '-rating,-reviewCount',
+    depth: 1,
+    limit,
+  })
+  return docs
+}
+
 export async function getArtistBySlug(slug: string) {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
@@ -134,7 +159,12 @@ export async function getArtistBySlug(slug: string) {
     where: {
       and: [
         { slug: { equals: slug } },
-        { approvalStatus: { equals: 'approved' } },
+        {
+          or: [
+            { approvalStatus: { equals: 'approved' } },
+            { verified: { equals: true } },
+          ],
+        },
       ],
     },
     depth: 2,

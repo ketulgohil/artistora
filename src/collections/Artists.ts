@@ -202,21 +202,6 @@ export const Artists: CollectionConfig = {
       },
     },
     {
-      name: 'verificationStatus',
-      type: 'select',
-      defaultValue: 'unverified',
-      options: [
-        { label: 'Unverified', value: 'unverified' },
-        { label: 'Verified', value: 'verified' },
-      ],
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
-      admin: {
-        position: 'sidebar',
-      },
-    },
-    {
       name: 'rating',
       type: 'number',
       min: 0,

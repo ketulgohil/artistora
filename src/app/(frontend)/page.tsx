@@ -8,6 +8,7 @@ import {
   getServices,
   getTestimonials,
   getFAQs,
+  getFeaturedArtists,
 } from '@/lib/payload'
 import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
 
@@ -130,11 +131,12 @@ function ServiceIcon({ type }: { type: 'camera' | 'makeup' | 'decor' | 'mehndi' 
 }
 
 export default async function HomePage() {
-  const [settings, _services, testimonials, faqs] = await Promise.all([
+  const [settings, _services, testimonials, faqs, featuredArtists] = await Promise.all([
     getSiteSettings() as Promise<SiteSetting>,
     getServices() as Promise<Service[]>,
     getTestimonials() as Promise<Testimonial[]>,
     getFAQs() as Promise<Faq[]>,
+    getFeaturedArtists(4),
   ])
 
   const bookingUrl = '/get-quote'
@@ -148,13 +150,10 @@ export default async function HomePage() {
   ]
 
   const trustStats = [
-    { value: '3+', label: 'Free Quotes' },
     { value: '24h', label: 'Response Time' },
     { value: '100%', label: 'Verified Artists' },
     { value: '50+', label: 'Areas Covered' },
   ]
-
-  const galleryImages = ['Bridal.webp', 'Baby_shower.webp', 'engagement.webp', 'deveshaa.webp']
 
   return (
     <>
@@ -253,24 +252,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Stats ── */}
-      <section className="border-y border-line/70 bg-white/70">
-        <div className={`${CONTAINER} py-8! md:py-10!`}>
-          <dl className="grid grid-cols-2 gap-6! text-center md:grid-cols-4">
-            {trustStats.map((item) => (
-              <div key={item.label}>
-                <dt className="sr-only">{item.label}</dt>
-                <dd className="font-display text-3xl! font-bold text-brand-deep md:text-4xl!">
-                  {item.value}
-                </dd>
-                <dd className="mt-1.5! text-[0.72rem] font-semibold tracking-[0.18em] text-ink-muted uppercase">
-                  {item.label}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
+
+      {/* TODO: Stats section removed — may add back later (Response Time, Verified Artists, Areas Covered) */}
 
       {/* ── Signature Services ── */}
       <section className={SECTION}>
@@ -354,72 +337,110 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Gallery Preview ── */}
-      <section className={`${SECTION} bg-white/60`}>
-        <div className={CONTAINER}>
-          <SectionHeading title="Artist Work" subtitle="Designs In Focus" />
-          <div className="grid grid-cols-2 gap-4! md:grid-cols-4 md:gap-5!">
-            {galleryImages.map((img) => (
-              <figure className="group relative overflow-hidden rounded-2xl shadow-soft" key={img}>
-                <img
-                  src={mediaFileUrl(img)}
-                  alt="Artist work showcased on Artistora"
-                  width={600}
-                  height={800}
-                  className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-coal/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                />
-              </figure>
-            ))}
+      {/* ── Featured Artists ── */}
+      {featuredArtists.length > 0 && (
+        <section className={`${SECTION} bg-white/60`}>
+          <div className={CONTAINER}>
+            <SectionHeading title="Featured Artists" subtitle="Top Rated" />
+            <div className="grid gap-6! sm:grid-cols-2 lg:grid-cols-4">
+              {featuredArtists.map((artist: any) => (
+                <Link
+                  key={artist.id}
+                  href={`/artists/${artist.slug}`}
+                  className="group relative overflow-hidden rounded-3xl border border-line bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+                >
+                  <div className="flex flex-col items-center p-6!">
+                    <div className="relative mb-4!">
+                      <img
+                        src={artist.profilePhoto?.filename ? `/api/media/file/${artist.profilePhoto.filename}` : '/artistora/og.png'}
+                        alt={artist.displayName}
+                        width={80}
+                        height={80}
+                        className="h-16! w-16! rounded-full object-contain ring-2 ring-brand/15"
+                        loading="lazy"
+                      />
+                      {artist.verified && (
+                        <span className="absolute -bottom-1 -right-1 inline-flex h-5! w-5! items-center justify-center rounded-full bg-green text-white">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-display text-center text-[1.05rem]! font-semibold text-ink group-hover:text-brand transition-colors">
+                      {artist.displayName}
+                    </h3>
+                    <p className="mt-1! text-sm text-ink-muted">{artist.area || artist.city}</p>
+                    {artist.rating > 0 && (
+                      <div className="mt-2.5! flex items-center gap-1.5!">
+                        <div className="flex items-center gap-0.5!">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <svg key={i} className={`h-3.5 w-3.5 ${i <= Math.round(artist.rating) ? 'text-gold' : 'text-line'}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                        <span className="text-xs text-ink-muted">
+                          {artist.rating?.toFixed(1)} ({artist.reviewCount || 0})
+                        </span>
+                      </div>
+                    )}
+                    {artist.startingPrice > 0 && (
+                      <p className="mt-2.5! text-sm font-semibold text-brand-deep">
+                        Starting from ₹{artist.startingPrice.toLocaleString('en-IN')}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-10! text-center">
+              <Link
+                className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
+                href="/artists"
+              >
+                View All Artists
+              </Link>
+            </div>
           </div>
-          <div className="mt-10! text-center">
-            <Link
-              className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
-              href="/portfolio"
-            >
-              Explore Full Portfolio
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Testimonials ── */}
-      <section className={SECTION}>
-        <div className={CONTAINER}>
-          <SectionHeading title="What Clients Say" subtitle="Trusted Reviews" />
-          <div className="grid gap-5! md:grid-cols-2 lg:grid-cols-3">
-            {testimonials.slice(0, 6).map((t: Testimonial) => (
-              <article
-                key={t.id}
-                className="relative flex flex-col rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
-              >
-                <div aria-hidden="true" className="font-display absolute -top-2 right-6 text-6xl! leading-none text-brand-light/25">
-                  &ldquo;
-                </div>
-                <div className="mb-4! flex items-center gap-1!">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} filled={i < (t.rating || 5)} />
-                  ))}
-                  <span className="sr-only">{t.rating || 5} out of 5 stars</span>
-                </div>
-                <p className="flex-1 text-[0.92rem] leading-relaxed text-ink-soft italic">
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <p className="font-display mt-5! text-[1.05rem]! font-semibold text-ink">{t.name}</p>
-              </article>
-            ))}
+      {testimonials.length > 0 && (
+        <section className={SECTION}>
+          <div className={CONTAINER}>
+            <SectionHeading title="What Clients Say" subtitle="Trusted Reviews" />
+            <div className="grid gap-5! md:grid-cols-2 lg:grid-cols-3">
+              {testimonials.slice(0, 6).map((t: Testimonial) => (
+                <article
+                  key={t.id}
+                  className="relative flex flex-col rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+                >
+                  <div aria-hidden="true" className="font-display absolute -top-2 right-6 text-6xl! leading-none text-brand-light/25">
+                    &ldquo;
+                  </div>
+                  <div className="mb-4! flex items-center gap-1!">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <Star key={i} filled={i < (t.rating || 5)} />
+                    ))}
+                    <span className="sr-only">{t.rating || 5} out of 5 stars</span>
+                  </div>
+                  <p className="flex-1 text-[0.92rem] leading-relaxed text-ink-soft italic">
+                    &ldquo;{t.text}&rdquo;
+                  </p>
+                  <p className="font-display mt-5! text-[1.05rem]! font-semibold text-ink">{t.name}</p>
+                </article>
+              ))}
+            </div>
+            <div className="mt-10! text-center">
+              <a className={BTN_OUTLINE} href="/get-quote">
+                Find Your Artist
+              </a>
+            </div>
           </div>
-          <div className="mt-10! text-center">
-            <a className={BTN_OUTLINE} href="/get-quote">
-              Find Your Artist
-            </a>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── FAQ ── */}
       <section className={SECTION}>

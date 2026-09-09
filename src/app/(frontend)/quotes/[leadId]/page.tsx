@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import SectionHeading from '@/components/SectionHeading'
 
 interface Quote {
   id: string
@@ -23,31 +24,61 @@ interface Quote {
 
 export default function QuotesPage() {
   const params = useParams()
-  const router = useRouter()
+  const searchParams = useSearchParams()
   const leadId = params.leadId as string
+  const token = searchParams.get('token')
 
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [bookingAccessToken, setBookingAccessToken] = useState<string | null>(null)
+
+  const invalidToken = !leadId || !token
 
   useEffect(() => {
-    if (!leadId) return
-    fetch(`/api/quotes?leadId=${leadId}`)
-      .then((r) => r.json())
-      .then((d) => { setQuotes(d.quotes || []); setLoading(false) })
-      .catch(() => { setError('Failed to load quotes'); setLoading(false) })
-  }, [leadId])
+    if (invalidToken) return
+
+    fetch(`/api/quotes?leadId=${leadId}&token=${token}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('Unauthorized')
+        return r.json()
+      })
+      .then((d) => {
+        if (d.error) throw new Error(d.error)
+        setQuotes(d.quotes || [])
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err.message || 'Invalid or expired link')
+        setLoading(false)
+      })
+  }, [leadId, token, invalidToken])
 
   const handleAccept = async (quoteId: string) => {
     setAccepting(quoteId)
     setError('')
     try {
-      const res = await fetch(`/api/quotes/${quoteId}/accept`, { method: 'POST' })
+      const res = await fetch(`/api/quotes/${quoteId}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to accept')
+
+      // Save booking access token for post-acceptance viewing
+      if (data.bookingAccessToken && leadId) {
+        // Store in sessionStorage so my-bookings can pick it up
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('bookingAccessToken', data.bookingAccessToken)
+          sessionStorage.setItem('bookingLeadId', leadId)
+        }
+      }
+
       setSuccess(true)
+      setBookingAccessToken(data.bookingAccessToken || null)
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === quoteId
@@ -64,6 +95,17 @@ export default function QuotesPage() {
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  if (invalidToken) {
+    return (
+      <section className="py-16! md:py-24!">
+        <div className="mx-auto max-w-2xl! px-4! text-center">
+          <SectionHeading title="Invalid Access Link" />
+          <p className="mt-4! text-ink-soft">This link is invalid or missing required parameters.</p>
+        </div>
+      </section>
+    )
+  }
 
   if (loading) {
     return (
@@ -101,7 +143,13 @@ export default function QuotesPage() {
 
         {success && (
           <div className="mb-6! rounded-xl border border-green-200 bg-green-50 px-4! py-3! text-sm text-green-700">
-            Quote accepted! A booking request has been sent to the artist for confirmation. You can also view it in <Link href="/my-bookings" className="font-semibold underline">My Bookings</Link>.
+            Quote accepted! A booking request has been sent to the artist for confirmation.
+            {bookingAccessToken && leadId && (
+              <> View your booking in <Link href={`/my-bookings?bookingToken=${bookingAccessToken}&leadId=${leadId}`} className="font-semibold underline">My Bookings</Link>.</>
+            )}
+            {!bookingAccessToken && (
+              <> View it in <Link href="/my-bookings" className="font-semibold underline">My Bookings</Link>.</>
+            )}
           </div>
         )}
 

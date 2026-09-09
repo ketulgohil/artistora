@@ -12,9 +12,18 @@ import {
 const CONTAINER = 'mx-auto max-w-5xl! px-4! md:px-6!'
 const SECTION = 'py-10! md:py-16!'
 
-const STYLE_OPTIONS = [
-  'Bridal', 'Arabic', 'Indo-Western', 'Minimal', 'Traditional',
-  'Rajasthani', 'Modern', 'Floral', 'Geometric', 'Custom Design',
+const STYLE_OPTIONS: Record<string, string[]> = {
+  'photographers': ['Wedding', 'Portrait', 'Candid', 'Traditional', 'Pre-Wedding', 'Event', 'Product', 'Fashion', 'Documentary', 'Drone/Aerial'],
+  'makeup-artists': ['Bridal', 'Party', 'Reception', 'Engagement', 'Editorial', 'Natural', 'Glam', 'Traditional', 'Airbrush', 'SFX'],
+  'decor-event-planners': ['Floral', 'Traditional', 'Modern', 'Minimal', 'Rustic', 'Vintage', 'Bohemian', 'Royal', 'Themed', 'Outdoor'],
+  'mehndi-artists': ['Bridal', 'Arabic', 'Indo-Western', 'Minimal', 'Traditional', 'Rajasthani', 'Modern', 'Floral', 'Geometric', 'Custom Design'],
+}
+
+const SERVICE_OPTIONS = [
+  { slug: 'photographers', label: 'Photographers' },
+  { slug: 'makeup-artists', label: 'Makeup Artists' },
+  { slug: 'decor-event-planners', label: 'Decor & Event Planners' },
+  { slug: 'mehndi-artists', label: 'Mehndi Artists' },
 ]
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -53,6 +62,8 @@ interface ArtistData {
   portfolioImages: Array<{ image: any; caption: string }>
   profilePhoto: any
   unavailableDates?: Array<{ date: string; reason?: string }>
+  services?: Array<{ slug: string; title: string }>
+  maxPortfolioItems?: number
 }
 
 interface BookingItem {
@@ -84,6 +95,7 @@ interface LeadItem {
   budgetRange?: string
   designStyle?: string
   additionalNotes?: string
+  referenceImages?: Array<{ image: any }>
   status: string
   createdAt: string
   myQuote?: {
@@ -107,6 +119,7 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [portfolioError, setPortfolioError] = useState('')
   const [uploading, setUploading] = useState(false)
   const portfolioInputRef = useRef<HTMLInputElement>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
@@ -122,6 +135,7 @@ export default function DashboardPage() {
     priceType: 'package',
     startingPrice: '',
     styles: [] as string[],
+    services: [] as string[],
   })
 
   // Bookings state
@@ -130,6 +144,8 @@ export default function DashboardPage() {
   const [bookingFilter, setBookingFilter] = useState<'all' | 'pending' | 'confirmed'>('pending')
   const [declineBookingId, setDeclineBookingId] = useState<number | null>(null)
   const [declineReason, setDeclineReason] = useState('')
+  const [cancelBookingId, setCancelBookingId] = useState<number | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
 
   // Leads & Quotes state
@@ -159,12 +175,13 @@ export default function DashboardPage() {
   // Analytics state
   const [analytics, setAnalytics] = useState<any>(null)
   const [loadingAnalytics, setLoadingAnalytics] = useState(false)
+  const [serviceMap, setServiceMap] = useState<Record<string, number>>({})
 
   // Load user + artist profile
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/auth/me')
+        const res = await fetch('/api/auth/me', { credentials: 'include' })
         const data = await res.json()
         if (!data.user) {
           router.push('/login')
@@ -177,12 +194,28 @@ export default function DashboardPage() {
           return
         }
 
+        // Fetch services to build slug->ID map
+        const svcRes = await fetch('/api/services?limit=100', { credentials: 'include' })
+        const svcData = await svcRes.json()
+        const map: Record<string, number> = {}
+        const idToSlug: Record<number, string> = {}
+        for (const svc of svcData.docs || []) {
+          map[svc.slug] = svc.id
+          idToSlug[svc.id] = svc.slug
+        }
+        setServiceMap(map)
+
         if (data.artistProfile) {
-          const artistRes = await fetch(`/api/artists?where[slug][equals]=${data.artistProfile.slug}&depth=2`)
+          const artistRes = await fetch(`/api/artists?where[slug][equals]=${data.artistProfile.slug}&depth=1`, { credentials: 'include' })
           const artistData = await artistRes.json()
           const a = artistData.docs?.[0]
           if (a) {
             setArtist(a)
+            const serviceSlugs = (a.services || []).map((s: any) => {
+              if (typeof s === 'object' && s?.slug) return s.slug
+              if (typeof s === 'number' || typeof s === 'string') return idToSlug[Number(s)]
+              return null
+            }).filter(Boolean)
             setForm({
               displayName: a.displayName || '',
               phone: a.phone || '',
@@ -194,6 +227,7 @@ export default function DashboardPage() {
               priceType: a.priceType || 'package',
               startingPrice: a.startingPrice?.toString() || '',
               styles: a.styles?.map((s: any) => s.style) || [],
+              services: serviceSlugs,
             })
           }
         }
@@ -210,7 +244,7 @@ export default function DashboardPage() {
   const fetchBookings = async () => {
     setLoadingBookings(true)
     try {
-      const res = await fetch('/api/dashboard/bookings')
+      const res = await fetch('/api/dashboard/bookings', { credentials: 'include' })
       const data = await res.json()
       if (res.ok) {
         setBookings(data.bookings || [])
@@ -226,7 +260,7 @@ export default function DashboardPage() {
   const fetchLeads = async () => {
     setLoadingLeads(true)
     try {
-      const res = await fetch('/api/dashboard/leads')
+      const res = await fetch('/api/dashboard/leads', { credentials: 'include' })
       const data = await res.json()
       if (res.ok) {
         setLeads(data.leads || [])
@@ -242,7 +276,7 @@ export default function DashboardPage() {
   const fetchAvailability = async () => {
     setLoadingAvailability(true)
     try {
-      const res = await fetch('/api/dashboard/availability')
+      const res = await fetch('/api/dashboard/availability', { credentials: 'include' })
       const data = await res.json()
       if (res.ok) {
         setUnavailableDates(data.unavailableDates || [])
@@ -259,7 +293,7 @@ export default function DashboardPage() {
   const fetchAnalytics = async () => {
     setLoadingAnalytics(true)
     try {
-      const res = await fetch('/api/dashboard/analytics')
+      const res = await fetch('/api/dashboard/analytics', { credentials: 'include' })
       const data = await res.json()
       if (res.ok) {
         setAnalytics(data)
@@ -286,21 +320,31 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [])
 
-  // Handle Booking Accept / Decline / Complete
+  // Handle Booking Accept / Decline / Cancel / Complete
   const handleBookingAction = async (id: number, action: string, reason?: string) => {
     setActionLoading(true)
     setError('')
     try {
+      const body: any = { action }
+      if (action === 'decline') body.declineReason = reason
+      if (action === 'cancel') {
+        body.cancellationReason = reason
+        body.cancelledBy = 'artist'
+      }
+
       const res = await fetch(`/api/bookings/${id}/action`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, declineReason: reason }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Action failed')
 
       setDeclineBookingId(null)
       setDeclineReason('')
+      setCancelBookingId(null)
+      setCancelReason('')
       await fetchBookings()
     } catch (err: any) {
       setError(err.message)
@@ -318,10 +362,10 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/quotes', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: quotingLead.id,
-          artistId: artist.id,
           priceType: quoteForm.priceType,
           amount: Number(quoteForm.amount),
           unitRate: quoteForm.unitRate ? Number(quoteForm.unitRate) : undefined,
@@ -363,6 +407,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch('/api/dashboard/availability', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date: newBlockDate, reason: newBlockReason }),
       })
@@ -384,6 +429,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`/api/dashboard/availability?date=${encodeURIComponent(date)}`, {
         method: 'DELETE',
+        credentials: 'include',
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to unblock date')
@@ -410,6 +456,16 @@ export default function DashboardPage() {
     setSaved(false)
   }
 
+  const toggleService = (slug: string) => {
+    setForm((prev) => {
+      const services = prev.services.includes(slug)
+        ? prev.services.filter((s) => s !== slug)
+        : [...prev.services, slug]
+      return { ...prev, services, styles: [] }
+    })
+    setSaved(false)
+  }
+
   const handleSave = async () => {
     if (!artist) return
     setSaving(true)
@@ -419,6 +475,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`/api/artists/${artist.id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           displayName: form.displayName,
@@ -431,6 +488,7 @@ export default function DashboardPage() {
           priceType: form.priceType,
           startingPrice: form.startingPrice ? Number(form.startingPrice) : undefined,
           styles: form.styles.map((s) => ({ style: s })),
+          services: form.services.map((slug) => serviceMap[slug]).filter(Boolean),
         }),
       })
 
@@ -439,6 +497,13 @@ export default function DashboardPage() {
         throw new Error(data.error || 'Save failed')
       }
 
+      const updated = await res.json()
+      const idToSlug: Record<number, string> = {}
+      Object.entries(serviceMap).forEach(([slug, id]) => { idToSlug[id] = slug })
+      setArtist({
+        ...updated.doc,
+        services: form.services.map((slug) => ({ slug, title: SERVICE_OPTIONS.find(s => s.slug === slug)?.label || slug, id: serviceMap[slug] })),
+      })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {
@@ -460,17 +525,21 @@ export default function DashboardPage() {
 
       const uploadRes = await fetch('/api/media', {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       })
 
       if (!uploadRes.ok) throw new Error('Upload failed')
       const media = await uploadRes.json()
 
-      await fetch(`/api/artists/${artist.id}`, {
+      const patchRes = await fetch(`/api/artists/${artist.id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profilePhoto: media.doc.id }),
       })
+
+      if (!patchRes.ok) throw new Error('Failed to update profile')
 
       setArtist((prev) => (prev ? { ...prev, profilePhoto: media.doc } : prev))
     } catch (err: any) {
@@ -484,18 +553,34 @@ export default function DashboardPage() {
     const files = e.target.files
     if (!files || files.length === 0 || !artist) return
 
+    const maxItems = artist.maxPortfolioItems ?? 10
+    const currentCount = artist.portfolioImages?.length ?? 0
+    if (currentCount >= maxItems) {
+      setPortfolioError(`Portfolio limit reached (${maxItems} images). Delete some to add more.`)
+      return
+    }
+
+    const allowed = maxItems - currentCount
+    const toUpload = Array.from(files).slice(0, allowed)
+    if (toUpload.length < files.length) {
+      setPortfolioError(`Only ${toUpload.length} image(s) can be added (limit: ${maxItems}).`)
+    } else {
+      setPortfolioError('')
+    }
+
     setUploading(true)
     try {
       const newImages = []
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
+      for (let i = 0; i < toUpload.length; i++) {
+        const file = toUpload[i]
         const formData = new FormData()
         formData.append('file', file)
         formData.append('alt', `${form.displayName} portfolio ${i + 1}`)
 
         const uploadRes = await fetch('/api/media', {
           method: 'POST',
+          credentials: 'include',
           body: formData,
         })
 
@@ -508,11 +593,12 @@ export default function DashboardPage() {
 
       await fetch(`/api/artists/${artist.id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ portfolioImages: updatedPortfolio }),
       })
 
-      const artistRes = await fetch(`/api/artists?where[slug][equals]=${artist.slug}&depth=2`)
+      const artistRes = await fetch(`/api/artists?where[slug][equals]=${artist.slug}&depth=2`, { credentials: 'include' })
       const artistData = await artistRes.json()
       if (artistData.docs?.[0]) setArtist(artistData.docs[0])
 
@@ -533,11 +619,12 @@ export default function DashboardPage() {
     try {
       await fetch(`/api/artists/${artist.id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ portfolioImages: updated }),
       })
 
-      const artistRes = await fetch(`/api/artists?where[slug][equals]=${artist.slug}&depth=2`)
+      const artistRes = await fetch(`/api/artists?where[slug][equals]=${artist.slug}&depth=2`, { credentials: 'include' })
       const artistData = await artistRes.json()
       if (artistData.docs?.[0]) setArtist(artistData.docs[0])
     } catch (err: any) {
@@ -560,7 +647,37 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user || !artist) return null
+  if (!user) return null
+
+  if (user.role === 'artist' && !artist) {
+    return (
+      <section className={SECTION}>
+        <div className={CONTAINER}>
+          <div className="mx-auto max-w-2xl! rounded-3xl border border-line bg-white p-8! text-center shadow-soft md:p-12!">
+            <p className="mb-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
+              Profile setup required
+            </p>
+            <h1 className="font-display text-2xl! font-semibold text-ink md:text-3xl!">
+              Your artist profile is not available yet
+            </h1>
+            <p className="mx-auto mt-4! max-w-xl text-sm leading-7 text-ink-soft">
+              Your account is signed in, but it is not linked to an artist profile. Please contact Artistora support so the profile can be linked safely.
+            </p>
+            <div className="mt-7! flex flex-wrap justify-center gap-3!">
+              <Link href="/contact" className="btn-brand">
+                Contact Support
+              </Link>
+              <Link href="/" className="btn-outline-brand">
+                Back to Home
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (!artist) return null
 
   // Filter bookings
   const filteredBookings = bookings.filter((b) => {
@@ -607,7 +724,7 @@ export default function DashboardPage() {
             </Link>
             <button
               onClick={async () => {
-                await fetch('/api/auth/logout', { method: 'POST' })
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
                 router.push('/')
                 router.refresh()
               }}
@@ -936,6 +1053,39 @@ export default function DashboardPage() {
                           >
                             Mark Completed
                           </button>
+
+                          {cancelBookingId === b.id ? (
+                            <div className="flex flex-1 items-center gap-2!">
+                              <input
+                                type="text"
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Reason for cancellation"
+                                className="w-full rounded-xl border border-line bg-cream/50 px-3! py-1.5! text-xs outline-none focus:border-brand"
+                              />
+                              <button
+                                onClick={() => handleBookingAction(b.id, 'cancel', cancelReason)}
+                                disabled={actionLoading || !cancelReason.trim()}
+                                className="cursor-pointer whitespace-nowrap rounded-full bg-red-600 px-4! py-1.5! text-xs font-semibold text-white disabled:opacity-50"
+                              >
+                                Confirm Cancel
+                              </button>
+                              <button
+                                onClick={() => { setCancelBookingId(null); setCancelReason('') }}
+                                className="cursor-pointer text-xs text-ink-muted hover:text-ink"
+                              >
+                                Back
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => { setCancelBookingId(b.id); setCancelReason('') }}
+                              disabled={actionLoading}
+                              className="cursor-pointer rounded-full border border-line px-4! py-1.5! text-xs font-medium text-red-500 hover:border-red-300 hover:bg-red-50"
+                            >
+                              Cancel Booking
+                            </button>
+                          )}
                         </div>
                       )}
 
@@ -949,6 +1099,39 @@ export default function DashboardPage() {
                           >
                             Mark Job Completed
                           </button>
+
+                          {cancelBookingId === b.id ? (
+                            <div className="flex flex-1 items-center gap-2!">
+                              <input
+                                type="text"
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Reason for cancellation"
+                                className="w-full rounded-xl border border-line bg-cream/50 px-3! py-1.5! text-xs outline-none focus:border-brand"
+                              />
+                              <button
+                                onClick={() => handleBookingAction(b.id, 'cancel', cancelReason)}
+                                disabled={actionLoading || !cancelReason.trim()}
+                                className="cursor-pointer whitespace-nowrap rounded-full bg-red-600 px-4! py-1.5! text-xs font-semibold text-white disabled:opacity-50"
+                              >
+                                Confirm Cancel
+                              </button>
+                              <button
+                                onClick={() => { setCancelBookingId(null); setCancelReason('') }}
+                                className="cursor-pointer text-xs text-ink-muted hover:text-ink"
+                              >
+                                Back
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => { setCancelBookingId(b.id); setCancelReason('') }}
+                              disabled={actionLoading}
+                              className="cursor-pointer rounded-full border border-line px-4! py-1.5! text-xs font-medium text-red-500 hover:border-red-300 hover:bg-red-50"
+                            >
+                              Cancel Booking
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1027,6 +1210,29 @@ export default function DashboardPage() {
                       <p className="mt-2.5! text-xs text-ink-soft">
                         Notes: &quot;{lead.additionalNotes}&quot;
                       </p>
+                    )}
+
+                    {lead.referenceImages && lead.referenceImages.length > 0 && (
+                      <div className="mt-3!">
+                        <p className="mb-2! text-xs font-medium text-ink-muted">Reference Design Images:</p>
+                        <div className="flex flex-wrap gap-2!">
+                          {lead.referenceImages.map((ref: any, i: number) => (
+                            <a
+                              key={i}
+                              href={`/api/media/file/${ref.image?.filename || ref.image}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block h-16! w-16! overflow-hidden rounded-lg border border-line hover:border-brand transition-colors"
+                            >
+                              <img
+                                src={`/api/media/file/${ref.image?.filename || ref.image}`}
+                                alt={`Reference ${i + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -1291,7 +1497,7 @@ export default function DashboardPage() {
                       <img
                         src={`/api/media/file/${(artist.profilePhoto as any).filename}`}
                         alt={artist.displayName}
-                        className="h-28! w-28! rounded-full object-cover ring-4 ring-brand/20"
+                        className="h-28! w-28! rounded-full object-contain ring-4 ring-brand/20"
                       />
                     ) : (
                       <div className="flex h-28! w-28! items-center justify-center rounded-full bg-cream-deep ring-4 ring-brand/20">
@@ -1451,26 +1657,52 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Styles */}
+              {/* Services & Styles */}
               <div className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-7!">
-                <h3 className="font-display text-lg! font-semibold text-ink">Service Styles</h3>
-                <p className="mt-1! text-sm text-ink-soft">Select the styles you offer</p>
-                <div className="mt-4! flex flex-wrap gap-2!">
-                  {STYLE_OPTIONS.map((style) => (
-                    <button
-                      key={style}
-                      type="button"
-                      onClick={() => toggleStyle(style)}
-                      className={`cursor-pointer rounded-full border px-4! py-2! text-sm font-medium transition-all duration-200 ${
-                        form.styles.includes(style)
-                          ? 'border-brand bg-brand text-white'
-                          : 'border-line bg-white text-ink-soft hover:border-brand/40'
-                      }`}
-                    >
-                      {style}
-                    </button>
-                  ))}
+                <h3 className="font-display text-lg! font-semibold text-ink">Services & Styles</h3>
+                <p className="mt-1! text-sm text-ink-soft">Select the services you offer, then pick your styles</p>
+
+                <div className="mt-4!">
+                  <p className="mb-2! text-xs font-medium uppercase tracking-wide text-ink-muted">Services</p>
+                  <div className="flex flex-wrap gap-2!">
+                    {SERVICE_OPTIONS.map((svc) => (
+                      <button
+                        key={svc.slug}
+                        type="button"
+                        onClick={() => toggleService(svc.slug)}
+                        className={`cursor-pointer rounded-full border px-4! py-2! text-sm font-medium transition-all duration-200 ${
+                          form.services.includes(svc.slug)
+                            ? 'border-brand bg-brand text-white'
+                            : 'border-line bg-white text-ink-soft hover:border-brand/40'
+                        }`}
+                      >
+                        {svc.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {form.services.length > 0 && (
+                  <div className="mt-5!">
+                    <p className="mb-2! text-xs font-medium uppercase tracking-wide text-ink-muted">Styles</p>
+                    <div className="flex flex-wrap gap-2!">
+                      {form.services.flatMap((slug) => STYLE_OPTIONS[slug] || []).map((style) => (
+                        <button
+                          key={style}
+                          type="button"
+                          onClick={() => toggleStyle(style)}
+                          className={`cursor-pointer rounded-full border px-4! py-2! text-sm font-medium transition-all duration-200 ${
+                            form.styles.includes(style)
+                              ? 'border-brand bg-brand text-white'
+                              : 'border-line bg-white text-ink-soft hover:border-brand/40'
+                          }`}
+                        >
+                          {style}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Portfolio */}
@@ -1493,6 +1725,10 @@ export default function DashboardPage() {
                     />
                   </label>
                 </div>
+
+                {portfolioError && (
+                  <p className="mt-3! rounded-xl border border-red-200 bg-red-50 px-4! py-2! text-sm text-red-700">{portfolioError}</p>
+                )}
 
                 {artist.portfolioImages?.length > 0 ? (
                   <div className="mt-5! grid grid-cols-2 gap-3! sm:grid-cols-3 md:grid-cols-4">

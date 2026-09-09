@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -9,9 +9,24 @@ const SECTION = 'py-16! md:py-24!'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) {
+          router.replace(data.user.role === 'artist' ? '/dashboard' : '/')
+        } else {
+          setCheckingAuth(false)
+        }
+      })
+      .catch(() => setCheckingAuth(false))
+  }, [router])
 
   const update = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -43,6 +58,14 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingAuth) {
+    return (
+      <section className={SECTION}>
+        <div className={CONTAINER + ' text-center text-ink-soft'}>Checking...</div>
+      </section>
+    )
   }
 
   return (
@@ -83,15 +106,42 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="mb-1.5! block text-sm font-medium text-ink-soft">Password *</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => update('password', e.target.value)}
-                placeholder="Enter your password"
-                required
-                className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
-              />
+              <div className="mb-1.5! flex items-center justify-between">
+                <label className="text-sm font-medium text-ink-soft">Password *</label>
+                <Link href="/forgot-password" className="text-xs font-medium text-brand hover:text-brand-deep transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={(e) => update('password', e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! pr-12! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1! text-ink-muted transition-colors hover:text-ink"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
+                      <path d="M14.12 14.12a3 3 0 11-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             <button

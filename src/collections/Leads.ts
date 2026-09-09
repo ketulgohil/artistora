@@ -1,5 +1,10 @@
 import type { CollectionConfig } from 'payload'
 import { sendArtistBookingEmail } from '../lib/email'
+import { randomBytes, createHash } from 'crypto'
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
 
 export const Leads: CollectionConfig = {
   slug: 'leads',
@@ -13,12 +18,31 @@ export const Leads: CollectionConfig = {
     group: 'Marketplace',
   },
   hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        // Auto-generate viewToken on create
+        if (operation === 'create' && !data?.viewTokenHash) {
+          const rawToken = randomBytes(32).toString('hex')
+          data.viewTokenHash = hashToken(rawToken)
+          data.viewTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          // Store raw token temporarily for the response (not persisted)
+          ;(data as any)._rawViewToken = rawToken
+        }
+        // Prevent token updates after creation
+        if (operation === 'update') {
+          if (data?.viewTokenHash) delete data.viewTokenHash
+          if (data?.viewTokenExpiresAt) delete data.viewTokenExpiresAt
+          if (data?.viewToken) delete data.viewToken
+        }
+        return data
+      },
+    ],
     afterChange: [
       async ({ doc, operation, req, previousDoc }) => {
         // Only trigger when status changes TO 'booked'
         if (operation !== 'update') return
         if (doc.status !== 'booked') return
-        if (previousDoc?.status === 'booked') return // already converted
+        if (previousDoc?.status === 'booked') return
 
         const {
           customerName, customerPhone, customerEmail,
@@ -42,6 +66,7 @@ export const Leads: CollectionConfig = {
               message: `Converted from lead #${doc.id}`,
               status: 'confirmed',
             },
+            overrideAccess: true,
           })
           req.payload.logger.info(`Lead #${doc.id} converted to booking`)
         } catch (err) {
@@ -59,13 +84,14 @@ export const Leads: CollectionConfig = {
               const artist = await req.payload.findByID({
                 collection: 'artists',
                 id: artistId,
+                overrideAccess: true,
               })
 
-              // Get the user's email from the artist's linked user
               if (artist.user) {
                 const user = await req.payload.findByID({
                   collection: 'users',
                   id: typeof artist.user === 'object' ? artist.user.id : artist.user,
+                  overrideAccess: true,
                 })
 
                 if (user.email) {
@@ -91,30 +117,20 @@ export const Leads: CollectionConfig = {
   },
   access: {
     read: ({ req }) => {
-      // Admins can read all
       if (req.user?.role === 'admin') return true
-
-      // Artists can read leads where they are matched
       if (req.user?.role === 'artist') {
         return {
           'matchedArtists.user': { equals: req.user.id },
         }
       }
-
-      // Customers and unauthenticated: no direct read via REST
-      // (use /api/my-bookings endpoint with phone lookup instead)
       return false
     },
-    create: () => true, // Anyone can create a lead (guest or logged in)
+    create: () => true,
     update: ({ req }) => {
-      // Admins can update all
       if (req.user?.role === 'admin') return true
-
-      // Artists cannot update leads directly
       return false
     },
     delete: ({ req }) => {
-      // Only admins can delete
       return req.user?.role === 'admin'
     },
   },
@@ -134,6 +150,21 @@ export const Leads: CollectionConfig = {
       type: 'email',
     },
     {
+      name: 'userId',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'Registered Customer',
+      access: {
+        update: () => false,
+        create: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Links lead to logged-in customer account',
+      },
+    },
+    {
       name: 'eventType',
       type: 'select',
       required: true,
@@ -144,7 +175,6 @@ export const Leads: CollectionConfig = {
         { label: 'Baby Shower', value: 'baby-shower' },
         { label: 'Corporate Event', value: 'corporate' },
         { label: 'Festival or Celebration', value: 'festival' },
-        // Retained for existing leads created before the marketplace became multi-service.
         { label: 'Legacy: Bridal Mehndi', value: 'bridal' },
         { label: 'Legacy: Family Function', value: 'family-function' },
         { label: 'Other', value: 'other' },
@@ -195,16 +225,36 @@ export const Leads: CollectionConfig = {
       type: 'textarea',
     },
     {
+      name: 'referenceImages',
+      type: 'array',
+      label: 'Reference Design Images',
+      maxRows: 5,
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    {
       name: 'matchedArtists',
       type: 'relationship',
       relationTo: 'artists',
       hasMany: true,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'acceptedQuote',
       type: 'relationship',
       relationTo: 'quotes',
       label: 'Accepted Quote',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'status',
@@ -222,6 +272,9 @@ export const Leads: CollectionConfig = {
         { label: 'Lost', value: 'lost' },
         { label: 'Closed', value: 'closed' },
       ],
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
       },
@@ -230,6 +283,9 @@ export const Leads: CollectionConfig = {
       name: 'lostReason',
       type: 'textarea',
       label: 'Lost Reason',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'lost',
@@ -240,8 +296,74 @@ export const Leads: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       label: 'Assigned Admin',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
       admin: {
         position: 'sidebar',
+      },
+    },
+    {
+      name: 'viewTokenHash',
+      type: 'text',
+      unique: true,
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'SHA-256 hash of the access token (raw token is never stored)',
+      },
+    },
+    {
+      name: 'viewTokenExpiresAt',
+      type: 'date',
+      label: 'Token Expires At',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Token expiry date (7 days from creation)',
+      },
+    },
+    {
+      name: 'viewTokenRevokedAt',
+      type: 'date',
+      label: 'Token Revoked At',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Set when token is revoked (e.g. after quote acceptance)',
+      },
+    },
+    {
+      name: 'bookingAccessTokenHash',
+      type: 'text',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'SHA-256 hash of booking access token (issued after quote acceptance)',
+      },
+    },
+    {
+      name: 'bookingAccessTokenExpiresAt',
+      type: 'date',
+      label: 'Booking Token Expires At',
+      access: {
+        update: () => false,
+      },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Booking access token expiry (30 days)',
       },
     },
   ],

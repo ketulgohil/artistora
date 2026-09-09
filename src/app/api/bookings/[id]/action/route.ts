@@ -1,16 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { checkArtistAvailability } from '@/lib/availability'
+import { sendBookingCancelledEmail } from '@/lib/email'
+import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+
+// Valid state transitions
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  requested: ['artist_pending', 'confirmed', 'cancelled'],
+  artist_pending: ['confirmed', 'declined', 'cancelled'],
+  confirmed: ['in_progress', 'cancelled'],
+  in_progress: ['completed', 'cancelled'],
+  completed: [], // Terminal state
+  declined: [], // Terminal state
+  cancelled: [], // Terminal state
+}
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // Rate limit
+    const ip = getClientIp(request)
+    const limiter = await rateLimitAsync(ip, RATE_LIMITS.bookingAction, 'bookingAction')
+    if (!limiter.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 },
+      )
+    }
+
     const { id } = await params
     const payload = await getPayloadClient()
     const body = await request.json()
     const { action, declineReason } = body
+
+    // Validate action
+    const validActions = ['accept', 'decline', 'in_progress', 'complete', 'cancel']
+    if (!validActions.includes(action)) {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
 
     // 1. Authenticate the user
     const authResult = await payload.auth({
@@ -21,7 +50,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const currentUser = authResult.user
+    const currentUser = authResult.user as any
 
     // 2. Fetch the booking
     const booking = await payload.findByID({
@@ -69,19 +98,40 @@ export async function PATCH(
         )
       }
     } else if (currentUser.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      // Customer — verify they own this booking by email
+      if (!booking.email || booking.email !== currentUser.email) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      }
     }
 
-    // Determine target artist ID
-    const targetArtistId =
-      currentArtist?.id ||
-      (typeof booking.artist === 'object' && booking.artist !== null
-        ? (booking.artist as any).id
-        : booking.artist)
+    // 4. Map action to target status
+    const actionToStatus: Record<string, string> = {
+      accept: 'confirmed',
+      decline: 'declined',
+      in_progress: 'in_progress',
+      complete: 'completed',
+      cancel: 'cancelled',
+    }
+    const targetStatus = actionToStatus[action]
 
-    // 4. Handle Actions
+    // 5. Enforce state machine
+    const currentStatus = booking.status as string
+    const allowedNext = VALID_TRANSITIONS[currentStatus] || []
+    if (!allowedNext.includes(targetStatus)) {
+      return NextResponse.json(
+        { error: `Cannot transition from "${currentStatus}" to "${targetStatus}"` },
+        { status: 400 },
+      )
+    }
+
+    // 6. Handle specific actions
     if (action === 'accept') {
       // Run availability & conflict check
+      const targetArtistId = currentArtist?.id ||
+        (typeof booking.artist === 'object' && booking.artist !== null
+          ? (booking.artist as any).id
+          : booking.artist)
+
       if (targetArtistId && booking.eventDate) {
         const conflict = await checkArtistAvailability(
           payload,
@@ -100,17 +150,16 @@ export async function PATCH(
 
       // Update assignedArtists status if present
       let updatedAssignedArtists = booking.assignedArtists
-      if (Array.isArray(updatedAssignedArtists) && targetArtistId) {
+      if (Array.isArray(updatedAssignedArtists) && currentArtist?.id) {
         updatedAssignedArtists = updatedAssignedArtists.map((item: any) => {
           const aId = typeof item.artist === 'object' ? item.artist.id : item.artist
-          if (aId === targetArtistId) {
+          if (aId === currentArtist.id) {
             return { ...item, status: 'accepted' }
           }
           return item
         })
       }
 
-      // Update status to confirmed
       const updated = await payload.update({
         collection: 'bookings',
         id: Number(id),
@@ -124,32 +173,30 @@ export async function PATCH(
     }
 
     if (action === 'decline') {
-      if (!declineReason || !declineReason.trim()) {
+      if (!declineReason || typeof declineReason !== 'string' || !declineReason.trim()) {
         return NextResponse.json(
           { error: 'Decline reason is required' },
           { status: 400 },
         )
       }
 
-      // Update assignedArtists status if present
       let updatedAssignedArtists = booking.assignedArtists
-      if (Array.isArray(updatedAssignedArtists) && targetArtistId) {
+      if (Array.isArray(updatedAssignedArtists) && currentArtist?.id) {
         updatedAssignedArtists = updatedAssignedArtists.map((item: any) => {
           const aId = typeof item.artist === 'object' ? item.artist.id : item.artist
-          if (aId === targetArtistId) {
-            return { ...item, status: 'declined', declineReason }
+          if (aId === currentArtist.id) {
+            return { ...item, status: 'declined', declineReason: declineReason.trim().slice(0, 500) }
           }
           return item
         })
       }
 
-      // Update status to declined with reason
       const updated = await payload.update({
         collection: 'bookings',
         id: Number(id),
         data: {
           status: 'declined',
-          declineReason,
+          declineReason: declineReason.trim().slice(0, 500),
           ...(updatedAssignedArtists ? { assignedArtists: updatedAssignedArtists } : {}),
         },
       })
@@ -161,11 +208,8 @@ export async function PATCH(
       const updated = await payload.update({
         collection: 'bookings',
         id: Number(id),
-        data: {
-          status: 'in_progress',
-        },
+        data: { status: 'in_progress' },
       })
-
       return NextResponse.json({ success: true, booking: updated })
     }
 
@@ -173,19 +217,98 @@ export async function PATCH(
       const updated = await payload.update({
         collection: 'bookings',
         id: Number(id),
+        data: { status: 'completed' },
+      })
+      return NextResponse.json({ success: true, booking: updated })
+    }
+
+    if (action === 'cancel') {
+      const { cancellationReason } = body
+
+      // Derive cancelledBy from authenticated user — never trust client
+      let cancelledBy: string
+      if (currentUser.role === 'admin') {
+        cancelledBy = 'admin'
+      } else if (currentUser.role === 'artist') {
+        cancelledBy = 'artist'
+      } else {
+        cancelledBy = 'customer'
+      }
+
+      // Artists can only cancel if they are assigned (already verified above)
+      // Customers can only cancel their own bookings (verified by email above)
+
+      // Prevent cancellation too close to event
+      if (booking.eventDate) {
+        const eventTime = new Date(booking.eventDate).getTime()
+        const now = Date.now()
+        const hoursUntilEvent = (eventTime - now) / (1000 * 60 * 60)
+
+        if (currentUser.role === 'artist' && hoursUntilEvent < 24) {
+          return NextResponse.json(
+            { error: 'Cannot cancel within 24 hours of the event' },
+            { status: 400 },
+          )
+        }
+        if (currentUser.role !== 'admin' && hoursUntilEvent < 48) {
+          return NextResponse.json(
+            { error: 'Cannot cancel within 48 hours of the event. Please contact support.' },
+            { status: 400 },
+          )
+        }
+      }
+
+      const updated = await payload.update({
+        collection: 'bookings',
+        id: Number(id),
         data: {
-          status: 'completed',
+          status: 'cancelled',
+          cancelledBy: cancelledBy as 'customer' | 'artist' | 'admin' | 'system',
+          cancellationReason: typeof cancellationReason === 'string' ? cancellationReason.trim().slice(0, 500) : '',
+          cancelledAt: new Date().toISOString(),
         },
       })
+
+      // Send cancellation emails (fire-and-forget)
+      const emailData = {
+        name: booking.name,
+        eventType: booking.eventType,
+        eventDate: booking.eventDate,
+        cancelledBy: cancelledBy === 'customer' ? 'Customer' : cancelledBy === 'artist' ? 'Artist' : 'Admin',
+        reason: typeof cancellationReason === 'string' ? cancellationReason.trim() : '',
+      }
+
+      if (booking.email) {
+        sendBookingCancelledEmail(booking.email, emailData).catch(() => {})
+      }
+
+      // Notify assigned artists
+      if (cancelledBy !== 'artist' && Array.isArray(booking.assignedArtists)) {
+        for (const item of booking.assignedArtists) {
+          try {
+            const aId = typeof item.artist === 'object' ? item.artist.id : Number(item.artist)
+            if (!aId) continue
+            const artistDoc = await payload.findByID({ collection: 'artists', id: aId, depth: 1 })
+            if (artistDoc?.user) {
+              const userDoc = await payload.findByID({
+                collection: 'users',
+                id: typeof artistDoc.user === 'object' ? artistDoc.user.id : artistDoc.user,
+              })
+              if (userDoc?.email) {
+                sendBookingCancelledEmail(userDoc.email, emailData).catch(() => {})
+              }
+            }
+          } catch { /* ignore */ }
+        }
+      }
 
       return NextResponse.json({ success: true, booking: updated })
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  } catch (error: any) {
-    console.error('Booking action error:', error)
+  } catch (error) {
     return NextResponse.json(
-      { error: error.message || 'Failed to process booking action' },
+      { error: 'Failed to process booking action' },
       { status: 500 },
     )
   }

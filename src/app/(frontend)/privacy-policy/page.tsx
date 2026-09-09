@@ -97,10 +97,10 @@ export default function PrivacyPolicyPage() {
                 If you have questions, want to correct your information, or want
                 to ask about deletion, please contact Artistora at{' '}
                 <a
-                  href="mailto:gohilketul5@gmail.com"
+                  href="mailto:hello@artistora.com"
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                 >
-                  gohilketul5@gmail.com
+                  hello@artistora.com
                 </a>
                 .
               </p>

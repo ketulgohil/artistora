@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 
 const CONTAINER = 'mx-auto max-w-3xl! px-4! md:px-6!'
@@ -68,6 +68,8 @@ export default function GetQuotePage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [submittedData, setSubmittedData] = useState<{ leadId: number; accessUrl: string } | null>(null)
   const [form, setForm] = useState({
     customerName: '',
     customerPhone: '',
@@ -79,11 +81,26 @@ export default function GetQuotePage() {
     budgetRange: '',
     designStyle: '',
     additionalNotes: '',
+    referenceImages: [] as Array<{ image: number; preview: string }>,
   })
 
   const update = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     setError('')
+  }
+
+  const handleImageUpload = async (_e: React.ChangeEvent<HTMLInputElement>) => {
+    // Guest reference-image uploads disabled for security.
+    // Reference images can be shared after quote access is established.
+    setError('Reference image uploads are temporarily unavailable. You can share images after receiving your quote access link.')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeImage = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      referenceImages: prev.referenceImages.filter((_, i) => i !== index),
+    }))
   }
 
   const canNext = () => {
@@ -103,10 +120,12 @@ export default function GetQuotePage() {
           ...form,
           guestCount: form.guestCount ? Number(form.guestCount) : undefined,
           customerEmail: form.customerEmail || undefined,
+          referenceImages: form.referenceImages.map((img) => ({ image: img.image })),
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Submission failed')
+      setSubmittedData({ leadId: data.leadId, accessUrl: data.accessUrl })
       setSubmitted(true)
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.')
@@ -115,7 +134,8 @@ export default function GetQuotePage() {
     }
   }
 
-  if (submitted) {
+  if (submitted && submittedData) {
+    const quoteLink = submittedData.accessUrl
     return (
       <section className={SECTION}>
         <div className={CONTAINER}>
@@ -134,6 +154,22 @@ export default function GetQuotePage() {
             <p className="mt-3! text-sm text-ink-muted">
               You will be contacted on {form.customerPhone} via WhatsApp or call.
             </p>
+
+            <div className="mt-6! rounded-xl border border-brand/20 bg-brand/5 p-5!">
+              <p className="mb-2! text-sm font-semibold text-ink">Your Secure Quote Link</p>
+              <p className="mb-3! text-xs text-ink-muted">Save this link to view and accept quotes from artists:</p>
+              <div className="flex items-center gap-2! rounded-lg bg-white border border-line p-3!">
+                <code className="flex-1 truncate text-xs text-brand-deep font-mono">{quoteLink}</code>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(quoteLink); alert('Link copied!') }}
+                  className="shrink-0 cursor-pointer rounded-lg bg-brand px-3! py-1.5! text-xs font-semibold text-white hover:bg-brand-dark transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+              <p className="mt-2! text-[11px] text-ink-muted">Do not share this link — it is linked to your quote request.</p>
+            </div>
+
             <div className="mt-8! flex flex-wrap justify-center gap-3!">
               <Link
                 href="/artists"
@@ -296,6 +332,50 @@ export default function GetQuotePage() {
                     placeholder="e.g. coverage, style, deliverables, or timing"
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
+                </div>
+                <div>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Reference Design Images (optional)</label>
+                  <p className="mb-2! text-xs text-ink-muted">Upload images of designs you like (max 5)</p>
+                  <div className="flex flex-wrap gap-3!">
+                    {form.referenceImages.map((img, i) => (
+                      <div key={i} className="relative h-20! w-20! overflow-hidden rounded-xl border border-line">
+                        <img src={img.preview} alt={`Reference ${i + 1}`} className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(i)}
+                          className="absolute -top-1 -right-1 flex h-5! w-5! items-center justify-center rounded-full bg-red-500 text-white text-xs cursor-pointer hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {form.referenceImages.length < 5 && (
+                      <label className="flex h-20! w-20! cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-line text-ink-muted transition-colors hover:border-brand hover:text-brand">
+                        {false ? (
+                          <svg className="animate-spin h-5! w-5!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                            <path d="M4 12a8 8 0 018-8" strokeLinecap="round" />
+                          </svg>
+                        ) : (
+                          <>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 5v14M5 12h14" />
+                            </svg>
+                            <span className="text-xs mt-0.5">Add</span>
+                          </>
+                        )}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handleImageUpload}
+                          disabled={false}
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="mb-1.5! block text-sm font-medium text-ink-soft">Additional Notes (optional)</label>

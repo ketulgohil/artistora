@@ -1,21 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const limiter = await rateLimitAsync(ip, RATE_LIMITS.login, 'login')
+
+    if (!limiter.allowed) {
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((limiter.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        },
+      )
+    }
+
     const payload = await getPayload({ config })
     const body = await request.json()
 
     const { email, password } = body
 
-    if (!email || !password) {
+    if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
 
     const result = await payload.login({
       collection: 'users',
-      data: { email, password },
+      data: { email: email.trim().toLowerCase(), password },
     })
 
     if (!result.token || !result.user) {
@@ -36,8 +53,7 @@ export async function POST(request: NextRequest) {
     })
 
     return response
-  } catch (error: any) {
-    console.error('Login error:', error)
+  } catch (error) {
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
   }
 }

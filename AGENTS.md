@@ -134,6 +134,11 @@ All 17 routes working (200 OK), content seeded, Payload CMS configured.
 - P0.6: Multi-Artist Bookings (assignedArtists, roles, statuses, notifications)
 - P0.7: Payload Access Control (role & owner-level security across all collections)
 
+### Homepage Stats Section (Removed, May Re-add)
+- Stats bar with "Response Time", "Verified Artists", "Areas Covered" removed from homepage
+- Original values: 24h, 100%, 50+
+- TODO: Consider adding back with a 4th stat (e.g. "4.9/5 Client Rating" or "100+ Artists")
+
 ### Analytics Dashboard (Completed)
 - Recharts charting library installed
 - `/api/dashboard/analytics` endpoint (computed on-demand, no counters)

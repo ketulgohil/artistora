@@ -162,7 +162,7 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
                   <img
                     src={getMediaUrl(artist.profilePhoto)}
                     alt={artist.displayName}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     decoding="async"
                   />

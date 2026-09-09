@@ -120,14 +120,6 @@ export default function SubscriptionPage() {
                 Artistora is starting with free onboarding. As the marketplace grows, you can choose the level of visibility, portfolio space, and insight that fits your business.
               </p>
               <div className="mt-8! flex flex-wrap gap-3!">
-                <a
-                  href="https://wa.me/917405387720?text=Hi%20Artistora%2C%20I%27d%20like%20to%20know%20about%20artist%20plans."
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-12! items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
-                >
-                  Ask about the pilot <ArrowIcon />
-                </a>
                 <Link
                   href="/dashboard"
                   className="inline-flex min-h-12! items-center justify-center gap-2! rounded-full border border-brand/35 bg-white/50 px-7! py-3! text-sm font-semibold text-brand-deep transition-colors hover:border-brand hover:bg-brand/5"

@@ -7,6 +7,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { PrivateMedia } from './collections/PrivateMedia'
 import { Services } from './collections/Services'
 import { PortfolioCategories } from './collections/PortfolioCategories'
 import { PortfolioItems } from './collections/PortfolioItems'
@@ -41,7 +42,10 @@ const s3Plugin = useS3
           secretAccessKey: process.env.PAYLOAD_S3_SECRET_ACCESS_KEY || '',
         },
       },
-      collections: { media: {} },
+      collections: {
+        media: {},
+        'private-media': {},
+      },
     })
   : null
 
@@ -53,20 +57,10 @@ const isRemoteDb =
   dbUrl.includes('pooler') ||
   dbUrl.includes('amazonaws.com')
 
-// node-postgres lets connection-string options override the explicit `ssl`
-// object. Remove sslmode so the remote-db TLS settings below are authoritative
-// (Supabase's pooler certificate is not trusted by the local Node CA bundle).
-const connectionString = (() => {
-  if (!isRemoteDb || !dbUrl) return dbUrl
+// neon.tech pooler uses session mode with a generous limit; no need to strip sslmode
+const connectionString = dbUrl
 
-  try {
-    const url = new URL(dbUrl)
-    url.searchParams.delete('sslmode')
-    return url.toString()
-  } catch {
-    return dbUrl
-  }
-})()
+const isProd = process.env.NODE_ENV === 'production'
 
 export default buildConfig({
   admin: {
@@ -74,10 +68,16 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    // Disable GraphQL playground in production
+    meta: {
+      titleSuffix: ' — Artistora CMS',
+      description: 'Artistora Artist Marketplace CMS',
+    },
   },
   collections: [
     Users,
     Media,
+    PrivateMedia,
     Services,
     PortfolioCategories,
     PortfolioItems,
@@ -100,12 +100,19 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString,
-      max: 10,
+      max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
-      ssl: isRemoteDb ? { rejectUnauthorized: false } : false,
+      // Only disable TLS verification for local development
+      ssl: isRemoteDb && isProd
+        ? { rejectUnauthorized: true }
+        : isRemoteDb
+          ? { rejectUnauthorized: false }
+          : false,
     },
   }),
   sharp,
   plugins: s3Plugin ? [s3Plugin] : [],
+  // Security: disable GraphQL in production unless explicitly enabled
+  graphQL: isProd ? { disablePlaygroundInProduction: true, disableIntrospectionInProduction: true } : {},
 })

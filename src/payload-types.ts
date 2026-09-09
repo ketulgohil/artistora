@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'private-media': PrivateMedia;
     services: Service;
     'portfolio-categories': PortfolioCategory;
     'portfolio-items': PortfolioItem;
@@ -90,6 +91,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'private-media': PrivateMediaSelect<false> | PrivateMediaSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     'portfolio-categories': PortfolioCategoriesSelect<false> | PortfolioCategoriesSelect<true>;
     'portfolio-items': PortfolioItemsSelect<false> | PortfolioItemsSelect<true>;
@@ -180,7 +182,8 @@ export interface User {
  */
 export interface Media {
   id: number;
-  alt: string;
+  alt?: string | null;
+  uploadedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -192,6 +195,137 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "private-media".
+ */
+export interface PrivateMedia {
+  id: number;
+  alt?: string | null;
+  uploadedBy?: (number | null) | User;
+  /**
+   * Tie this file to a specific lead
+   */
+  leadId?: (number | null) | Lead;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
+  /**
+   * Links lead to logged-in customer account
+   */
+  userId?: (number | null) | User;
+  eventType:
+    | 'wedding'
+    | 'engagement'
+    | 'birthday'
+    | 'baby-shower'
+    | 'corporate'
+    | 'festival'
+    | 'bridal'
+    | 'family-function'
+    | 'other';
+  eventDate: string;
+  eventLocation: string;
+  guestCount?: number | null;
+  budgetRange?:
+    | ('under-2000' | '2000-5000' | '5000-10000' | '10000-20000' | '20000-50000' | 'above-50000' | 'unsure')
+    | null;
+  serviceType?: (number | null) | Service;
+  designStyle?: string | null;
+  additionalNotes?: string | null;
+  referenceImages?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  matchedArtists?: (number | Artist)[] | null;
+  acceptedQuote?: (number | null) | Quote;
+  status?:
+    | (
+        | 'new'
+        | 'reviewing'
+        | 'artists_matched'
+        | 'quotes_received'
+        | 'customer_contacted'
+        | 'artist_selected'
+        | 'booking_pending'
+        | 'booked'
+        | 'lost'
+        | 'closed'
+      )
+    | null;
+  lostReason?: string | null;
+  assignedAdmin?: (number | null) | User;
+  /**
+   * SHA-256 hash of the access token (raw token is never stored)
+   */
+  viewTokenHash?: string | null;
+  /**
+   * Token expiry date (7 days from creation)
+   */
+  viewTokenExpiresAt?: string | null;
+  /**
+   * Set when token is revoked (e.g. after quote acceptance)
+   */
+  viewTokenRevokedAt?: string | null;
+  /**
+   * SHA-256 hash of booking access token (issued after quote acceptance)
+   */
+  bookingAccessTokenHash?: string | null;
+  /**
+   * Booking access token expiry (30 days)
+   */
+  bookingAccessTokenExpiresAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -209,42 +343,6 @@ export interface Service {
         id?: string | null;
       }[]
     | null;
-  order?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "portfolio-categories".
- */
-export interface PortfolioCategory {
-  id: number;
-  title: string;
-  slug?: string | null;
-  description?: string | null;
-  order?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "portfolio-items".
- */
-export interface PortfolioItem {
-  id: number;
-  image: number | Media;
-  category: number | PortfolioCategory;
-  /**
-   * Broad service category used for the public portfolio filter
-   */
-  serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other';
-  /**
-   * The artist whose work is shown in this portfolio item
-   */
-  artist?: (number | null) | Artist;
-  altText: string;
-  featured?: boolean | null;
-  description?: string | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -300,7 +398,6 @@ export interface Artist {
     | null;
   verified?: boolean | null;
   approvalStatus?: ('pending' | 'approved' | 'rejected' | 'suspended') | null;
-  verificationStatus?: ('unverified' | 'verified') | null;
   rating?: number | null;
   reviewCount?: number | null;
   /**
@@ -327,6 +424,63 @@ export interface Artist {
    * Total earnings in INR from completed bookings
    */
   totalEarnings?: number | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes".
+ */
+export interface Quote {
+  id: number;
+  lead: number | Lead;
+  artist: number | Artist;
+  priceType?: ('package' | 'hourly' | 'per_person' | 'custom_quote') | null;
+  unitRate?: number | null;
+  units?: number | null;
+  amount: number;
+  message?: string | null;
+  estimatedHours?: number | null;
+  travelFee?: number | null;
+  numberOfArtists?: number | null;
+  validUntil?: string | null;
+  status?: ('pending' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired' | 'withdrawn') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-categories".
+ */
+export interface PortfolioCategory {
+  id: number;
+  title: string;
+  slug?: string | null;
+  description?: string | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-items".
+ */
+export interface PortfolioItem {
+  id: number;
+  image: number | Media;
+  category: number | PortfolioCategory;
+  /**
+   * Broad service category used for the public portfolio filter
+   */
+  serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other';
+  /**
+   * The artist whose work is shown in this portfolio item
+   */
+  artist?: (number | null) | Artist;
+  altText: string;
+  featured?: boolean | null;
+  description?: string | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -421,76 +575,6 @@ export interface StaticPage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "leads".
- */
-export interface Lead {
-  id: number;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string | null;
-  eventType:
-    | 'wedding'
-    | 'engagement'
-    | 'birthday'
-    | 'baby-shower'
-    | 'corporate'
-    | 'festival'
-    | 'bridal'
-    | 'family-function'
-    | 'other';
-  eventDate: string;
-  eventLocation: string;
-  guestCount?: number | null;
-  budgetRange?:
-    | ('under-2000' | '2000-5000' | '5000-10000' | '10000-20000' | '20000-50000' | 'above-50000' | 'unsure')
-    | null;
-  serviceType?: (number | null) | Service;
-  designStyle?: string | null;
-  additionalNotes?: string | null;
-  matchedArtists?: (number | Artist)[] | null;
-  acceptedQuote?: (number | null) | Quote;
-  status?:
-    | (
-        | 'new'
-        | 'reviewing'
-        | 'artists_matched'
-        | 'quotes_received'
-        | 'customer_contacted'
-        | 'artist_selected'
-        | 'booking_pending'
-        | 'booked'
-        | 'lost'
-        | 'closed'
-      )
-    | null;
-  lostReason?: string | null;
-  assignedAdmin?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "quotes".
- */
-export interface Quote {
-  id: number;
-  lead: number | Lead;
-  artist: number | Artist;
-  priceType?: ('package' | 'hourly' | 'per_person' | 'custom_quote') | null;
-  unitRate?: number | null;
-  units?: number | null;
-  amount: number;
-  message?: string | null;
-  estimatedHours?: number | null;
-  travelFee?: number | null;
-  numberOfArtists?: number | null;
-  validUntil?: string | null;
-  status?: ('pending' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired' | 'withdrawn') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "bookings".
  */
 export interface Booking {
@@ -537,6 +621,10 @@ export interface Booking {
   paymentStatus?: ('unpaid' | 'pending' | 'partially_paid' | 'paid' | 'refunded') | null;
   paymentMethod?: ('cash' | 'upi' | 'bank_transfer' | 'online') | null;
   paymentReference?: string | null;
+  /**
+   * Links booking to logged-in customer account
+   */
+  userId?: (number | null) | User;
   status?:
     | ('requested' | 'artist_pending' | 'confirmed' | 'in_progress' | 'completed' | 'declined' | 'cancelled')
     | null;
@@ -601,6 +689,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'private-media';
+        value: number | PrivateMedia;
       } | null)
     | ({
         relationTo: 'services';
@@ -722,6 +814,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  uploadedBy?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -733,6 +826,64 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "private-media_select".
+ */
+export interface PrivateMediaSelect<T extends boolean = true> {
+  alt?: T;
+  uploadedBy?: T;
+  leadId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -872,7 +1023,6 @@ export interface ArtistsSelect<T extends boolean = true> {
       };
   verified?: T;
   approvalStatus?: T;
-  verificationStatus?: T;
   rating?: T;
   reviewCount?: T;
   searchRank?: T;
@@ -902,6 +1052,7 @@ export interface LeadsSelect<T extends boolean = true> {
   customerName?: T;
   customerPhone?: T;
   customerEmail?: T;
+  userId?: T;
   eventType?: T;
   eventDate?: T;
   eventLocation?: T;
@@ -910,11 +1061,22 @@ export interface LeadsSelect<T extends boolean = true> {
   serviceType?: T;
   designStyle?: T;
   additionalNotes?: T;
+  referenceImages?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   matchedArtists?: T;
   acceptedQuote?: T;
   status?: T;
   lostReason?: T;
   assignedAdmin?: T;
+  viewTokenHash?: T;
+  viewTokenExpiresAt?: T;
+  viewTokenRevokedAt?: T;
+  bookingAccessTokenHash?: T;
+  bookingAccessTokenExpiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -973,6 +1135,7 @@ export interface BookingsSelect<T extends boolean = true> {
   paymentStatus?: T;
   paymentMethod?: T;
   paymentReference?: T;
+  userId?: T;
   status?: T;
   declineReason?: T;
   cancelledBy?: T;

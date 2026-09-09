@@ -89,9 +89,9 @@
 ## P2 — Scale & Monetization Readiness
 
 ### 4.1 Payments / Advance Booking
-- [x] totalAmount, advanceAmount, remainingAmount
-- [x] platformFee, artistAmount
-- [x] paymentStatus: unpaid, pending, partially_paid, paid, refunded
+- [x] ~~totalAmount, advanceAmount, remainingAmount~~ — Not taking advance payments
+- [x] ~~platformFee, artistAmount~~ — Not taking advance payments
+- [x] ~~paymentStatus: unpaid, pending, partially_paid, paid, refunded~~ — Not taking advance payments
 
 ### 4.2 Artist Analytics
 - [x] Profile views, leads, quotes, bookings won, conversion rate, reviews, earnings

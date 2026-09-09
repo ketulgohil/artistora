@@ -525,6 +525,49 @@ export async function sendBookingCancelledEmail(to: string, data: {
   })
 }
 
+// ── Quote Access Link (email to customer with secure token) ──
+export async function sendQuoteAccessLink(to: string, data: {
+  customerName: string
+  leadId: string
+  accessUrl: string
+}) {
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; color: #04224b;">
+      <div style="background: linear-gradient(135deg, #ec6783, #d14a68); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 22px;">Your Quotes Are Ready</h1>
+        <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">Artistora Marketplace</p>
+      </div>
+      <div style="background: #ffffff; padding: 32px; border: 1px solid #f1d9dc; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="margin: 0 0 16px; font-size: 15px;">Hi <strong>${data.customerName}</strong>,</p>
+        <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #41506b;">
+          Artists have sent quotes for your event. Click the button below to view and compare them. This link is single-use and expires in 7 days.
+        </p>
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${data.accessUrl}" style="display: inline-block; padding: 14px 36px; background: #ec6783; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 15px;">View Your Quotes</a>
+        </div>
+        <div style="background: #fdeeee; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #41506b;">
+            <strong>Note:</strong> This link can only be used once. If you need a new link, please contact us.
+          </p>
+        </div>
+        <p style="margin: 20px 0 0; font-size: 14px; line-height: 1.6; color: #41506b;">
+          Questions? Reach us at <strong>+91 7405387720</strong> or on WhatsApp.
+        </p>
+        <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>
+        </div>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: 'Your Artistora Quotes Are Ready — View Now',
+    html,
+  })
+}
+
 // ── Review Request ──
 export async function sendReviewRequestEmail(to: string, data: {
   customerName: string
@@ -571,6 +614,41 @@ export async function sendReviewRequestEmail(to: string, data: {
     from: FROM_EMAIL,
     to,
     subject: `How was your ${EVENT_LABELS[data.eventType] || data.eventType} with ${data.artistName}?`,
+    html,
+  })
+}
+
+export async function sendPasswordResetEmail(to: string, data: {
+  name: string
+  resetUrl: string
+}) {
+  const html = `
+    <div style="font-family: 'Manrope', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #f1d9dc;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #04224B;">Reset Your Password</h1>
+      </div>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        Hi ${data.name},
+      </p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #41506b; line-height: 1.6;">
+        We received a request to reset your Artistora account password. Click the button below to set a new password:
+      </p>
+      <div style="margin: 28px 0; text-align: center;">
+        <a href="${data.resetUrl}" style="display: inline-block; padding: 12px 32px; background: #ec6783; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 14px;">Reset Password</a>
+      </div>
+      <p style="margin: 0 0 8px; font-size: 13px; color: #7e8aa3; line-height: 1.5;">
+        This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+      </p>
+      <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: 'Reset your Artistora password',
     html,
   })
 }

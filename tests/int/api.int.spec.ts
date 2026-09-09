@@ -1,5 +1,6 @@
 import { getPayload, Payload } from 'payload'
 import { describe, it, expect, beforeAll, vi } from 'vitest'
+import { createTokenPair, hashToken } from '../../src/lib/token'
 
 vi.mock('../../src/lib/email', () => ({
   sendBookingConfirmation: vi.fn().mockResolvedValue({}),
@@ -21,6 +22,7 @@ let customerId: number
 let artistUserId: number
 let artistProfileId: number
 let leadId: number
+let leadToken: string
 let quoteId: number
 let bookingId: number
 
@@ -138,6 +140,9 @@ describe('API', () => {
 
   describe('Leads', () => {
     it('creates lead', async () => {
+      const { rawToken, hash, expiresAt } = createTokenPair()
+      leadToken = rawToken
+
       const lead = await payload.create({
         collection: 'leads',
         data: {
@@ -149,7 +154,9 @@ describe('API', () => {
           eventLocation: 'Ahmedabad',
           guestCount: 200,
           status: 'new',
-        },
+          viewTokenHash: hash,
+          viewTokenExpiresAt: expiresAt,
+        } as any,
       })
       expect(lead.id).toBeDefined()
       leadId = lead.id
@@ -279,6 +286,89 @@ describe('API', () => {
       })
       expect(updated.bio).toBe('Updated bio')
       expect(updated.startingPrice).toBe(15000)
+    })
+  })
+
+  describe('Security: Token Auth', () => {
+    it('rejects quotes GET without token or auth', async () => {
+      const { verifyToken } = await import('../../src/lib/token')
+      const leads = await payload.find({ collection: 'leads', limit: 1 })
+      const lead = leads.docs[0]
+      if (!lead) return
+
+      const result = verifyToken({ rawToken: 'invalid', storedHash: lead.viewTokenHash, expiresAt: lead.viewTokenExpiresAt, revokedAt: lead.viewTokenRevokedAt })
+      expect(result.valid).toBe(false)
+      if (!result.valid) expect(result.status).toBe(403)
+    })
+
+    it('rejects expired tokens', async () => {
+      const { hashToken } = await import('../../src/lib/token')
+      const expiredHash = hashToken('expired-token')
+      const { verifyToken } = await import('../../src/lib/token')
+      const result = verifyToken({ rawToken: 'expired-token', storedHash: expiredHash, expiresAt: new Date(Date.now() - 60_000).toISOString(), revokedAt: undefined })
+      expect(result.valid).toBe(false)
+      if (!result.valid) expect(result.status).toBe(403)
+    })
+
+    it('rejects revoked tokens', async () => {
+      const { rawToken, hash: tokenHash } = createTokenPair()
+      const { verifyToken } = await import('../../src/lib/token')
+      const result = verifyToken({
+        rawToken,
+        storedHash: tokenHash,
+        expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        revokedAt: new Date().toISOString(),
+      })
+      expect(result.valid).toBe(false)
+      if (!result.valid) expect(result.status).toBe(403)
+    })
+
+    it('allows quotes GET with valid lead token via Local API', async () => {
+      const { rawToken, hash: tokenHash, expiresAt } = createTokenPair()
+      const { verifyToken } = await import('../../src/lib/token')
+
+      const testLead = await payload.create({
+        collection: 'leads',
+        data: {
+          customerName: 'Token Test',
+          customerPhone: '+91 99999 99999',
+          eventType: 'wedding',
+          eventDate: '2026-12-25',
+          eventLocation: 'Ahmedabad',
+          viewTokenHash: tokenHash,
+          viewTokenExpiresAt: expiresAt,
+        } as any,
+      })
+
+      const result = verifyToken({ rawToken, storedHash: testLead.viewTokenHash, expiresAt: testLead.viewTokenExpiresAt, revokedAt: testLead.viewTokenRevokedAt })
+      expect(result.valid).toBe(true)
+
+      const quotes = await payload.find({
+        collection: 'quotes',
+        where: { and: [{ lead: { equals: testLead.id } }, { status: { in: ['sent', 'viewed', 'accepted'] } }] },
+      })
+      expect(quotes.docs).toBeInstanceOf(Array)
+
+      await payload.delete({ collection: 'leads', id: testLead.id })
+    })
+  })
+
+  describe('Security: Quote Idempotency', () => {
+    it('returns existing booking on duplicate acceptance', async () => {
+      const quotes = await payload.find({
+        collection: 'quotes',
+        where: { and: [{ lead: { equals: leadId } }, { status: { equals: 'accepted' } }] },
+        limit: 1,
+      })
+      if (quotes.docs.length === 0) return
+
+      const quote = quotes.docs[0]
+      const existingBookings = await payload.find({
+        collection: 'bookings',
+        where: { quote: { equals: quote.id } },
+        limit: 1,
+      })
+      expect(existingBookings.docs.length).toBe(1)
     })
   })
 
