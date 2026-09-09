@@ -73,11 +73,18 @@ export default buildConfig({
     defaultFromAddress: FROM_EMAIL,
     defaultFromName: 'Artistora',
     sendEmail: async (message) => {
-      const from = message.from
-        ? (typeof message.from === 'string' ? message.from : `${(message.from as any).name} <${(message.from as any).address}>`)
-        : FROM_EMAIL
+      let from: string
+      if (typeof message.from === 'string') {
+        from = message.from
+      } else if (message.from && 'address' in message.from) {
+        from = message.from.name
+          ? `${message.from.name} <${message.from.address}>`
+          : message.from.address
+      } else {
+        from = FROM_EMAIL
+      }
       const to = Array.isArray(message.to)
-        ? message.to.map((a: any) => typeof a === 'string' ? a : a.address).join(',')
+        ? message.to.map((a: any) => (typeof a === 'string' ? a : a.address)).join(',')
         : typeof message.to === 'string'
           ? message.to
           : (message.to as any)?.address || ''
