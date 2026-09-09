@@ -704,10 +704,10 @@ export default function DashboardPage() {
               Manage your incoming booking requests, calendar availability, and profile
             </p>
           </div>
-          <div className="flex gap-3!">
+          <div className="flex w-full flex-col gap-3! sm:w-auto sm:flex-row">
             <Link
               href={`/artists/${artist.slug}`}
-              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-transparent px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10"
+              className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-transparent px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10 sm:w-auto"
             >
               View Public Profile
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -718,7 +718,7 @@ export default function DashboardPage() {
               </Link>
             <Link
               href="/subscription"
-              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-brand/5 px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10"
+              className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-brand/5 px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10 sm:w-auto"
             >
               Plans &amp; Visibility
             </Link>
@@ -728,7 +728,7 @@ export default function DashboardPage() {
                 router.push('/')
                 router.refresh()
               }}
-              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-red-300 hover:text-red-600"
+              className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-red-300 hover:text-red-600 sm:w-auto"
             >
               Log Out
             </button>
@@ -771,10 +771,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="mb-8! flex flex-wrap gap-2! border-b border-line pb-4!">
+        <div className="mb-8! flex snap-x snap-mandatory gap-2! overflow-x-auto border-b border-line pb-4! [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setActiveTab('bookings')}
-            className={`relative flex items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`relative flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'bookings'
                 ? 'bg-brand text-white shadow-soft'
                 : 'bg-white text-ink-soft hover:bg-cream/70'
@@ -792,7 +792,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => setActiveTab('leads')}
-            className={`flex items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'leads'
                 ? 'bg-brand text-white shadow-soft'
                 : 'bg-white text-ink-soft hover:bg-cream/70'
@@ -803,7 +803,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => setActiveTab('availability')}
-            className={`flex items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'availability'
                 ? 'bg-brand text-white shadow-soft'
                 : 'bg-white text-ink-soft hover:bg-cream/70'
@@ -814,7 +814,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'profile'
                 ? 'bg-brand text-white shadow-soft'
                 : 'bg-white text-ink-soft hover:bg-cream/70'
@@ -825,7 +825,7 @@ export default function DashboardPage() {
 
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`flex items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'analytics'
                 ? 'bg-brand text-white shadow-soft'
                 : 'bg-white text-ink-soft hover:bg-cream/70'

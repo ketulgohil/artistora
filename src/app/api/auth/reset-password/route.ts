@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
-import { hashToken } from '@/lib/token'
 
 const MIN_PASSWORD_LENGTH = 6
 const MAX_PASSWORD_LENGTH = 128
@@ -37,53 +36,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash the raw token to look up the user
-    const tokenHash = hashToken(token)
-
-    const { docs: users } = await payload.find({
+    await payload.resetPassword({
       collection: 'users',
-      where: {
-        and: [
-          { resetPasswordToken: { equals: tokenHash } },
-        ],
-      },
-      limit: 1,
-    })
-
-    if (users.length === 0) {
-      return NextResponse.json(
-        { error: 'This reset link is invalid or has expired. Please request a new one.' },
-        { status: 400 },
-      )
-    }
-
-    const user = users[0]
-
-    // Check expiry
-    const expiration = (user as any).resetPasswordExpiration
-    if (!expiration || new Date(expiration) < new Date()) {
-      return NextResponse.json(
-        { error: 'This reset link has expired. Please request a new one.' },
-        { status: 400 },
-      )
-    }
-
-    // Update password and clear reset token
-    await payload.update({
-      collection: 'users',
-      id: user.id,
+      overrideAccess: true,
       data: {
+        token,
         password,
-        resetPasswordToken: null,
-        resetPasswordExpiration: null,
-      } as any,
+      },
     })
 
     return NextResponse.json({
       success: true,
       message: 'Password has been reset. You can now log in.',
     })
-  } catch {
+  } catch (error: any) {
+    const message = error?.message || 'Failed to reset password'
+    if (message.includes('expired') || message.includes('invalid') || message.includes('token')) {
+      return NextResponse.json(
+        { error: 'This reset link is invalid or has expired. Please request a new one.' },
+        { status: 400 },
+      )
+    }
     return NextResponse.json(
       { error: 'Failed to reset password' },
       { status: 500 },

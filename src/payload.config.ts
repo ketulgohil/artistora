@@ -4,6 +4,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { Resend } from 'resend'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -62,8 +63,25 @@ const connectionString = dbUrl
 
 const isProd = process.env.NODE_ENV === 'production'
 
+const resend = new Resend(process.env.RESEND_API_KEY)
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Artistora <hello@artistora.com>'
+
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com',
+  email: {
+    fromName: 'Artistora',
+    fromAddress: FROM_EMAIL,
+    transport: async ({ email }) => {
+      const from = email.from || `${FROM_EMAIL}`
+      await resend.emails.send({
+        from: typeof from === 'string' ? from : `${from.name} <${from.address}>`,
+        to: Array.isArray(email.to) ? email.to.map((a: any) => typeof a === 'string' ? a : a.address).join(',') : typeof email.to === 'string' ? email.to : (email.to as any)?.address || '',
+        subject: email.subject || '',
+        html: (typeof email.html === 'string' ? email.html : '') as string,
+        text: email.text as string | undefined,
+      })
+    },
+  } as any,
   admin: {
     user: Users.slug,
     importMap: {

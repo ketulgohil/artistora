@@ -206,7 +206,7 @@ export default function GetQuotePage() {
       {/* ── Form ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
-          <div className="rounded-3xl border border-line bg-white p-7! shadow-soft md:p-10!">
+          <div className="rounded-3xl border border-line bg-white p-5! shadow-soft sm:p-7! md:p-10!">
             <StepIndicator current={step} total={3} />
 
             {error && (
@@ -396,11 +396,11 @@ export default function GetQuotePage() {
             )}
 
             {/* Navigation */}
-            <div className="mt-8! flex items-center justify-between border-t border-line pt-6!">
+            <div className="mt-8! flex flex-col-reverse items-stretch gap-3! border-t border-line pt-6! sm:flex-row sm:items-center sm:justify-between">
               {step > 1 ? (
                 <button
                   onClick={() => setStep((s) => s - 1)}
-                  className="inline-flex min-h-10! cursor-pointer items-center justify-center rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-brand"
+                  className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-brand sm:w-auto"
                 >
                   Back
                 </button>
@@ -411,7 +411,7 @@ export default function GetQuotePage() {
                 <button
                   onClick={() => setStep((s) => s + 1)}
                   disabled={!canNext()}
-                  className="inline-flex min-h-12! cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-soft"
+                  className="inline-flex min-h-12! w-full cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-5! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-soft sm:w-auto sm:px-7!"
                 >
                   Continue
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -422,7 +422,7 @@ export default function GetQuotePage() {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="inline-flex min-h-12! cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-soft"
+                  className="inline-flex min-h-12! w-full cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-5! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-soft sm:w-auto sm:px-7!"
                 >
                   {submitting ? (
                     <>

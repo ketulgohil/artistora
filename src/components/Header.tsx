@@ -61,6 +61,13 @@ export default function Header() {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   function isActive(item: { to: string }) {
     if (item.to === '/') return pathname === '/'
     return pathname.startsWith(item.to)
@@ -91,7 +98,7 @@ export default function Header() {
               <strong className="font-display text-xl! font-bold tracking-tight text-brand-deep md:text-2xl!">
                 Artistora
               </strong>
-              <small className="text-[0.58rem] font-semibold tracking-[0.2em] text-brand uppercase md:text-[0.64rem]">
+              <small className="hidden text-[0.58rem] font-semibold tracking-[0.2em] text-brand uppercase sm:block md:text-[0.64rem]">
                 Ahmedabad&apos;s verified artist marketplace
               </small>
             </span>

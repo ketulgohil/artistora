@@ -103,8 +103,8 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
   return (
     <>
       {/* Filters */}
-      <div className="mb-8! flex flex-wrap items-center gap-3!">
-        <div className="relative flex-1 min-w-[200px] max-w-md">
+      <div className="mb-8! flex flex-col items-stretch gap-3! sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative w-full flex-1 sm:min-w-[200px] sm:max-w-md">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
@@ -121,7 +121,7 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as any)}
-          className="rounded-full border border-line bg-white px-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand cursor-pointer"
+          className="w-full rounded-full border border-line bg-white px-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand cursor-pointer sm:w-auto"
         >
           <option value="rating">Top Rated</option>
           <option value="price-low">Price: Low to High</option>
@@ -133,7 +133,7 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
           <select
             value={styleFilter}
             onChange={(e) => setStyleFilter(e.target.value)}
-            className="rounded-full border border-line bg-white px-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand cursor-pointer"
+            className="w-full rounded-full border border-line bg-white px-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand cursor-pointer sm:w-auto"
           >
             <option value="all">All Styles</option>
             {allStyles.map((style) => (
