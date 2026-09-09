@@ -28,18 +28,18 @@ export async function POST(request: NextRequest) {
       message: 'If an account with that email exists, a password reset link has been sent.',
     })
 
-    // Payload's forgotPassword sends email via configured adapter + stores token
     try {
       await payload.forgotPassword({
         collection: 'users',
         data: { email: email.trim().toLowerCase() },
       })
-    } catch {
-      // Silently ignore — always return success to prevent enumeration
+    } catch (err: any) {
+      console.error('[forgot-password] payload.forgotPassword error:', err?.message || err)
     }
 
     return successResponse
-  } catch {
+  } catch (err: any) {
+    console.error('[forgot-password] top-level error:', err?.message || err)
     return NextResponse.json(
       { error: 'Failed to process request' },
       { status: 500 },
