@@ -161,8 +161,8 @@ export const RATE_LIMITS = {
   upload: { windowMs: 60 * 60 * 1000, max: 50 },
   guestUpload: { windowMs: 60 * 60 * 1000, max: 10 },
   guestTokenValidate: { windowMs: 15 * 60 * 1000, max: 30 },
-  forgotPassword: { windowMs: 60 * 60 * 1000, max: 5 },
-  resetPassword: { windowMs: 60 * 60 * 1000, max: 5 },
+  forgotPassword: { windowMs: 15 * 60 * 1000, max: 10 },
+  resetPassword: { windowMs: 15 * 60 * 1000, max: 10 },
 } as const
 
 /**
