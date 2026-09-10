@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import SectionHeading from '@/components/SectionHeading'
+import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import { mediaFileUrl } from '@/lib/media-url'
 import {
   getSiteSettings,
@@ -415,14 +416,18 @@ export default async function HomePage() {
                 >
                   <div className="flex flex-col items-center p-6!">
                     <div className="relative mb-4!">
-                      <img
-                        src={artist.profilePhoto?.filename ? `/api/media/file/${artist.profilePhoto.filename}` : '/artistora/social-profile-1000x1000.png'}
-                        alt={artist.displayName}
-                        width={80}
-                        height={80}
-                        className="h-16! w-16! rounded-full object-contain ring-2 ring-brand/15"
-                        loading="lazy"
-                      />
+                      {artist.profilePhoto?.filename ? (
+                        <img
+                          src={`/api/media/file/${artist.profilePhoto.filename}`}
+                          alt={artist.displayName}
+                          width={80}
+                          height={80}
+                          className="h-16! w-16! rounded-full object-contain ring-2 ring-brand/15"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <ArtistPlaceholder name={artist.displayName} size="sm" className="ring-2 ring-brand/15" />
+                      )}
                       {artist.verified && (
                         <span className="absolute -bottom-1 -right-1 inline-flex h-5! w-5! items-center justify-center rounded-full bg-green text-white">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

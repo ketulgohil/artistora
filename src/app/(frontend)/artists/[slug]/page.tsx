@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getArtistBySlug, mediaUrl, getPayloadClient } from '@/lib/payload'
 import SectionHeading from '@/components/SectionHeading'
+import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -184,11 +185,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                       className="aspect-square w-full max-w-[340px] rounded-[1.7rem] object-contain"
                     />
                   ) : (
-                    <div className="flex aspect-square w-full max-w-[340px] items-center justify-center rounded-[1.7rem] bg-cream-deep">
-                      <span className="font-display text-7xl! text-brand/30">
-                        {artist.displayName?.charAt(0)}
-                      </span>
-                    </div>
+                    <ArtistPlaceholder name={artist.displayName} size="lg" className="aspect-square w-full max-w-[340px]" />
                   )}
                 </div>
               </div>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 
 function Star({ filled = true }: { filled?: boolean }) {
   return (
@@ -167,11 +168,7 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
                     decoding="async"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <span className="font-display text-5xl! text-brand/30">
-                      {artist.displayName?.charAt(0)}
-                    </span>
-                  </div>
+                  <ArtistPlaceholder name={artist.displayName} size="md" />
                 )}
                 {artist.verified && (
                   <span className="absolute top-3! right-3!">

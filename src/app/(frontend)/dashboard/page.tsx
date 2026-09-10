@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, FunnelChart, Funnel, LabelList,
@@ -1571,11 +1572,7 @@ export default function DashboardPage() {
                         className="h-28! w-28! rounded-full object-contain ring-4 ring-brand/20"
                       />
                     ) : (
-                      <div className="flex h-28! w-28! items-center justify-center rounded-full bg-cream-deep ring-4 ring-brand/20">
-                        <span className="font-display text-3xl! text-brand/40">
-                          {artist.displayName?.charAt(0)}
-                        </span>
-                      </div>
+                      <ArtistPlaceholder name={artist.displayName} size="sm" className="h-28! w-28! ring-4 ring-brand/20" />
                     )}
                   </div>
                   <label className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-brand">
