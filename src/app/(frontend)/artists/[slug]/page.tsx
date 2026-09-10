@@ -126,6 +126,8 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   const phone = artist.whatsappNumber || artist.phone
   const whatsappUrl = phone ? `https://wa.me/91${phone.replace(/\D/g, '').replace(/^91/, '')}` : ''
   const phoneUrl = phone ? `tel:+91${phone.replace(/\D/g, '').replace(/^91/, '')}` : ''
+  const name = artist.displayName || 'Artist'
+  const location = artist.city || 'Ahmedabad'
 
   return (
     <>
