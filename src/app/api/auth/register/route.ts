@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { sendCustomerWelcome, sendArtistWelcome } from '@/lib/email'
+import { sendCustomerWelcome, sendArtistWelcome, sendAdminNewArtistNotification } from '@/lib/email'
 
 const MAX_NAME_LENGTH = 100
 const MAX_EMAIL_LENGTH = 254
@@ -84,6 +84,16 @@ export async function POST(request: NextRequest) {
     // Send welcome email (non-blocking)
     const emailFn = requestedRole === 'artist' ? sendArtistWelcome : sendCustomerWelcome
     emailFn(email.trim().toLowerCase(), name.trim()).catch(() => {})
+
+    // Notify admin of new artist registration (non-blocking)
+    if (requestedRole === 'artist') {
+      sendAdminNewArtistNotification({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: typeof phone === 'string' ? phone.trim() : undefined,
+        city: typeof city === 'string' ? city.trim() : undefined,
+      }).catch(() => {})
+    }
 
     // Log the user in by creating a session cookie
     const loginResult = await payload.login({

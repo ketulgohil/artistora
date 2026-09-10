@@ -189,6 +189,50 @@ export async function sendArtistWelcome(to: string, name: string) {
   })
 }
 
+export async function sendAdminNewArtistNotification(artistData: {
+  name: string
+  email: string
+  phone?: string
+  city?: string
+}) {
+  const adminEmail = process.env.RESEND_NOTIFY_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@artistora.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; color: #04224b;">
+      <div style="background: linear-gradient(135deg, #031936, #04224b); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: #ec6783; margin: 0; font-size: 22px;">New Artist Registration</h1>
+        <p style="color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px;">Artistora Admin</p>
+      </div>
+      <div style="background: #ffffff; padding: 32px; border: 1px solid #f1d9dc; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="margin: 0 0 20px; font-size: 15px;">A new artist has registered on Artistora and is pending approval.</p>
+        <div style="background: #fdeeee; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+            <tr><td style="padding: 6px 0; color: #7e8aa3; width: 120px;">Name</td><td style="padding: 6px 0; font-weight: 600;">${artistData.name}</td></tr>
+            <tr><td style="padding: 6px 0; color: #7e8aa3;">Email</td><td style="padding: 6px 0;"><a href="mailto:${artistData.email}" style="color: #d14a68; text-decoration: none;">${artistData.email}</a></td></tr>
+            ${artistData.phone ? `<tr><td style="padding: 6px 0; color: #7e8aa3;">Phone</td><td style="padding: 6px 0;">${artistData.phone}</td></tr>` : ''}
+            ${artistData.city ? `<tr><td style="padding: 6px 0; color: #7e8aa3;">City</td><td style="padding: 6px 0;">${artistData.city}</td></tr>` : ''}
+            <tr><td style="padding: 6px 0; color: #7e8aa3;">Status</td><td style="padding: 6px 0;"><span style="background: #fef3cd; color: #856404; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pending Approval</span></td></tr>
+          </table>
+        </div>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${siteUrl}/admin/collections/artists" style="display: inline-block; background: linear-gradient(135deg, #ec6783, #d14a68); color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Review in Admin Panel</a>
+        </div>
+        <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora Admin Notifications</p>
+        </div>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: adminEmail,
+    subject: `New Artist Registered: ${artistData.name} — Pending Approval`,
+    html,
+  })
+}
+
 const EVENT_LABELS: Record<string, string> = {
   wedding: 'Wedding',
   engagement: 'Engagement',
