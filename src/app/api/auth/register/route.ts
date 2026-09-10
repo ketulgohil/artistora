@@ -15,9 +15,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }
     const payload = await getPayload({ config })
-    const body = await request.json()
 
-    const { name, email, password, role, phone, city } = body
+    // Handle both FormData and JSON
+    let name: string, email: string, password: string, role: string, phone: string, city: string, bio: string, startingPrice: string
+    let profilePhotoFile: File | null = null
+
+    const contentType = request.headers.get('content-type') || ''
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData()
+      name = formData.get('name') as string
+      email = formData.get('email') as string
+      password = formData.get('password') as string
+      role = formData.get('role') as string
+      phone = formData.get('phone') as string || ''
+      city = formData.get('city') as string || 'Ahmedabad'
+      bio = formData.get('bio') as string || ''
+      startingPrice = formData.get('startingPrice') as string || ''
+      profilePhotoFile = formData.get('profilePhoto') as File | null
+      if (!profilePhotoFile || profilePhotoFile.size === 0) profilePhotoFile = null
+    } else {
+      const body = await request.json()
+      name = body.name
+      email = body.email
+      password = body.password
+      role = body.role
+      phone = body.phone || ''
+      city = body.city || 'Ahmedabad'
+      bio = body.bio || ''
+      startingPrice = body.startingPrice || ''
+    }
 
     // Input validation
     if (!name || !email || !password) {
@@ -37,8 +63,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Only allow customer or artist registration — never admin
-    const allowedRoles = ['customer', 'artist']
-    const requestedRole = allowedRoles.includes(role) ? role : 'customer'
+    const allowedRoles = ['customer', 'artist'] as const
+    const requestedRole: 'customer' | 'artist' = allowedRoles.includes(role as any) ? (role as 'customer' | 'artist') : 'customer'
+
+    // Artist-specific validation
+    if (requestedRole === 'artist') {
+      if (!bio || typeof bio !== 'string' || bio.trim().length < 20) {
+        return NextResponse.json({ error: 'Bio must be at least 20 characters' }, { status: 400 })
+      }
+      if (!startingPrice || isNaN(Number(startingPrice)) || Number(startingPrice) < 0) {
+        return NextResponse.json({ error: 'Please enter a valid starting price' }, { status: 400 })
+      }
+    }
 
     // Check if user already exists
     const existing = await payload.find({
@@ -62,10 +98,34 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // If registering as artist, create an empty artist profile
+    // If registering as artist, create artist profile with new fields
     let artistProfile = null
     if (requestedRole === 'artist') {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+      // Upload profile photo if provided
+      let profilePhotoId: number | undefined
+      if (profilePhotoFile && profilePhotoFile.size > 0) {
+        try {
+          const uploaded = await payload.create({
+            collection: 'media',
+            data: {
+              alt: `${name.trim()} profile photo`,
+            },
+            filePath: undefined,
+            file: {
+              data: Buffer.from(await profilePhotoFile.arrayBuffer()),
+              name: profilePhotoFile.name,
+              mimetype: profilePhotoFile.type,
+              size: profilePhotoFile.size,
+            },
+          } as any)
+          profilePhotoId = uploaded.id
+        } catch (err) {
+          console.error('Failed to upload profile photo:', err)
+        }
+      }
+
       artistProfile = await payload.create({
         collection: 'artists',
         data: {
@@ -73,8 +133,10 @@ export async function POST(request: NextRequest) {
           slug: `${slug}-${user.id}`,
           user: user.id,
           phone: typeof phone === 'string' ? phone.trim().slice(0, 20) : '0000000000',
-          bio: 'Profile coming soon',
+          bio: bio.trim(),
           city: typeof city === 'string' ? city.trim().slice(0, 100) : 'Ahmedabad',
+          startingPrice: Number(startingPrice) || 0,
+          ...(profilePhotoId ? { profilePhoto: profilePhotoId } : {}),
           verified: false,
           approvalStatus: 'pending',
         } as any,

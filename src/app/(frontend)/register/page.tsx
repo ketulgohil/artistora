@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [form, setForm] = useState({
     name: '',
@@ -13,8 +14,12 @@ export default function RegisterPage() {
     password: '',
     phone: '',
     city: 'Ahmedabad',
+    bio: '',
+    startingPrice: '',
     role: 'customer' as 'customer' | 'artist',
   })
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string>('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -38,16 +43,39 @@ export default function RegisterPage() {
     setError('')
   }
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Profile photo must be under 5MB')
+      return
+    }
+    setProfilePhoto(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
+      const formData = new FormData()
+      formData.append('name', form.name)
+      formData.append('email', form.email)
+      formData.append('password', form.password)
+      formData.append('role', form.role)
+      if (form.phone) formData.append('phone', form.phone)
+      if (form.city) formData.append('city', form.city)
+      if (form.role === 'artist') {
+        formData.append('bio', form.bio)
+        formData.append('startingPrice', form.startingPrice)
+        if (profilePhoto) formData.append('profilePhoto', profilePhoto)
+      }
+
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: formData,
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Registration failed')
@@ -294,28 +322,94 @@ export default function RegisterPage() {
 
             {/* Artist optional Phone & City fields */}
             {!isCustomer && (
-              <div className="grid grid-cols-1 gap-4! sm:grid-cols-2">
+              <>
+                <div className="grid grid-cols-1 gap-4! sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">Phone / WhatsApp *</label>
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                      placeholder="e.g. 9876543210"
+                      required
+                      className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">City *</label>
+                    <input
+                      type="text"
+                      value={form.city}
+                      onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+                      placeholder="e.g. Ahmedabad"
+                      required
+                      className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Profile Photo */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Phone / WhatsApp</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Profile Photo *</label>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex cursor-pointer items-center gap-4! rounded-xl border-2 border-dashed border-line bg-cream/30 p-4! transition-colors hover:border-brand/50 hover:bg-brand/5"
+                  >
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" className="h-16! w-16! rounded-full object-cover ring-2 ring-brand/20" />
+                    ) : (
+                      <div className="flex h-16! w-16! items-center justify-center rounded-full bg-cream-deep text-ink-muted">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {profilePhoto ? 'Change photo' : 'Upload profile photo'}
+                      </p>
+                      <p className="text-xs text-ink-muted">JPG, PNG. Max 5MB.</p>
+                    </div>
+                  </div>
                   <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                    placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
                   />
                 </div>
+
+                {/* Bio */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">City</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Bio / About You *</label>
+                  <textarea
+                    value={form.bio}
+                    onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+                    placeholder="Tell customers about your experience, style, and what makes you unique..."
+                    required
+                    rows={3}
+                    className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 resize-none"
+                  />
+                  <p className="mt-1! text-xs text-ink-muted">Min 20 characters. A good bio gets 3x more booking requests.</p>
+                </div>
+
+                {/* Starting Price */}
+                <div>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Starting Price (₹) *</label>
                   <input
-                    type="text"
-                    value={form.city}
-                    onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-                    placeholder="e.g. Ahmedabad"
+                    type="number"
+                    value={form.startingPrice}
+                    onChange={(e) => setForm((p) => ({ ...p, startingPrice: e.target.value }))}
+                    placeholder="e.g. 5000"
+                    required
+                    min={0}
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
+                  <p className="mt-1! text-xs text-ink-muted">Your starting price shown to customers. You can change this later.</p>
                 </div>
-              </div>
+              </>
             )}
 
             {/* Submit */}

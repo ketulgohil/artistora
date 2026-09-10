@@ -10,6 +10,7 @@ const navItems = [
   { to: '/', label: 'Home' },
   { to: '/services', label: 'Services' },
   { to: '/artists', label: 'Artists' },
+  { to: '/portfolio', label: 'Portfolio' },
   { to: '/my-bookings', label: 'My Bookings' },
   { to: '/contact', label: 'Contact' },
 ]
