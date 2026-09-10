@@ -1,0 +1,16 @@
+{
+  "name": "Artistora — Book Verified Artists in Ahmedabad",
+  "short_name": "Artistora",
+  "description": "Compare quotes from verified mehndi, photography, makeup, and decor artists in Ahmedabad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdeeee",
+  "theme_color": "#ec6783",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

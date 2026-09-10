@@ -37,15 +37,28 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   // Next's dev client may resolve localhost to 127.0.0.1 for the HMR socket.
   // Allow both loopback hostnames during local development.
   allowedDevOrigins: ['localhost', '127.0.0.1'],
   images: {
+    formats: ['image/avif', 'image/webp'],
     localPatterns: [
       {
         pathname: '/api/media/file/**',
       },
     ],
+  },
+  async redirects() {
+    return [
+      // Redirect www to apex
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.artistora.com' }],
+        destination: 'https://www.artistora.com/:path*',
+        permanent: true,
+      },
+    ]
   },
   async headers() {
     return [

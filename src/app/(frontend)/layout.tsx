@@ -19,6 +19,7 @@ export const metadata = {
   },
   other: {
     'theme-color': '#ec6783',
+    'manifest': '/site.webmanifest',
   },
   openGraph: {
     title: 'Artistora — Book Verified Artists in Ahmedabad',
