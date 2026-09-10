@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
 
     // Handle both FormData and JSON
-    let name: string, email: string, password: string, role: string, phone: string, city: string, bio: string, startingPrice: string
+    let name: string, email: string, password: string, role: string, phone: string, city: string, bio: string, startingPrice: string, yearsOfExperience: string
     let profilePhotoFile: File | null = null
 
     const contentType = request.headers.get('content-type') || ''
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       city = formData.get('city') as string || 'Ahmedabad'
       bio = formData.get('bio') as string || ''
       startingPrice = formData.get('startingPrice') as string || ''
+      yearsOfExperience = formData.get('yearsOfExperience') as string || ''
       profilePhotoFile = formData.get('profilePhoto') as File | null
       if (!profilePhotoFile || profilePhotoFile.size === 0) profilePhotoFile = null
     } else {
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
       city = body.city || 'Ahmedabad'
       bio = body.bio || ''
       startingPrice = body.startingPrice || ''
+      yearsOfExperience = body.yearsOfExperience || ''
     }
 
     // Input validation
@@ -73,6 +75,9 @@ export async function POST(request: NextRequest) {
       }
       if (!startingPrice || isNaN(Number(startingPrice)) || Number(startingPrice) < 0) {
         return NextResponse.json({ error: 'Please enter a valid starting price' }, { status: 400 })
+      }
+      if (!yearsOfExperience || isNaN(Number(yearsOfExperience)) || Number(yearsOfExperience) < 0) {
+        return NextResponse.json({ error: 'Please enter your years of experience' }, { status: 400 })
       }
     }
 
@@ -136,6 +141,7 @@ export async function POST(request: NextRequest) {
           bio: bio.trim(),
           city: typeof city === 'string' ? city.trim().slice(0, 100) : 'Ahmedabad',
           startingPrice: Number(startingPrice) || 0,
+          yearsOfExperience: Number(yearsOfExperience) || 0,
           ...(profilePhotoId ? { profilePhoto: profilePhotoId } : {}),
           verified: false,
           approvalStatus: 'pending',

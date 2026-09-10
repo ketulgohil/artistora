@@ -16,6 +16,7 @@ export default function RegisterPage() {
     city: 'Ahmedabad',
     bio: '',
     startingPrice: '',
+    yearsOfExperience: '',
     role: 'customer' as 'customer' | 'artist',
   })
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
@@ -70,6 +71,7 @@ export default function RegisterPage() {
       if (form.role === 'artist') {
         formData.append('bio', form.bio)
         formData.append('startingPrice', form.startingPrice)
+        formData.append('yearsOfExperience', form.yearsOfExperience)
         if (profilePhoto) formData.append('profilePhoto', profilePhoto)
       }
 
@@ -408,6 +410,22 @@ export default function RegisterPage() {
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
                   <p className="mt-1! text-xs text-ink-muted">Your starting price shown to customers. You can change this later.</p>
+                </div>
+
+                {/* Years of Experience */}
+                <div>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Years of Experience *</label>
+                  <input
+                    type="number"
+                    value={form.yearsOfExperience}
+                    onChange={(e) => setForm((p) => ({ ...p, yearsOfExperience: e.target.value }))}
+                    placeholder="e.g. 5"
+                    required
+                    min={0}
+                    max={50}
+                    className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  />
+                  <p className="mt-1! text-xs text-ink-muted">Total years of professional experience.</p>
                 </div>
               </>
             )}
