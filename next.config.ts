@@ -49,17 +49,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      // Redirect www to apex
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.artistora.com' }],
-        destination: 'https://www.artistora.com/:path*',
-        permanent: true,
-      },
-    ]
-  },
   async headers() {
     return [
       {
