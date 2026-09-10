@@ -7,6 +7,7 @@ const popularBookings = [
   { label: 'How It Works', to: '/how-it-works' },
   { label: 'For Artists', to: '/for-artists' },
   { label: 'Areas We Serve', to: '/areas' },
+  { label: 'FAQ', to: '/faq' },
 ]
 
 const trustLinks = [
@@ -179,6 +180,21 @@ export default function Footer() {
                     <path d="m22 7-10 6L2 7" />
                   </svg>
                   <span className="break-all">hello@artistora.com</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/artistoraofficial?stkn=Z3d6azczbGFlaG81"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3! text-sm text-cream/65 transition-colors duration-200 hover:text-cream"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-gold">
+                    <rect x="2" y="2" width="20" height="20" rx="5" />
+                    <circle cx="12" cy="12" r="5" />
+                    <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+                  </svg>
+                  <span>@artistoraofficial</span>
                 </a>
               </li>
             </ul>

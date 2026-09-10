@@ -5,24 +5,33 @@ export const Artists: CollectionConfig = {
   slug: 'artists',
   hooks: {
     afterChange: [
-      async ({ doc, operation, previousDoc }) => {
-        // Send approval email when status changes to 'approved'
+      async ({ doc, operation, previousDoc, req }) => {
+        // Send approval email when approvalStatus changes to 'approved'
         if (
           operation === 'update' &&
-          doc.status === 'approved' &&
-          previousDoc?.status !== 'approved'
+          doc.approvalStatus === 'approved' &&
+          previousDoc?.approvalStatus !== 'approved'
         ) {
-          const userEmail =
+          // user field is a relationship — may be ID or object
+          const userId =
             typeof doc.user === 'object' && doc.user !== null
-              ? (doc.user as any).email
-              : undefined
+              ? (doc.user as any).id
+              : doc.user
 
-          if (userEmail) {
+          if (userId) {
             try {
-              await sendArtistApprovedNotification({
-                name: doc.displayName || 'Artist',
-                email: userEmail,
-              })
+              const user = await req.payload.findByID({
+                collection: 'users',
+                id: userId,
+              } as any)
+
+              const email = (user as any)?.email
+              if (email) {
+                await sendArtistApprovedNotification({
+                  name: doc.displayName || 'Artist',
+                  email,
+                })
+              }
             } catch (err) {
               console.error('Failed to send artist approval email:', err)
             }
