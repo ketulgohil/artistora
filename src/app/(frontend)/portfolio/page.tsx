@@ -177,7 +177,15 @@ export default function PortfolioPage() {
                     />
                     <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-coal/70 to-transparent px-3! pt-8! pb-2! text-left text-[0.72rem] font-medium text-white/0 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:text-white/90 group-hover:opacity-100">
                       <span>{SERVICE_CATEGORIES.find((service) => service.value === item.serviceCategory)?.label || item.category?.title}</span>
-                      {item.artist?.displayName && <span className="mt-0.5! block text-white/65">by {item.artist.displayName}</span>}
+                      {item.artist?.displayName && (
+                        <a
+                          href={`/artists/${item.artist.slug}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-0.5! block text-white/80 underline decoration-white/30 underline-offset-2 hover:text-white"
+                        >
+                          by {item.artist.displayName}
+                        </a>
+                      )}
                     </span>
                   </button>
                 ))}
