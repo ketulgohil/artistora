@@ -770,6 +770,77 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* Profile Completion Checklist */}
+        {(() => {
+          const checks = [
+            { label: 'Profile photo', done: !!artist.profilePhoto },
+            { label: 'Display name', done: !!artist.displayName && artist.displayName !== 'Profile coming soon' },
+            { label: 'Bio', done: !!artist.bio && artist.bio !== 'Profile coming soon' && (artist.bio?.length || 0) > 20 },
+            { label: 'Phone number', done: !!artist.phone && artist.phone !== '0000000000' },
+            { label: 'WhatsApp number', done: !!artist.whatsappNumber },
+            { label: 'City', done: !!artist.city },
+            { label: 'Area / locality', done: !!artist.area },
+            { label: 'Years of experience', done: !!artist.yearsOfExperience },
+            { label: 'Services offered', done: !!(artist.services && artist.services.length > 0) },
+            { label: 'Starting price', done: !!artist.startingPrice },
+            { label: 'Portfolio images', done: !!(artist.portfolioImages && artist.portfolioImages.length > 0) },
+          ]
+          const completed = checks.filter((c) => c.done).length
+          const total = checks.length
+          const pct = Math.round((completed / total) * 100)
+          const isComplete = pct === 100
+
+          if (isComplete) return null
+
+          return (
+            <div className="mb-8! rounded-2xl border border-brand/20 bg-gradient-to-br from-white to-brand/5 p-6! shadow-soft">
+              <div className="mb-4! flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-lg! font-semibold text-ink">Complete Your Profile</h3>
+                  <p className="mt-0.5! text-sm text-ink-soft">{completed} of {total} items done — {pct}% complete</p>
+                </div>
+                <div className="relative h-14! w-14!">
+                  <svg className="h-14! w-14! -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="#f1d9dc" strokeWidth="3" />
+                    <circle
+                      cx="18" cy="18" r="16" fill="none" stroke="#ec6783" strokeWidth="3"
+                      strokeDasharray={`${pct} ${100 - pct}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-xs! font-bold text-brand">{pct}%</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6! gap-y-2! sm:grid-cols-3 lg:grid-cols-4">
+                {checks.map((check) => (
+                  <button
+                    key={check.label}
+                    onClick={() => setActiveTab('profile')}
+                    type="button"
+                    className="flex items-center gap-2! rounded-lg px-3! py-2! text-left text-sm transition-colors hover:bg-brand/5 cursor-pointer"
+                  >
+                    {check.done ? (
+                      <span className="flex h-5! w-5! shrink-0 items-center justify-center rounded-full bg-green/10 text-green">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                      </span>
+                    ) : (
+                      <span className="flex h-5! w-5! shrink-0 items-center justify-center rounded-full border-2 border-line text-ink-muted">
+                        <span className="h-2! w-2! rounded-full bg-ink-muted/30" />
+                      </span>
+                    )}
+                    <span className={check.done ? 'text-ink-soft line-through decoration-ink-muted/40' : 'text-ink'}>
+                      {check.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-4! text-xs text-ink-muted">
+                A complete profile helps you get more booking requests from customers.
+              </p>
+            </div>
+          )
+        })()}
+
         {/* Navigation Tabs */}
         <div className="mb-8! flex snap-x snap-mandatory gap-2! overflow-x-auto border-b border-line pb-4! [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
