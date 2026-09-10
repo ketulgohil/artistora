@@ -4,9 +4,9 @@ const BOOKING_URL = '/get-quote'
 
 const popularBookings = [
   { label: 'Artists', to: '/artists' },
+  { label: 'How It Works', to: '/how-it-works' },
+  { label: 'For Artists', to: '/for-artists' },
   { label: 'Photographers', to: '/services' },
-  { label: 'Makeup Artists', to: '/services' },
-  { label: 'Decor & Planning', to: '/services' },
 ]
 
 const trustLinks = [
