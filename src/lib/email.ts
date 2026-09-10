@@ -233,6 +233,68 @@ export async function sendAdminNewArtistNotification(artistData: {
   })
 }
 
+export async function sendArtistApprovedNotification(artistData: {
+  name: string
+  email: string
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
+
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; color: #04224b;">
+      <div style="background: linear-gradient(135deg, #031936, #04224b); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: #ec6783; margin: 0; font-size: 22px;">You're Approved!</h1>
+        <p style="color: rgba(255,255,255,0.7); margin: 8px 0 0; font-size: 14px;">Artistora Artist Network</p>
+      </div>
+      <div style="background: #ffffff; padding: 32px; border: 1px solid #f1d9dc; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="margin: 0 0 20px; font-size: 15px;">Hi <strong>${artistData.name}</strong>,</p>
+        <p style="margin: 0 0 20px; font-size: 15px;">Great news! Your Artistora artist profile has been <strong style="color: #17856b;">approved</strong>. You're now part of Ahmedabad's verified artist network.</p>
+        
+        <div style="background: #fdeeee; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #04224b;">Next Steps to Start Receiving Bookings:</p>
+          <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 0; color: #7e8aa3; width: 24px; vertical-align: top;">1.</td>
+              <td style="padding: 6px 0;">Complete your profile with bio, pricing, and portfolio photos</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #7e8aa3; vertical-align: top;">2.</td>
+              <td style="padding: 6px 0;">Upload 5-10 of your best work samples</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #7e8aa3; vertical-align: top;">3.</td>
+              <td style="padding: 6px 0;">Set your availability and pricing</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="margin: 0 0 20px; font-size: 15px;">A complete profile gets <strong>3x more booking requests</strong>. Follow our step-by-step guide to set up your profile the right way:</p>
+
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${siteUrl}/for-artists" style="display: inline-block; background: linear-gradient(135deg, #04224b, #031936); color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Complete Your Profile Guide →</a>
+        </div>
+
+        <p style="margin: 20px 0 0; font-size: 14px; color: #7e8aa3;">
+          <strong>Quick links:</strong><br>
+          <a href="${siteUrl}/dashboard" style="color: #d14a68; text-decoration: none;">Go to Dashboard</a> · 
+          <a href="${siteUrl}/how-it-works" style="color: #d14a68; text-decoration: none;">How It Works</a> · 
+          <a href="${siteUrl}/areas" style="color: #d14a68; text-decoration: none;">Areas We Serve</a>
+        </p>
+
+        <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Welcome to Artistora — Ahmedabad's verified artist marketplace</p>
+        </div>
+      </div>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: artistData.email,
+    subject: `Your Artistora Profile is Approved — Start Receiving Bookings!`,
+    html,
+  })
+}
+
 const EVENT_LABELS: Record<string, string> = {
   wedding: 'Wedding',
   engagement: 'Engagement',

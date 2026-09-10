@@ -1,7 +1,37 @@
 import type { CollectionConfig } from 'payload'
+import { sendArtistApprovedNotification } from '../lib/email'
 
 export const Artists: CollectionConfig = {
   slug: 'artists',
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, previousDoc }) => {
+        // Send approval email when status changes to 'approved'
+        if (
+          operation === 'update' &&
+          doc.status === 'approved' &&
+          previousDoc?.status !== 'approved'
+        ) {
+          const userEmail =
+            typeof doc.user === 'object' && doc.user !== null
+              ? (doc.user as any).email
+              : undefined
+
+          if (userEmail) {
+            try {
+              await sendArtistApprovedNotification({
+                name: doc.displayName || 'Artist',
+                email: userEmail,
+              })
+            } catch (err) {
+              console.error('Failed to send artist approval email:', err)
+            }
+          }
+        }
+        return doc
+      },
+    ],
+  },
   access: {
     read: () => true, // Public artist directory
     create: ({ req }) => {

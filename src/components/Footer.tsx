@@ -6,7 +6,7 @@ const popularBookings = [
   { label: 'Artists', to: '/artists' },
   { label: 'How It Works', to: '/how-it-works' },
   { label: 'For Artists', to: '/for-artists' },
-  { label: 'Photographers', to: '/services' },
+  { label: 'Areas We Serve', to: '/areas' },
 ]
 
 const trustLinks = [
