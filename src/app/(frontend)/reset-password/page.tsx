@@ -23,9 +23,9 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) return null; return r.json() })
       .then((data) => {
-        if (data.user) {
+        if (data?.user) {
           router.replace(data.user.role === 'artist' ? '/dashboard' : '/')
         } else {
           setCheckingAuth(false)

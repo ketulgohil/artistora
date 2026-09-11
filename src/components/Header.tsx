@@ -24,8 +24,8 @@ export default function Header() {
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((d) => { if (d.user) setUser(d.user); else setUser(null) })
+      .then((r) => { if (!r.ok) return null; return r.json() })
+      .then((d) => { if (d?.user) setUser(d.user); else setUser(null) })
       .catch(() => setUser(null))
   }, [])
 

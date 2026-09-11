@@ -201,6 +201,7 @@ export default function DashboardPage() {
     async function load() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' })
+        if (!res.ok) { router.push('/login'); return }
         const data = await res.json()
         if (!data.user) {
           router.push('/login')
