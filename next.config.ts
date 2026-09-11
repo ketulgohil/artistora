@@ -54,6 +54,11 @@ const nextConfig: NextConfig = {
         hostname: 'artistora.com',
         pathname: '/api/media/file/**',
       },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   async headers() {
