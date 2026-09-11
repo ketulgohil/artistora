@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getArtistBySlug, mediaUrl, getPayloadClient } from '@/lib/payload'
 import SectionHeading from '@/components/SectionHeading'
@@ -174,12 +175,14 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 <div aria-hidden="true" className="absolute -inset-3 -rotate-1 rounded-[2.4rem] border border-dashed border-gold/40" />
                 <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
                   {artist.profilePhoto ? (
-                    <img
+                    <Image
                       src={mediaUrl(artist.profilePhoto)}
                       alt={artist.displayName}
                       width={400}
                       height={400}
                       className="aspect-square w-full max-w-[340px] rounded-[1.7rem] object-contain"
+                      priority
+                      sizes="(max-width: 1024px) 340px, 340px"
                     />
                   ) : (
                     <ArtistPlaceholder name={artist.displayName} size="lg" className="aspect-square w-full max-w-[340px]" />
@@ -336,12 +339,13 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                   key={i}
                   className="group relative overflow-hidden rounded-2xl border border-line bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
                 >
-                  <img
+                  <Image
                     src={mediaUrl(item.image)}
                     alt={item.caption || `${artist.displayName} portfolio ${i + 1}`}
+                    width={400}
+                    height={533}
                     className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                   {item.caption && (
                     <figcaption className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-coal/80 to-transparent px-4! py-3!">

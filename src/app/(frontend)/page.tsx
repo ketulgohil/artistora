@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import { mediaFileUrl } from '@/lib/media-url'
@@ -276,13 +277,14 @@ export default async function HomePage() {
                 className="absolute -inset-4 rotate-2 rounded-[2.6rem] border border-dashed border-gold/50"
               />
               <div className="relative rounded-[2.4rem] bg-white/85 p-2.5! shadow-lift ring-1 ring-line/70">
-                <img
+                <Image
                   src={mediaFileUrl('Bridal.webp')}
                   alt="Event artistry work by a verified artist on Artistora"
                   width={1400}
                   height={933}
                   className="aspect-[4/5] w-full rounded-[2rem] object-cover"
-                  loading="eager"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
 
@@ -417,13 +419,13 @@ export default async function HomePage() {
                   <div className="flex flex-col items-center p-6!">
                     <div className="relative mb-4!">
                       {artist.profilePhoto?.filename ? (
-                        <img
+                        <Image
                           src={`/api/media/file/${artist.profilePhoto.filename}`}
                           alt={artist.displayName}
                           width={80}
                           height={80}
                           className="h-16! w-16! rounded-full object-contain ring-2 ring-brand/15"
-                          loading="lazy"
+                          sizes="64px"
                         />
                       ) : (
                         <ArtistPlaceholder name={artist.displayName} size="sm" className="ring-2 ring-brand/15" />

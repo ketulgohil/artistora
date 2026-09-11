@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 
 const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })))
@@ -1313,10 +1314,13 @@ export default function DashboardPage() {
                               rel="noopener noreferrer"
                               className="block h-16! w-16! overflow-hidden rounded-lg border border-line hover:border-brand transition-colors"
                             >
-                              <img
+                              <Image
                                 src={`/api/media/file/${ref.image?.filename || ref.image}`}
                                 alt={`Reference ${i + 1}`}
+                                width={64}
+                                height={64}
                                 className="h-full w-full object-cover"
+                                sizes="64px"
                               />
                             </a>
                           ))}
@@ -1583,10 +1587,13 @@ export default function DashboardPage() {
                 <div className="mt-4! flex flex-col items-center gap-4!">
                   <div className="relative">
                     {artist.profilePhoto ? (
-                      <img
+                      <Image
                         src={`/api/media/file/${(artist.profilePhoto as any).filename}`}
                         alt={artist.displayName}
+                        width={112}
+                        height={112}
                         className="h-28! w-28! rounded-full object-contain ring-4 ring-brand/20"
+                        sizes="112px"
                       />
                     ) : (
                       <ArtistPlaceholder name={artist.displayName} size="sm" className="h-28! w-28! ring-4 ring-brand/20" />
@@ -1819,11 +1826,13 @@ export default function DashboardPage() {
                   <div className="mt-5! grid grid-cols-2 gap-3! sm:grid-cols-3 md:grid-cols-4">
                     {artist.portfolioImages.map((item: any, i: number) => (
                       <div key={i} className="group relative overflow-hidden rounded-xl border border-line">
-                        <img
+                        <Image
                           src={`/api/media/file/${item.image?.filename || item.image}`}
                           alt={item.caption || `Portfolio ${i + 1}`}
+                          width={200}
+                          height={267}
                           className="aspect-[3/4] w-full object-cover"
-                          loading="lazy"
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                         />
                         <button
                           onClick={() => handleDeletePortfolio(i)}

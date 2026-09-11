@@ -1,6 +1,7 @@
 import 'server-only'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
 import { getSiteSettings } from '@/lib/payload'
 import { mediaFileUrl } from '@/lib/media-url'
@@ -109,13 +110,14 @@ export default async function ArtistPage() {
                 className="absolute -inset-3 rotate-2 rounded-[2.4rem] border border-dashed border-gold/50"
               />
               <div className="relative rounded-[2.2rem] bg-white p-2.5! shadow-lift ring-1 ring-line/70">
-                <img
+                <Image
                   src="/services/mehndi-new.jpg"
                   alt="Artists on Artistora"
                   width={800}
                   height={600}
                   className="aspect-[3/4] w-full rounded-[1.9rem] object-cover"
-                  loading="eager"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
               <Sparkle className="absolute -top-5 right-6 h-6 w-6" />

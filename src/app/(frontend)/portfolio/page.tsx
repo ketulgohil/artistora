@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
 import { mediaFileUrl } from '@/lib/media-url'
 
@@ -167,13 +168,13 @@ export default function PortfolioPage() {
                     aria-label={`Open ${item.altText || 'portfolio work'} in full view`}
                     className="group relative cursor-zoom-in overflow-hidden rounded-2xl border border-line/70 bg-white p-0 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
                   >
-                    <img
+                    <Image
                       src={imgUrl(item)}
                       alt={item.altText || 'Portfolio work by an Artistora professional'}
                       width={imgWidth(item)}
                       height={imgHeight(item)}
                       className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-coal/70 to-transparent px-3! pt-8! pb-2! text-left text-[0.72rem] font-medium text-white/0 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:text-white/90 group-hover:opacity-100">
                       <span>{SERVICE_CATEGORIES.find((service) => service.value === item.serviceCategory)?.label || item.category?.title}</span>
@@ -211,7 +212,7 @@ export default function PortfolioPage() {
           >
             &times;
           </button>
-          <img
+          <Image
             src={fullImage.src}
             alt={fullImage.alt}
             width={fullImage.width}

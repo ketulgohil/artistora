@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 
 function Star({ filled = true }: { filled?: boolean }) {
@@ -160,12 +161,12 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-cream-deep">
                 {artist.profilePhoto ? (
-                  <img
+                  <Image
                     src={getMediaUrl(artist.profilePhoto)}
                     alt={artist.displayName}
-                    className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
+                    fill
+                    className="object-contain transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 ) : (
                   <ArtistPlaceholder name={artist.displayName} size="md" />

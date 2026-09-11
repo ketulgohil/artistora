@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -87,12 +88,13 @@ export default function Header() {
             className="flex min-w-0 items-center gap-2.5!"
             onClick={() => setIsOpen(false)}
           >
-            <img
+            <Image
               src="/artistora/logo-icon-transparent.png"
               alt="Artistora lotus mark"
               width={64}
               height={64}
               className="h-11! w-auto shrink-0 object-contain md:h-12!"
+              priority
             />
             <span className="flex min-w-0 flex-col leading-tight">
               <strong className="font-display text-xl! font-bold tracking-tight text-brand-deep md:text-2xl!">

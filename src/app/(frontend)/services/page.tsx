@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { getServices, getSiteSettings, getFAQs, mediaUrl, mediaDimensions } from '@/lib/payload'
 import { mediaFileUrl } from '@/lib/media-url'
 import SectionHeading from '@/components/SectionHeading'
@@ -330,14 +331,13 @@ export default async function ServicesPage() {
                     className="absolute -inset-3 -rotate-1 rounded-[2.4rem] border border-dashed border-gold/40"
                   />
                   <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
-                    <img
+                    <Image
                       src={serviceImages[service.title] || (service.image ? mediaUrl(service.image) : mediaFileUrl('engagement.webp'))}
                       alt={service.title}
                       width={800}
                       height={600}
                       className="aspect-[4/3] w-full rounded-[1.7rem] object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      loading="lazy"
-                      decoding="async"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                     />
                   </div>
                 </div>
