@@ -1,11 +1,23 @@
 import type { CollectionConfig } from 'payload'
 import { sendArtistApprovedNotification } from '../lib/email'
+import { revalidatePath } from 'next/cache'
 
 export const Artists: CollectionConfig = {
   slug: 'artists',
   hooks: {
     afterChange: [
       async ({ doc, operation, previousDoc, req }) => {
+        // Revalidate cache when approvalStatus changes
+        if (operation === 'update' && doc.approvalStatus !== previousDoc?.approvalStatus) {
+          try {
+            revalidatePath('/artists')
+            if (doc.slug) revalidatePath(`/artists/${doc.slug}`)
+            revalidatePath('/')
+          } catch (err) {
+            req.payload.logger.error(`Failed to revalidate artists: ${err}`)
+          }
+        }
+
         // Send approval email when approvalStatus changes to 'approved'
         if (
           operation === 'update' &&
