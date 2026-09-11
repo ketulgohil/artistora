@@ -112,14 +112,14 @@ export async function POST(request: NextRequest) {
       let profilePhotoId: number | undefined
       if (profilePhotoFile && profilePhotoFile.size > 0) {
         try {
+          const fileBuffer = Buffer.from(await profilePhotoFile.arrayBuffer())
           const uploaded = await payload.create({
             collection: 'media',
             data: {
               alt: `${name.trim()} profile photo`,
             },
-            filePath: undefined,
             file: {
-              data: Buffer.from(await profilePhotoFile.arrayBuffer()),
+              data: fileBuffer,
               name: profilePhotoFile.name,
               mimetype: profilePhotoFile.type,
               size: profilePhotoFile.size,

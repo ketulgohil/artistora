@@ -352,7 +352,7 @@ export default function RegisterPage() {
 
                 {/* Profile Photo */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Profile Photo *</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Profile Photo</label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="flex cursor-pointer items-center gap-4! rounded-xl border-2 border-dashed border-line bg-cream/30 p-4! transition-colors hover:border-brand/50 hover:bg-brand/5"
