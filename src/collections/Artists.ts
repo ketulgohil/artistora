@@ -7,8 +7,8 @@ export const Artists: CollectionConfig = {
   hooks: {
     afterChange: [
       async ({ doc, operation, previousDoc, req }) => {
-        // Revalidate cache when approvalStatus changes
-        if (operation === 'update' && doc.approvalStatus !== previousDoc?.approvalStatus) {
+        // Revalidate cache on any artist profile change
+        if (operation === 'update') {
           try {
             revalidatePath('/artists')
             if (doc.slug) revalidatePath(`/artists/${doc.slug}`)
