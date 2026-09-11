@@ -113,16 +113,13 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   if (!artist) notFound()
 
   // Increment profile views (fire-and-forget, don't block rendering)
-  try {
-    const payload = await getPayloadClient()
-    await payload.update({
+  getPayloadClient().then((payload) =>
+    payload.update({
       collection: 'artists',
       id: artist.id,
       data: { profileViews: (artist.profileViews || 0) + 1 },
-    })
-  } catch {
-    // Non-critical — ignore errors
-  }
+    }).catch(() => {}),
+  )
 
   const phone = artist.whatsappNumber || artist.phone
   const whatsappUrl = phone ? `https://wa.me/91${phone.replace(/\D/g, '').replace(/^91/, '')}` : ''

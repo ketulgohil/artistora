@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getArtists, getSiteSettings, mediaUrl } from '@/lib/payload'
+import { getArtists } from '@/lib/payload'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistsGrid from './ArtistsGrid'
 
@@ -25,10 +25,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 }
 
 export default async function ArtistsPage() {
-  const [artists, settings] = await Promise.all([
-    getArtists(),
-    getSiteSettings(),
-  ])
+  const artists = await getArtists()
 
   return (
     <>

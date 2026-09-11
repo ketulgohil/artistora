@@ -1,4 +1,5 @@
 import { getPayload, type Where } from 'payload'
+import { cache } from 'react'
 import config from '../payload.config'
 import { mediaFileUrl } from './media-url'
 
@@ -63,6 +64,13 @@ export async function getPortfolioItems(categorySlug?: string) {
     where: Object.keys(where).length > 0 ? where : undefined,
     sort: 'order',
     depth: 2,
+    select: {
+      image: true,
+      caption: true,
+      category: true,
+      artist: true,
+      serviceCategory: true,
+    },
   })
   return docs
 }
@@ -112,7 +120,7 @@ export async function getStaticPage(slug: string) {
 }
 
 // ── Artists ──
-export async function getArtists(city?: string) {
+export async function getArtists(city?: string, limit = 50) {
   const payload = await getPayloadClient()
   const where: Where = {
     or: [
@@ -126,6 +134,22 @@ export async function getArtists(city?: string) {
     where,
     sort: '-isFeatured,-searchRank,order',
     depth: 1,
+    limit,
+    select: {
+      displayName: true,
+      slug: true,
+      bio: true,
+      city: true,
+      startingPrice: true,
+      priceType: true,
+      services: true,
+      profilePhoto: true,
+      verified: true,
+      isFeatured: true,
+      rating: true,
+      reviewCount: true,
+      yearsOfExperience: true,
+    },
   })
   return docs
 }
@@ -148,11 +172,25 @@ export async function getFeaturedArtists(limit = 4) {
     sort: '-rating,-reviewCount',
     depth: 1,
     limit,
+    select: {
+      displayName: true,
+      slug: true,
+      bio: true,
+      city: true,
+      startingPrice: true,
+      priceType: true,
+      services: true,
+      profilePhoto: true,
+      verified: true,
+      isFeatured: true,
+      rating: true,
+      reviewCount: true,
+    },
   })
   return docs
 }
 
-export async function getArtistBySlug(slug: string) {
+export const getArtistBySlug = cache(async (slug: string) => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'artists',
@@ -171,7 +209,7 @@ export async function getArtistBySlug(slug: string) {
     limit: 1,
   })
   return docs[0] || null
-}
+})
 
 // ── Media URL helper ──
 export function mediaUrl(media: any): string {

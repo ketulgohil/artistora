@@ -32,8 +32,8 @@
   --color-accent-dark: #d14a68;
   --color-accent-light: #f9c7d1;
 
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
-  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   --shadow-soft: 0 2px 8px rgb(4 34 75 / 0.05), 0 12px 32px rgb(4 34 75 / 0.07);
   --shadow-lift: 0 8px 18px rgb(4 34 75 / 0.09), 0 24px 48px rgb(4 34 75 / 0.12);

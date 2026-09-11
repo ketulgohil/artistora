@@ -1,14 +1,31 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, FunnelChart, Funnel, LabelList,
-  LineChart, Line, Area, AreaChart,
-} from 'recharts'
+
+const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })))
+const Bar = lazy(() => import('recharts').then(m => ({ default: m.Bar })))
+const XAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis })))
+const YAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis })))
+const CartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid })))
+const Tooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip })))
+const ResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })))
+const PieChart = lazy(() => import('recharts').then(m => ({ default: m.PieChart })))
+const Pie = lazy(() => import('recharts').then(m => ({ default: m.Pie })))
+const Cell = lazy(() => import('recharts').then(m => ({ default: m.Cell })))
+const FunnelChart = lazy(() => import('recharts').then(m => ({ default: m.FunnelChart })))
+const Funnel = lazy(() => import('recharts').then(m => ({ default: m.Funnel })))
+const LabelList = lazy(() => import('recharts').then(m => ({ default: m.LabelList })))
+const LineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart })))
+const Line = lazy(() => import('recharts').then(m => ({ default: m.Line })))
+const Area = lazy(() => import('recharts').then(m => ({ default: m.Area })))
+const AreaChart = lazy(() => import('recharts').then(m => ({ default: m.AreaChart })))
+
+function ChartFallback() {
+  return <div className="flex h-64! items-center justify-center text-sm text-ink-muted">Loading chart...</div>
+}
 
 const CONTAINER = 'mx-auto max-w-5xl! px-4! md:px-6!'
 const SECTION = 'py-10! md:py-16!'
@@ -1847,6 +1864,7 @@ export default function DashboardPage() {
                 <div className="h-8! w-8! animate-spin rounded-full border-2 border-brand border-t-transparent" />
               </div>
             ) : analytics ? (
+              <Suspense fallback={<ChartFallback />}>
               <>
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 gap-4! md:grid-cols-4">
@@ -2022,6 +2040,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </>
+              </Suspense>
             ) : (
               <div className="rounded-2xl border border-line bg-white p-12! text-center">
                 <p className="text-ink-muted">No analytics data yet. Complete bookings to see your performance insights.</p>

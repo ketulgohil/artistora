@@ -26,7 +26,7 @@ export default function Header() {
       .then((r) => r.json())
       .then((d) => { if (d.user) setUser(d.user); else setUser(null) })
       .catch(() => setUser(null))
-  }, [pathname])
+  }, [])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
