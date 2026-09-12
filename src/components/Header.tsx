@@ -62,6 +62,10 @@ export default function Header() {
   }, [isOpen])
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
