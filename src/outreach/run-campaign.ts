@@ -15,11 +15,15 @@ import { Client, LocalAuth } from 'whatsapp-web.js'
 import { createRequire } from 'module'
 import * as fs from 'fs'
 import * as path from 'path'
+import { config } from 'dotenv'
 
 const require = createRequire(import.meta.url)
 
+// Load .env file
+config({ path: path.resolve(process.cwd(), '.env') })
+
 // Database connection
-const DB_URL = 'postgresql://neondb_owner:npg_pc0Lns6TWCjh@ep-red-dust-ayh0bv0o-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require'
+const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || ''
 
 const SESSION_DIR = './whatsapp-session'
 const SENT_LOG = './outreach-sent.json'
