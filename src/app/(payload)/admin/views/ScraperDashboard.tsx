@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useEffect } from 'react'
-import { Gutter, Button, Banner } from '@payloadcms/ui'
+import { Gutter, Button } from '@payloadcms/ui'
 
 const SERVICES = [
   { value: 'mehndi', label: 'Mehndi', icon: '🪷', queries: ['mehndi artist', 'henna artist', 'bridal mehndi'] },
@@ -226,11 +226,15 @@ export default function ScraperDashboard() {
 
       {/* Result Banner */}
       {result && (
-        <div style={{ marginBottom: '24px' }}>
-          <Banner
-            type={result.error ? 'error' : 'success'}
-            heading={result.error ? 'Scrape Failed' : result.multiJob ? `Launched ${result.totalJobs} scrape jobs` : `Job #${result.jobId} started`}
-          />
+        <div style={{
+          marginBottom: '24px',
+          padding: '12px 16px',
+          borderRadius: 'var(--border-radius)',
+          background: result.error ? 'var(--theme-error-50)' : 'var(--theme-success-50, #e8f5e9)',
+          border: `1px solid ${result.error ? 'var(--theme-error-500)' : 'var(--theme-success-500, #4caf50)'}`,
+          color: result.error ? 'var(--theme-error-500)' : 'var(--theme-success-500, #4caf50)',
+        }}>
+          {result.error ? '❌ Scrape Failed' : result.multiJob ? `✅ Launched ${result.totalJobs} scrape jobs` : `✅ Job #${result.jobId} started`}
         </div>
       )}
 
@@ -250,7 +254,9 @@ export default function ScraperDashboard() {
         {loadingJobs ? (
           <p style={{ color: 'var(--theme-elevation-500)' }}>Loading...</p>
         ) : recentJobs.length === 0 ? (
-          <Banner type="info" heading="No scrape jobs yet. Run your first scrape above!" />
+          <div style={{ padding: '12px 16px', borderRadius: 'var(--border-radius)', background: 'var(--theme-elevation-50)', border: '1px solid var(--theme-elevation-100)', color: 'var(--theme-elevation-500)' }}>
+            ℹ️ No scrape jobs yet. Run your first scrape above!
+          </div>
         ) : (
           <div style={{ border: '1px solid var(--theme-elevation-100)', borderRadius: 'var(--border-radius)', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
