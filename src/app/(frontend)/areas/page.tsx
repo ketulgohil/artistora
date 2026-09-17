@@ -1,14 +1,23 @@
 import Link from 'next/link'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Areas We Serve — Book Artists Across Ahmedabad',
   description:
     'Find verified photographers, makeup artists, mehndi artists, and event planners in your area across Ahmedabad — Satellite, Vastrapur, Bopal, Prahlad Nagar, and more.',
   alternates: {
     canonical: 'https://www.artistora.com/areas',
   },
-}
+  openGraph: {
+    title: 'Areas We Serve — Artistora',
+    description:
+      'Book verified artists across 20+ areas in Ahmedabad — home service available.',
+    url: 'https://www.artistora.com/areas',
+    type: 'website',
+  },
+})
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
@@ -39,6 +48,8 @@ const areas = [
 export default async function AreasPage() {
   return (
     <>
+      <Breadcrumbs items={[{ label: 'Areas' }]} />
+
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
         <div aria-hidden="true" className="pointer-events-none absolute -top-32 -left-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />

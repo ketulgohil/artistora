@@ -82,6 +82,10 @@ export interface Config {
     quotes: Quote;
     bookings: Booking;
     reviews: Review;
+    'discovered-artists': DiscoveredArtist;
+    campaigns: Campaign;
+    'outreach-messages': OutreachMessage;
+    'scrape-jobs': ScrapeJob;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +108,10 @@ export interface Config {
     quotes: QuotesSelect<false> | QuotesSelect<true>;
     bookings: BookingsSelect<false> | BookingsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'discovered-artists': DiscoveredArtistsSelect<false> | DiscoveredArtistsSelect<true>;
+    campaigns: CampaignsSelect<false> | CampaignsSelect<true>;
+    'outreach-messages': OutreachMessagesSelect<false> | OutreachMessagesSelect<true>;
+    'scrape-jobs': ScrapeJobsSelect<false> | ScrapeJobsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -683,6 +691,338 @@ export interface Review {
   createdAt: string;
 }
 /**
+ * Artists discovered from Google Maps, Instagram, Justdial, etc.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discovered-artists".
+ */
+export interface DiscoveredArtist {
+  id: number;
+  name: string;
+  slug?: string | null;
+  /**
+   * Business / studio name if different from personal name
+   */
+  businessName?: string | null;
+  source: 'google_maps' | 'instagram' | 'justdial' | 'sulekha' | 'wedmegood' | 'weddingwire' | 'manual' | 'referral';
+  /**
+   * URL of the original listing / profile
+   */
+  sourceUrl?: string | null;
+  /**
+   * ID from the source platform (Google place_id, IG user id, etc.)
+   */
+  sourceId?: string | null;
+  scrapeJob?: (number | null) | ScrapeJob;
+  /**
+   * Primary phone (E.164 preferred, raw OK)
+   */
+  phone?: string | null;
+  phoneVerified?: boolean | null;
+  email?: string | null;
+  /**
+   * WhatsApp number if different from phone
+   */
+  whatsappNumber?: string | null;
+  /**
+   * Instagram @handle (with or without @)
+   */
+  instagramHandle?: string | null;
+  /**
+   * Full Instagram profile URL
+   */
+  instagramProfileUrl?: string | null;
+  website?: string | null;
+  city?: string | null;
+  /**
+   * Specific locality (e.g., SG Highway, Vastrapur)
+   */
+  area?: string | null;
+  state?: string | null;
+  /**
+   * Services summary (auto-generated)
+   */
+  serviceDisplay?: string | null;
+  /**
+   * Services offered by this artist
+   */
+  services?:
+    | {
+        category?: (number | null) | Service;
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Key specializations extracted from bio / description
+   */
+  specializations?: string | null;
+  priceRange?: ('budget' | 'mid' | 'premium' | 'luxury' | 'unknown') | null;
+  /**
+   * Rating from the source (0–5)
+   */
+  rating?: number | null;
+  reviewCount?: number | null;
+  /**
+   * Instagram followers
+   */
+  followerCount?: number | null;
+  postCount?: number | null;
+  /**
+   * Sample images from their public portfolio
+   */
+  portfolioImages?:
+    | {
+        url: string;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Auto-calculated lead quality score (0–100)
+   */
+  leadScore?: number | null;
+  /**
+   * Detailed breakdown of lead score calculation
+   */
+  leadScoreBreakdown?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * If this artist registered on Artistora, link to their profile
+   */
+  linkedArtist?: (number | null) | Artist;
+  outreachStatus?: ('new' | 'contacted' | 'replied' | 'interested' | 'registered' | 'declined' | 'blacklisted') | null;
+  outreachAttempts?: number | null;
+  lastContactedAt?: string | null;
+  repliedAt?: string | null;
+  registeredAt?: string | null;
+  /**
+   * Admin notes about this artist
+   */
+  notes?: string | null;
+  /**
+   * Whether opt-in consent has been recorded
+   */
+  consentGiven?: boolean | null;
+  /**
+   * Set to true if artist asked to be removed
+   */
+  doNotContact?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Scraping jobs to discover artists from online platforms
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scrape-jobs".
+ */
+export interface ScrapeJob {
+  id: number;
+  source: 'google_maps' | 'instagram' | 'justdial' | 'sulekha' | 'wedmegood' | 'weddingwire';
+  /**
+   * The search term used (e.g., "mehndi artist ahmedabad")
+   */
+  searchQuery: string;
+  searchCity?: string | null;
+  /**
+   * Service category filter applied
+   */
+  searchCategory?: string | null;
+  maxResults?: number | null;
+  status?: ('queued' | 'running' | 'completed' | 'failed' | 'cancelled') | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  /**
+   * Duration in seconds
+   */
+  duration?: number | null;
+  resultsFound?: number | null;
+  /**
+   * Artists created (not duplicates)
+   */
+  newArtists?: number | null;
+  duplicatesSkipped?: number | null;
+  /**
+   * Raw scraped data (stored temporarily for debugging)
+   */
+  rawResults?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorMessage?: string | null;
+  /**
+   * Detailed error log array
+   */
+  errorLog?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  triggeredBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Outreach campaigns to contact discovered artists
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campaigns".
+ */
+export interface Campaign {
+  id: number;
+  /**
+   * Internal campaign name (e.g., "Mehndi Artists Q1 2026")
+   */
+  name: string;
+  description?: string | null;
+  channel: 'whatsapp' | 'instagram_dm' | 'email' | 'sms';
+  template:
+    | 'warm_intro_en'
+    | 'warm_intro_hi'
+    | 'social_proof'
+    | 'event_based'
+    | 'portfolio_showcase'
+    | 'gujarati_welcome'
+    | 're_engagement'
+    | 'custom';
+  /**
+   * Custom message body. Use {{artistName}}, {{businessName}}, {{services}}, {{city}} as placeholders.
+   */
+  customTemplateBody?: string | null;
+  targetFilters?: {
+    /**
+     * Filter by discovery source (leave empty for all)
+     */
+    sources?:
+      | {
+          source?:
+            | (
+                | 'google_maps'
+                | 'instagram'
+                | 'justdial'
+                | 'sulekha'
+                | 'wedmegood'
+                | 'weddingwire'
+                | 'manual'
+                | 'referral'
+              )
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    minLeadScore?: number | null;
+    maxLeadScore?: number | null;
+    serviceCategories?:
+      | {
+          category?: (number | null) | Service;
+          id?: string | null;
+        }[]
+      | null;
+    cities?:
+      | {
+          city?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Max artists to contact in this campaign (safety limit)
+   */
+  maxRecipients?: number | null;
+  /**
+   * Seconds between each message (rate limit protection)
+   */
+  delayBetweenMessages?: number | null;
+  status?: ('draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'cancelled') | null;
+  /**
+   * When to start the campaign
+   */
+  scheduledAt?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  totalRecipients?: number | null;
+  sentCount?: number | null;
+  deliveredCount?: number | null;
+  readCount?: number | null;
+  replyCount?: number | null;
+  /**
+   * Artists who registered after this campaign
+   */
+  conversionCount?: number | null;
+  errorCount?: number | null;
+  createdBy: number | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Individual outreach messages sent to discovered artists
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outreach-messages".
+ */
+export interface OutreachMessage {
+  id: number;
+  artist: number | DiscoveredArtist;
+  campaign: number | Campaign;
+  channel: 'whatsapp' | 'instagram_dm' | 'email' | 'sms';
+  templateUsed?:
+    | (
+        | 'warm_intro_en'
+        | 'warm_intro_hi'
+        | 'social_proof'
+        | 'event_based'
+        | 'portfolio_showcase'
+        | 'gujarati_welcome'
+        | 're_engagement'
+        | 'custom'
+      )
+    | null;
+  /**
+   * Final rendered message body sent to the artist
+   */
+  body: string;
+  /**
+   * Image / video URL sent with the message (if any)
+   */
+  mediaUrl?: string | null;
+  status?: ('pending' | 'queued' | 'sending' | 'sent' | 'delivered' | 'read' | 'replied' | 'failed' | 'bounced') | null;
+  queuedAt?: string | null;
+  sentAt?: string | null;
+  deliveredAt?: string | null;
+  readAt?: string | null;
+  repliedAt?: string | null;
+  /**
+   * External message ID (WhatsApp message ID, IG DM id, etc.)
+   */
+  messageSid?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  retryCount?: number | null;
+  /**
+   * Cost in INR (0 for free channels)
+   */
+  cost?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -765,6 +1105,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'discovered-artists';
+        value: number | DiscoveredArtist;
+      } | null)
+    | ({
+        relationTo: 'campaigns';
+        value: number | Campaign;
+      } | null)
+    | ({
+        relationTo: 'outreach-messages';
+        value: number | OutreachMessage;
+      } | null)
+    | ({
+        relationTo: 'scrape-jobs';
+        value: number | ScrapeJob;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1190,6 +1546,163 @@ export interface ReviewsSelect<T extends boolean = true> {
   text?: T;
   verifiedBooking?: T;
   helpfulCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discovered-artists_select".
+ */
+export interface DiscoveredArtistsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  businessName?: T;
+  source?: T;
+  sourceUrl?: T;
+  sourceId?: T;
+  scrapeJob?: T;
+  phone?: T;
+  phoneVerified?: T;
+  email?: T;
+  whatsappNumber?: T;
+  instagramHandle?: T;
+  instagramProfileUrl?: T;
+  website?: T;
+  city?: T;
+  area?: T;
+  state?: T;
+  serviceDisplay?: T;
+  services?:
+    | T
+    | {
+        category?: T;
+        name?: T;
+        id?: T;
+      };
+  specializations?: T;
+  priceRange?: T;
+  rating?: T;
+  reviewCount?: T;
+  followerCount?: T;
+  postCount?: T;
+  portfolioImages?:
+    | T
+    | {
+        url?: T;
+        caption?: T;
+        id?: T;
+      };
+  leadScore?: T;
+  leadScoreBreakdown?: T;
+  linkedArtist?: T;
+  outreachStatus?: T;
+  outreachAttempts?: T;
+  lastContactedAt?: T;
+  repliedAt?: T;
+  registeredAt?: T;
+  notes?: T;
+  consentGiven?: T;
+  doNotContact?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "campaigns_select".
+ */
+export interface CampaignsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  channel?: T;
+  template?: T;
+  customTemplateBody?: T;
+  targetFilters?:
+    | T
+    | {
+        sources?:
+          | T
+          | {
+              source?: T;
+              id?: T;
+            };
+        minLeadScore?: T;
+        maxLeadScore?: T;
+        serviceCategories?:
+          | T
+          | {
+              category?: T;
+              id?: T;
+            };
+        cities?:
+          | T
+          | {
+              city?: T;
+              id?: T;
+            };
+      };
+  maxRecipients?: T;
+  delayBetweenMessages?: T;
+  status?: T;
+  scheduledAt?: T;
+  startedAt?: T;
+  completedAt?: T;
+  totalRecipients?: T;
+  sentCount?: T;
+  deliveredCount?: T;
+  readCount?: T;
+  replyCount?: T;
+  conversionCount?: T;
+  errorCount?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outreach-messages_select".
+ */
+export interface OutreachMessagesSelect<T extends boolean = true> {
+  artist?: T;
+  campaign?: T;
+  channel?: T;
+  templateUsed?: T;
+  body?: T;
+  mediaUrl?: T;
+  status?: T;
+  queuedAt?: T;
+  sentAt?: T;
+  deliveredAt?: T;
+  readAt?: T;
+  repliedAt?: T;
+  messageSid?: T;
+  errorCode?: T;
+  errorMessage?: T;
+  retryCount?: T;
+  cost?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scrape-jobs_select".
+ */
+export interface ScrapeJobsSelect<T extends boolean = true> {
+  source?: T;
+  searchQuery?: T;
+  searchCity?: T;
+  searchCategory?: T;
+  maxResults?: T;
+  status?: T;
+  startedAt?: T;
+  completedAt?: T;
+  duration?: T;
+  resultsFound?: T;
+  newArtists?: T;
+  duplicatesSkipped?: T;
+  rawResults?: T;
+  errorMessage?: T;
+  errorLog?: T;
+  triggeredBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }

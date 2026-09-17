@@ -1,16 +1,25 @@
 import Link from 'next/link'
 import { getArtists } from '@/lib/payload'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistsGrid from './ArtistsGrid'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Verified Artists in Ahmedabad — Find & Book Top Professionals',
   description:
     'Discover verified mehndi artists, photographers, makeup artists, and decor professionals in Ahmedabad. Read reviews, compare quotes, and book instantly.',
   alternates: {
     canonical: 'https://www.artistora.com/artists',
   },
-}
+  openGraph: {
+    title: 'Verified Artists in Ahmedabad — Artistora',
+    description:
+      'Discover verified mehndi, photography, makeup, and decor artists in Ahmedabad. Compare quotes and book.',
+    url: 'https://www.artistora.com/artists',
+    type: 'website',
+  },
+})
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
@@ -27,8 +36,31 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 export default async function ArtistsPage() {
   const artists = await getArtists()
 
+  const artistListSchema = (artists || []).length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Verified Artists in Ahmedabad',
+    description: 'Browse verified mehndi artists, photographers, makeup artists, and decor professionals in Ahmedabad on Artistora.',
+    numberOfItems: (artists || []).length,
+    itemListElement: (artists || []).slice(0, 20).map((artist: any, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `https://www.artistora.com/artists/${artist.slug}`,
+      name: artist.displayName,
+    })),
+  } : null
+
   return (
     <>
+      {artistListSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(artistListSchema) }}
+        />
+      )}
+
+      <Breadcrumbs items={[{ label: 'Artists' }]} />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
         <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />

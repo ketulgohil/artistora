@@ -1,14 +1,23 @@
 import Link from 'next/link'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'For Artists — Join Ahmedabad\'s Trusted Artist Network',
   description:
     'Register on Artistora, set up your profile, and start receiving booking leads from customers in Ahmedabad. Free to join, no hidden fees.',
   alternates: {
     canonical: 'https://www.artistora.com/for-artists',
   },
-}
+  openGraph: {
+    title: 'For Artists — Artistora',
+    description:
+      'Join Ahmedabad\'s trusted artist network. Free to register, no hidden fees.',
+    url: 'https://www.artistora.com/for-artists',
+    type: 'website',
+  },
+})
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
@@ -76,8 +85,32 @@ const faqItems = [
 ]
 
 export default function ForArtistsPage() {
+  const forArtistsSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'For Artists — Join Artistora',
+    description: 'Register on Artistora, set up your profile, and start receiving booking leads from customers in Ahmedabad.',
+    url: 'https://www.artistora.com/for-artists',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Artistora',
+      url: 'https://www.artistora.com',
+    },
+    about: {
+      '@type': 'Organization',
+      name: 'Artistora',
+    },
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(forArtistsSchema) }}
+      />
+
+      <Breadcrumbs items={[{ label: 'For Artists' }]} />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
         <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-deep/10 blur-3xl" />

@@ -2,8 +2,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getArtistBySlug, mediaUrl, getPayloadClient } from '@/lib/payload'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -25,15 +27,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     : artist.profilePhoto
       ? mediaUrl(artist.profilePhoto)
       : undefined
-  return {
+  return withDefaultSeo({
     title,
     description,
+    alternates: {
+      canonical: `https://www.artistora.com/artists/${slug}`,
+    },
     openGraph: {
       title,
       description,
+      url: `https://www.artistora.com/artists/${slug}`,
       images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : [],
     },
-  }
+  })
 }
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
@@ -159,10 +165,19 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
               bestRating: '5',
               worstRating: '1',
             } : undefined,
+            offers: artist.startingPrice ? {
+              '@type': 'AggregateOffer',
+              lowPrice: artist.startingPrice,
+              priceCurrency: 'INR',
+              offerCount: '1',
+              availability: 'https://schema.org/InStock',
+            } : undefined,
             priceRange: artist.startingPrice ? `₹${artist.startingPrice.toLocaleString('en-IN')}+` : undefined,
           }),
         }}
       />
+
+      <Breadcrumbs items={[{ label: 'Artists', href: '/artists' }, { label: name }]} />
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">

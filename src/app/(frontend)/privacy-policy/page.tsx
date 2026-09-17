@@ -1,6 +1,8 @@
+import { withDefaultSeo } from '@/lib/seo'
+
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Privacy Policy',
   description:
     'Read Artistora\'s privacy policy to understand how we collect, use, and protect your personal information.',
@@ -8,7 +10,7 @@ export const metadata = {
   alternates: {
     canonical: 'https://www.artistora.com/privacy-policy',
   },
-}
+})
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (

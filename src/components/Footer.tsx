@@ -52,9 +52,9 @@ export default function Footer() {
               <p className="mb-2! text-[0.7rem] font-semibold tracking-[0.3em] text-cream/70 uppercase">
                 Book Verified Artists
               </p>
-              <h2 className="font-display text-2xl! leading-snug font-semibold text-white md:text-3xl!">
+              <p className="font-display text-2xl! leading-snug font-semibold text-white md:text-3xl!">
                 Verified artists for weddings, events, and celebrations.
-              </h2>
+              </p>
             </div>
             <div className="flex flex-col gap-3! sm:flex-row">
               <a

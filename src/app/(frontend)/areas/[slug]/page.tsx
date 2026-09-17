@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import type { Metadata } from 'next'
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
@@ -136,7 +138,7 @@ export async function generateMetadata({ params }: AreaPageProps): Promise<Metad
   const area = areasData[slug]
   if (!area) return { title: 'Area Not Found' }
 
-  return {
+  return withDefaultSeo({
     title: `${area.name} Artists — Book Verified Professionals | Artistora`,
     description: `Find verified photographers, makeup artists, mehndi artists, and event planners in ${area.name}, Ahmedabad. Home-visit services available.`,
     alternates: {
@@ -148,7 +150,7 @@ export async function generateMetadata({ params }: AreaPageProps): Promise<Metad
       url: `https://www.artistora.com/areas/${slug}`,
       type: 'website',
     },
-  }
+  })
 }
 
 export default async function AreaPage({ params }: AreaPageProps) {
@@ -180,6 +182,8 @@ export default async function AreaPage({ params }: AreaPageProps) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      <Breadcrumbs items={[{ label: 'Areas', href: '/areas' }, { label: area.name }]} />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
@@ -255,6 +259,49 @@ export default async function AreaPage({ params }: AreaPageProps) {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      {(() => {
+        const areaFaqs = [
+          { q: `How do I find artists in ${area.name}?`, a: `Submit your event details on Artistora and receive free quotes from verified artists who serve ${area.name}, Ahmedabad. Compare pricing, portfolios, and reviews before booking.` },
+          { q: `What types of artists are available in ${area.name}?`, a: `${area.name} has verified mehndi artists, wedding photographers, makeup artists, event planners, and decor designers. All artists go through Artistora's verification process.` },
+          { q: `How much do artists cost in ${area.name}?`, a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, photographers from ₹15,000, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.` },
+          { q: `Do artists in ${area.name} offer home service?`, a: `Yes. Many verified artists in ${area.name} offer home-visit services for bridal mehndi, makeup trials, and pre-event consultations. Check individual artist profiles for home-service availability.` },
+        ]
+        return (
+          <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: areaFaqs.map((faq) => ({
+                  '@type': 'Question',
+                  name: faq.q,
+                  acceptedAnswer: { '@type': 'Answer', text: faq.a },
+                })),
+              }),
+            }} />
+            <section className={`${SECTION} bg-cream/50`}>
+              <div className={CONTAINER}>
+                <SectionHeading title={`Frequently Asked Questions`} subtitle={`${area.name}`} />
+                <div className="mx-auto mt-10! max-w-3xl! space-y-4!">
+                  {areaFaqs.map((faq) => (
+                    <details key={faq.q} className="group rounded-2xl border border-line bg-white p-6! shadow-soft">
+                      <summary className="flex cursor-pointer items-center justify-between gap-4! font-display text-base! font-semibold text-ink">
+                        {faq.q}
+                        <svg className="h-5! w-5! shrink-0 text-ink-muted transition-transform duration-200 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </summary>
+                      <p className="mt-3! text-sm leading-relaxed text-ink-soft">{faq.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </>
+        )
+      })()}
 
       {/* CTA */}
       <section className={`${SECTION} bg-coal`}>

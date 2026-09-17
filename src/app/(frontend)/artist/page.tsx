@@ -3,17 +3,18 @@ import 'server-only'
 import Link from 'next/link'
 import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
+import { withDefaultSeo } from '@/lib/seo'
 import { getSiteSettings } from '@/lib/payload'
 import { mediaFileUrl } from '@/lib/media-url'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'About Artistora — Ahmedabad\'s Trusted Artist Marketplace',
   description:
     'Artistora connects customers with verified artists in Ahmedabad for weddings, events, and celebrations. Learn about our mission, values, and how we ensure quality.',
   alternates: {
     canonical: 'https://www.artistora.com/artist',
   },
-}
+})
 
 function Eyebrow({
   children,
@@ -69,6 +70,26 @@ export default async function ArtistPage() {
   const settings = (await getSiteSettings()) as any
   const bookingUrl = '/get-quote'
 
+  const aboutPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About Artistora',
+    description: 'Artistora connects customers with verified artists in Ahmedabad for weddings, events, and celebrations.',
+    url: 'https://www.artistora.com/artist',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Artistora',
+      url: 'https://www.artistora.com',
+      description: 'Ahmedabad\'s trusted artist marketplace — verified mehndi, photography, makeup, and decor professionals.',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Ahmedabad',
+        addressRegion: 'Gujarat',
+        addressCountry: 'IN',
+      },
+    },
+  }
+
   const highlights = [
     {
       label: 'Verified Network',
@@ -93,6 +114,11 @@ export default async function ArtistPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageSchema) }}
+      />
+
       {/* ── Editorial ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>

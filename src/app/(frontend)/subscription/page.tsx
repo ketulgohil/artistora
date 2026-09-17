@@ -1,12 +1,13 @@
 import Link from 'next/link'
+import { withDefaultSeo } from '@/lib/seo'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Artist Plans & Visibility',
   description: 'Choose how you want to grow your presence on the Artistora marketplace.',
   alternates: {
     canonical: 'https://www.artistora.com/subscription',
   },
-}
+})
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'

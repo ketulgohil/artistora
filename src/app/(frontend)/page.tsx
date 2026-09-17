@@ -3,6 +3,7 @@ import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import { mediaFileUrl } from '@/lib/media-url'
+import { withDefaultSeo } from '@/lib/seo'
 import {
   getSiteSettings,
   getServices,
@@ -12,7 +13,7 @@ import {
 } from '@/lib/payload'
 import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Book Verified Artists in Ahmedabad — Mehndi, Photography, Makeup & Decor',
   description:
     'Artistora connects you with verified artists in Ahmedabad for weddings, events, and celebrations. Compare quotes from mehndi, photography, makeup, and decor professionals.',
@@ -25,7 +26,7 @@ export const metadata = {
       'Compare quotes from verified mehndi, photography, makeup, and decor artists in Ahmedabad.',
     url: 'https://www.artistora.com',
   },
-}
+})
 
 function renderLexicalText(data: unknown): string {
   if (!data) return ''
@@ -201,6 +202,10 @@ export default async function HomePage() {
               '@type': 'AggregateRating',
               ratingValue: '4.9',
               reviewCount: '150',
+            },
+            speakable: {
+              '@type': 'SpeakableSpecification',
+              cssSelector: ['.font-display'],
             },
           }),
         }}

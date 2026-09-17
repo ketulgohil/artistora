@@ -61,6 +61,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        // Redirect bare domain to www
+        source: '/((?!api|_next|artistora|favicon.ico|apple-touch-icon.png|site.webmanifest).*)',
+        has: [{ type: 'host', value: 'artistora.com' }],
+        destination: 'https://www.artistora.com/:path*',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {

@@ -1,14 +1,23 @@
 import Link from 'next/link'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'How It Works — Book Verified Artists in 3 Simple Steps',
   description:
     'Learn how Artistora works — share your event details, compare quotes from verified artists, and book the perfect professional for your wedding or celebration in Ahmedabad.',
   alternates: {
     canonical: 'https://www.artistora.com/how-it-works',
   },
-}
+  openGraph: {
+    title: 'How It Works — Artistora',
+    description:
+      'Book verified artists in Ahmedabad in 3 simple steps. Share your event, compare quotes, and confirm.',
+    url: 'https://www.artistora.com/how-it-works',
+    type: 'website',
+  },
+})
 
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
@@ -105,8 +114,39 @@ const benefits = [
 ]
 
 export default function HowItWorksPage() {
+  const howToCustomer = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to Book an Artist on Artistora',
+    description: 'Book verified artists in Ahmedabad in 3 simple steps — share your event, compare quotes, and confirm.',
+    step: customerSteps.map((step) => ({
+      '@type': 'HowToStep',
+      position: parseInt(step.num),
+      name: step.title,
+      text: step.description,
+    })),
+  }
+
+  const howToArtist = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to Join Artistora as an Artist',
+    description: 'Register as an artist on Artistora, receive booking requests, and grow your client base in Ahmedabad.',
+    step: artistSteps.map((step) => ({
+      '@type': 'HowToStep',
+      position: parseInt(step.num),
+      name: step.title,
+      text: step.description,
+    })),
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToCustomer) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToArtist) }} />
+
+      <Breadcrumbs items={[{ label: 'How It Works' }]} />
+
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
         <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />

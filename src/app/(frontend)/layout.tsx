@@ -54,11 +54,38 @@ export const metadata = {
   },
 }
 
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Artistora',
+  url: 'https://www.artistora.com',
+  logo: 'https://www.artistora.com/artistora/logo-white.png',
+  description: 'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Ahmedabad',
+    addressRegion: 'Gujarat',
+    addressCountry: 'IN',
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+917405387720',
+    contactType: 'customer service',
+    availableLanguage: 'English',
+  },
+  sameAs: [
+    'https://www.instagram.com/artistoraofficial',
+  ],
+}
+
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
     <html lang="en" className={`${manrope.variable} ${fraunces.variable}`}>
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      </head>
       <body>
         <BrandLoader />
         <a

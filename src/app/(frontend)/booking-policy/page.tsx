@@ -1,6 +1,8 @@
+import { withDefaultSeo } from '@/lib/seo'
+
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Booking Policy',
   description:
     'Understand Artistora\'s booking terms, cancellation policies, and payment guidelines for hiring verified artists in Ahmedabad.',
@@ -8,7 +10,7 @@ export const metadata = {
   alternates: {
     canonical: 'https://www.artistora.com/booking-policy',
   },
-}
+})
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (

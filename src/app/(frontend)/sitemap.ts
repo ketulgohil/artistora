@@ -3,6 +3,13 @@ import { getPayloadClient } from '@/lib/payload'
 
 const BASE_URL = 'https://www.artistora.com'
 
+const areaSlugs = [
+  'satellite', 'vastrapur', 'bopal', 'prahlad-nagar', 'thaltej',
+  'gota', 'south-bopal', 'science-city', 'shela', 'nikol',
+  'vastral', 'maninagar', 'naroda', 'chandkheda', 'motera',
+  'sola', 'ghodasar', 'isanpur', 'memco', 'daskroi',
+]
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayloadClient()
 
@@ -12,13 +19,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/services`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/artists`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/portfolio`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/how-it-works`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/for-artists`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE_URL}/faq`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/artist`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/get-quote`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE_URL}/areas`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE_URL}/privacy-policy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/booking-policy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${BASE_URL}/subscription`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
   ]
+
+  // Area pages
+  const areaPages: MetadataRoute.Sitemap = areaSlugs.map((slug) => ({
+    url: `${BASE_URL}/areas/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
 
   // Dynamic artist profile pages
   const { docs: artists } = await payload.find({
@@ -42,5 +61,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }))
 
-  return [...staticPages, ...artistPages]
+  return [...staticPages, ...areaPages, ...artistPages]
 }

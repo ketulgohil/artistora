@@ -50,3 +50,4 @@ src/app/(payload)/admin/importMap.js
 # supabase local temp
 supabase/.temp/
 .env*
+whatsapp-session/

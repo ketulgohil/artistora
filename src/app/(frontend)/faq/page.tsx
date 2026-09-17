@@ -1,13 +1,22 @@
 import Link from 'next/link'
+import { withDefaultSeo } from '@/lib/seo'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Frequently Asked Questions — Artistora',
   description:
     'Got questions about booking artists in Ahmedabad? Find answers about pricing, booking, cancellation, artist verification, and more on Artistora.',
   alternates: {
     canonical: 'https://www.artistora.com/faq',
   },
-}
+  openGraph: {
+    title: 'FAQ — Artistora',
+    description:
+      'Answers about booking artists, pricing, cancellation, and verification on Artistora.',
+    url: 'https://www.artistora.com/faq',
+    type: 'website',
+  },
+})
 
 const CONTAINER = 'mx-auto max-w-3xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
@@ -101,6 +110,10 @@ const jsonLd = {
       text: item.a,
     },
   })),
+  speakable: {
+    '@type': 'SpeakableSpecification',
+    cssSelector: ['h1', 'h2', 'summary'],
+  },
 }
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
@@ -121,6 +134,8 @@ export default function FaqPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      <Breadcrumbs items={[{ label: 'FAQ' }]} />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">

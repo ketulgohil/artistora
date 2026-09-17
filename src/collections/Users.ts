@@ -44,10 +44,14 @@ export const Users: CollectionConfig = {
         // Prevent privilege escalation: strip role=admin from non-admin creates
         if (operation === 'create') {
           if (data?.role === 'admin' && req.user?.role !== 'admin') {
-            data.role = 'customer'
+            // Allow first user to be admin (bootstrap)
+            const { totalDocs } = await req.payload.find({ collection: 'users', limit: 0 })
+            if (totalDocs > 0) {
+              data.role = 'customer'
+            }
           }
-          // Allow only customer or artist for public registration
-          if (!data?.role || !['customer', 'artist'].includes(data.role)) {
+          // Allow only customer or artist for public registration (unless first user)
+          if (!data?.role || !['customer', 'artist', 'admin'].includes(data.role)) {
             data.role = 'customer'
           }
         }

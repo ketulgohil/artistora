@@ -1,14 +1,23 @@
 import SectionHeading from '@/components/SectionHeading'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import { withDefaultSeo } from '@/lib/seo'
 import { getSiteSettings } from '@/lib/payload'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Contact Us — Get in Touch with Artistora',
   description:
     'Have questions about Artistora? Reach out to our team for support with bookings, artist inquiries, or partnership opportunities in Ahmedabad.',
   alternates: {
     canonical: 'https://www.artistora.com/contact',
   },
-}
+  openGraph: {
+    title: 'Contact Us — Artistora',
+    description:
+      'Get in touch with Artistora for bookings, artist inquiries, or partnership opportunities.',
+    url: 'https://www.artistora.com/contact',
+    type: 'website',
+  },
+})
 
 function PhoneIcon() {
   return (
@@ -83,8 +92,26 @@ export default async function ContactPage() {
   const address = settings.address || ''
   const whatsappNumber = settings.whatsappNumber || '917405387720'
 
+  const contactPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact Artistora',
+    description: 'Get in touch with Artistora for bookings, artist inquiries, or partnership opportunities in Ahmedabad.',
+    url: 'https://www.artistora.com/contact',
+    mainEntity: {
+      '@type': 'Organization',
+      name: businessName,
+      telephone: phone,
+      email: email,
+    },
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageSchema) }} />
+
+      <Breadcrumbs items={[{ label: 'Contact' }]} />
+
       {/* ── Intro + contact details ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>

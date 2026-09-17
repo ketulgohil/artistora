@@ -2,16 +2,25 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getServices, getSiteSettings, getFAQs, mediaUrl, mediaDimensions } from '@/lib/payload'
 import { mediaFileUrl } from '@/lib/media-url'
+import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
-export const metadata = {
+export const metadata = withDefaultSeo({
   title: 'Services — Photography, Mehndi, Makeup, Decor & More in Ahmedabad',
   description:
     'Browse verified artist services on Artistora — wedding photography, bridal mehndi, makeup artists, event decor, and entertainment in Ahmedabad.',
   alternates: {
     canonical: 'https://www.artistora.com/services',
   },
-}
+  openGraph: {
+    title: 'Services — Artistora',
+    description:
+      'Photography, mehndi, makeup, decor, and more — verified artist services in Ahmedabad.',
+    url: 'https://www.artistora.com/services',
+    type: 'website',
+  },
+})
 
 function extractLexicalText(richText: any): string {
   if (!richText || !richText.root) return ''
@@ -239,6 +248,8 @@ export default async function ServicesPage() {
           }),
         }}
       />
+
+      <Breadcrumbs items={[{ label: 'Services' }]} />
 
       {/* ── Page Intro: Services + editorial hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">

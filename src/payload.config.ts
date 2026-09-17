@@ -21,6 +21,10 @@ import { Leads } from './collections/Leads'
 import { Quotes } from './collections/Quotes'
 import { Bookings } from './collections/Bookings'
 import { Reviews } from './collections/Reviews'
+import DiscoveredArtists from './collections/DiscoveredArtists'
+import Campaigns from './collections/Campaigns'
+import OutreachMessages from './collections/OutreachMessages'
+import ScrapeJobs from './collections/ScrapeJobs'
 import { SiteSettings } from './globals/SiteSettings'
 import { HeaderFooter } from './globals/HeaderFooter'
 
@@ -107,6 +111,19 @@ export default buildConfig({
       titleSuffix: ' — Artistora CMS',
       description: 'Artistora Artist Marketplace CMS',
     },
+    components: {
+      afterNavLinks: process.env.ENABLE_SCRAPER
+        ? [{ path: '@/app/(payload)/admin/views/ScraperNavLink#default' }]
+        : [],
+      views: process.env.ENABLE_SCRAPER
+        ? {
+            scraper: {
+              Component: '@/app/(payload)/admin/views/ScraperDashboard#default',
+              path: '/scraper',
+            },
+          }
+        : {},
+    },
   },
   collections: [
     Users,
@@ -124,6 +141,10 @@ export default buildConfig({
     Quotes,
     Bookings,
     Reviews,
+    DiscoveredArtists,
+    Campaigns,
+    OutreachMessages,
+    ScrapeJobs,
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),
