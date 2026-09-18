@@ -284,6 +284,41 @@ const DiscoveredArtists: CollectionConfig = {
       type: 'date',
     },
     {
+      name: 'lastCampaign',
+      type: 'text',
+      admin: { description: 'Name/ID of last campaign sent to this artist' },
+    },
+    {
+      name: 'lastTemplateUsed',
+      type: 'text',
+      admin: { description: 'Last message template used' },
+    },
+    {
+      name: 'messageStatus',
+      type: 'select',
+      defaultValue: 'none',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'Sent', value: 'sent' },
+        { label: 'Delivered', value: 'delivered' },
+        { label: 'Read', value: 'read' },
+        { label: 'Failed', value: 'failed' },
+        { label: 'Replied', value: 'replied' },
+      ],
+      admin: { description: 'WhatsApp message delivery status' },
+    },
+    {
+      name: 'campaignHistory',
+      type: 'array',
+      admin: { description: 'History of all campaigns sent to this artist' },
+      fields: [
+        { name: 'campaign', type: 'text', required: true },
+        { name: 'template', type: 'text' },
+        { name: 'sentAt', type: 'date', required: true },
+        { name: 'status', type: 'text', defaultValue: 'sent' },
+      ],
+    },
+    {
       name: 'repliedAt',
       type: 'date',
     },

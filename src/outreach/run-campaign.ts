@@ -32,6 +32,7 @@ const LIMIT = parseInt(process.argv.find((_, i, a) => a[i - 1] === '--limit') ||
 const TEMPLATE_ID = process.argv.find((_, i, a) => a[i - 1] === '--template') || 'gujarati_welcome'
 const AREA_FILTER = process.argv.find((_, i, a) => a[i - 1] === '--area')
 const SERVICE_FILTER = process.argv.find((_, i, a) => a[i - 1] === '--service')
+const CAMPAIGN_NAME = process.argv.find((_, i, a) => a[i - 1] === '--campaign') || `manual_${TEMPLATE_ID}_${new Date().toISOString().split('T')[0]}`
 const SHOW_STATS = process.argv.includes('--stats')
 
 // ── Message Templates ──
@@ -212,13 +213,15 @@ async function queryArtists(filters: { area?: string; service?: string; limit: n
     where += ` AND specializations ILIKE $${params.length}`
   }
 
-  // Exclude already sent
+  // Exclude already sent (check both JSON log and database)
   const sent = loadSentLog()
   const sentIds = Object.keys(sent)
   if (sentIds.length > 0) {
     params.push(sentIds)
     where += ` AND id::text != ALL($${params.length}::text[])`
   }
+  // Also exclude artists already contacted in database
+  where += ` AND (outreach_attempts IS NULL OR outreach_attempts = 0)`
 
   params.push(filters.limit)
   params.push(filters.offset)
@@ -286,6 +289,23 @@ async function showStats() {
     WHERE phone IS NOT NULL
     GROUP BY area ORDER BY count DESC LIMIT 10
   `)
+  const outreach = await pg.query(`
+    SELECT 
+      outreach_status,
+      COUNT(*) as count
+    FROM discovered_artists
+    GROUP BY outreach_status
+  `)
+  const recentlyContacted = await pg.query(`
+    SELECT COUNT(*) as count 
+    FROM discovered_artists 
+    WHERE last_contacted_at > NOW() - INTERVAL '7 days'
+  `)
+  const messagesSent = await pg.query(`
+    SELECT COUNT(*) as count 
+    FROM outreach_messages 
+    WHERE sent_at > NOW() - INTERVAL '7 days'
+  `)
 
   const sent = loadSentLog()
 
@@ -293,7 +313,11 @@ async function showStats() {
   console.log('─'.repeat(50))
   console.log(`Total Artists: ${total.rows[0].total}`)
   console.log(`With Phone: ${total.rows[0].with_phone}`)
-  console.log(`Already Sent: ${Object.keys(sent).length}`)
+  console.log(`Already Sent (JSON): ${Object.keys(sent).length}`)
+  console.log(`Contacted (DB): ${recentlyContacted.rows[0].count} (last 7 days)`)
+  console.log(`Messages Sent (DB): ${messagesSent.rows[0].count} (last 7 days)`)
+  console.log('\nBy Status:')
+  outreach.rows.forEach((r: any) => console.log(`  ${r.outreach_status}: ${r.count}`))
   console.log(`Remaining: ${parseInt(total.rows[0].with_phone) - Object.keys(sent).length}`)
 
   console.log('\n📌 By Service:')
@@ -416,6 +440,51 @@ async function main() {
       fs.writeFileSync(path.join(queueDir, filename), JSON.stringify({ phone, message, queuedAt: new Date().toISOString() }))
       sentLog[a.id] = new Date().toISOString()
       sent++
+
+      // Update database tracking
+      try {
+        const { Client: PgClient } = require('pg')
+        const pg = new PgClient({ connectionString: DB_URL })
+        await pg.connect()
+        
+        // Update discovered_artists
+        await pg.query(`
+          UPDATE discovered_artists 
+          SET outreach_status = 'contacted',
+              outreach_attempts = COALESCE(outreach_attempts, 0) + 1,
+              last_contacted_at = NOW(),
+              last_campaign = $1,
+              last_template_used = $2,
+              message_status = 'sent',
+              campaign_history = COALESCE(campaign_history, '[]'::jsonb) || $3::jsonb
+          WHERE id = $4
+        `, [
+          CAMPAIGN_NAME,
+          TEMPLATE_ID,
+          JSON.stringify([{
+            campaign: CAMPAIGN_NAME,
+            template: TEMPLATE_ID,
+            sentAt: new Date().toISOString(),
+            status: 'sent'
+          }]),
+          a.id
+        ])
+
+        // Log to outreach_messages
+        await pg.query(`
+          INSERT INTO outreach_messages (artist, channel, template_used, body, status, sent_at, queued_at, campaign_name)
+          SELECT $1, 'whatsapp', $2, $3, 'sent', NOW(), NOW(), $4
+          WHERE NOT EXISTS (
+            SELECT 1 FROM outreach_messages 
+            WHERE artist = $1 AND sent_at > NOW() - INTERVAL '24 hours'
+          )
+        `, [a.id, TEMPLATE_ID, message.substring(0, 1000), CAMPAIGN_NAME])
+
+        await pg.end()
+      } catch (dbErr: any) {
+        console.log(`    ⚠️  DB update failed: ${dbErr.message}`)
+      }
+
       console.log(`  [${i + 1}/${artists.length}] ✅ Queued for ${displayName} (${phone})`)
     } catch (err: any) {
       failed++

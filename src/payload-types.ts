@@ -801,6 +801,30 @@ export interface DiscoveredArtist {
   outreachStatus?: ('new' | 'contacted' | 'replied' | 'interested' | 'registered' | 'declined' | 'blacklisted') | null;
   outreachAttempts?: number | null;
   lastContactedAt?: string | null;
+  /**
+   * Name/ID of last campaign sent to this artist
+   */
+  lastCampaign?: string | null;
+  /**
+   * Last message template used
+   */
+  lastTemplateUsed?: string | null;
+  /**
+   * WhatsApp message delivery status
+   */
+  messageStatus?: ('none' | 'sent' | 'delivered' | 'read' | 'failed' | 'replied') | null;
+  /**
+   * History of all campaigns sent to this artist
+   */
+  campaignHistory?:
+    | {
+        campaign: string;
+        template?: string | null;
+        sentAt: string;
+        status?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   repliedAt?: string | null;
   registeredAt?: string | null;
   /**
@@ -980,7 +1004,11 @@ export interface Campaign {
 export interface OutreachMessage {
   id: number;
   artist: number | DiscoveredArtist;
-  campaign: number | Campaign;
+  campaign?: (number | null) | Campaign;
+  /**
+   * Campaign name for manual sends (when not linked to a campaign record)
+   */
+  campaignName?: string | null;
   channel: 'whatsapp' | 'instagram_dm' | 'email' | 'sms';
   templateUsed?:
     | (
@@ -1598,6 +1626,18 @@ export interface DiscoveredArtistsSelect<T extends boolean = true> {
   outreachStatus?: T;
   outreachAttempts?: T;
   lastContactedAt?: T;
+  lastCampaign?: T;
+  lastTemplateUsed?: T;
+  messageStatus?: T;
+  campaignHistory?:
+    | T
+    | {
+        campaign?: T;
+        template?: T;
+        sentAt?: T;
+        status?: T;
+        id?: T;
+      };
   repliedAt?: T;
   registeredAt?: T;
   notes?: T;
@@ -1664,6 +1704,7 @@ export interface CampaignsSelect<T extends boolean = true> {
 export interface OutreachMessagesSelect<T extends boolean = true> {
   artist?: T;
   campaign?: T;
+  campaignName?: T;
   channel?: T;
   templateUsed?: T;
   body?: T;

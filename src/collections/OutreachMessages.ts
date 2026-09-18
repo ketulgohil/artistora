@@ -35,8 +35,13 @@ const OutreachMessages: CollectionConfig = {
       name: 'campaign',
       type: 'relationship',
       relationTo: 'campaigns',
-      required: true,
+      required: false,
       index: true,
+    },
+    {
+      name: 'campaignName',
+      type: 'text',
+      admin: { description: 'Campaign name for manual sends (when not linked to a campaign record)' },
     },
 
     // --- Channel ---
