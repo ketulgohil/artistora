@@ -190,6 +190,21 @@ export const Artists: CollectionConfig = {
       ],
     },
     {
+      name: 'artistType',
+      type: 'select',
+      required: true,
+      label: 'Primary Service Type',
+      options: [
+        { label: 'Mehndi Artists', value: 'mehndi-artists' },
+        { label: 'Photographers', value: 'photographers' },
+        { label: 'Makeup Artists', value: 'makeup-artists' },
+        { label: 'Decor & Event Planners', value: 'decor-event-planners' },
+      ],
+      admin: {
+        description: 'Primary service category selected during registration',
+      },
+    },
+    {
       name: 'services',
       type: 'relationship',
       relationTo: 'services',

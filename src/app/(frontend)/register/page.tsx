@@ -17,6 +17,7 @@ export default function RegisterPage() {
     bio: '',
     startingPrice: '',
     yearsOfExperience: '',
+    artistType: '',
     role: 'customer' as 'customer' | 'artist',
   })
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
@@ -72,6 +73,7 @@ export default function RegisterPage() {
         formData.append('bio', form.bio)
         formData.append('startingPrice', form.startingPrice)
         formData.append('yearsOfExperience', form.yearsOfExperience)
+        formData.append('artistType', form.artistType)
         if (profilePhoto) formData.append('profilePhoto', profilePhoto)
       }
 
@@ -275,8 +277,28 @@ export default function RegisterPage() {
                   Artist Membership
                 </div>
                 <p className="mt-1.5! text-ink-muted">
-                  You’ll get an artist dashboard to showcase your portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
+                  You'll get an artist dashboard to showcase your portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
                 </p>
+              </div>
+            )}
+
+            {/* Artist Type — primary service category */}
+            {!isCustomer && (
+              <div>
+                <label className="mb-1.5! block text-sm font-medium text-ink-soft">Artist Type / Service Category *</label>
+                <select
+                  value={form.artistType}
+                  onChange={(e) => setForm((p) => ({ ...p, artistType: e.target.value }))}
+                  required
+                  className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+                >
+                  <option value="">Select your primary service type</option>
+                  <option value="mehndi-artists">Mehndi Artists</option>
+                  <option value="photographers">Photographers</option>
+                  <option value="makeup-artists">Makeup Artists</option>
+                  <option value="decor-event-planners">Decor &amp; Event Planners</option>
+                </select>
+                <p className="mt-1! text-xs text-ink-muted">Choose the category that best describes your work. You can add more services later from your dashboard.</p>
               </div>
             )}
 

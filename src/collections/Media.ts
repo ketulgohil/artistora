@@ -32,6 +32,17 @@ export const Media: CollectionConfig = {
         // Auto-create portfolio item when an artist uploads an image
         if (operation === 'create' && req.user && doc.id) {
           try {
+            // Skip if this image is already used as a profile photo
+            const existingArtist = await req.payload.find({
+              collection: 'artists',
+              where: { profilePhoto: { equals: doc.id } },
+              limit: 1,
+            })
+            if (existingArtist.docs.length > 0) return doc
+
+            // Skip HEIC files (not supported by browsers)
+            if (doc.mimeType === 'image/heic' || doc.filename?.toLowerCase().endsWith('.heic')) return doc
+
             // Find artist linked to this user
             const artists = await req.payload.find({
               collection: 'artists',

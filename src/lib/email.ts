@@ -194,6 +194,7 @@ export async function sendAdminNewArtistNotification(artistData: {
   email: string
   phone?: string
   city?: string
+  artistType?: string
 }) {
   const adminEmail = process.env.RESEND_NOTIFY_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@artistora.com'
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
@@ -212,6 +213,7 @@ export async function sendAdminNewArtistNotification(artistData: {
             <tr><td style="padding: 6px 0; color: #7e8aa3;">Email</td><td style="padding: 6px 0;"><a href="mailto:${artistData.email}" style="color: #d14a68; text-decoration: none;">${artistData.email}</a></td></tr>
             ${artistData.phone ? `<tr><td style="padding: 6px 0; color: #7e8aa3;">Phone</td><td style="padding: 6px 0;">${artistData.phone}</td></tr>` : ''}
             ${artistData.city ? `<tr><td style="padding: 6px 0; color: #7e8aa3;">City</td><td style="padding: 6px 0;">${artistData.city}</td></tr>` : ''}
+            ${artistData.artistType ? `<tr><td style="padding: 6px 0; color: #7e8aa3;">Service Type</td><td style="padding: 6px 0; font-weight: 600;">${artistData.artistType.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</td></tr>` : ''}
             <tr><td style="padding: 6px 0; color: #7e8aa3;">Status</td><td style="padding: 6px 0;"><span style="background: #fef3cd; color: #856404; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pending Approval</span></td></tr>
           </table>
         </div>

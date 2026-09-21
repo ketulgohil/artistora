@@ -402,6 +402,10 @@ export interface Artist {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Primary service category selected during registration
+   */
+  artistType: 'mehndi-artists' | 'photographers' | 'makeup-artists' | 'decor-event-planners';
   services?: (number | Service)[] | null;
   styles?:
     | {
@@ -1418,6 +1422,7 @@ export interface ArtistsSelect<T extends boolean = true> {
         reason?: T;
         id?: T;
       };
+  artistType?: T;
   services?: T;
   styles?:
     | T

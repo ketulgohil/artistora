@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
 
     // Handle both FormData and JSON
-    let name: string, email: string, password: string, role: string, phone: string, city: string, bio: string, startingPrice: string, yearsOfExperience: string
+    let name: string, email: string, password: string, role: string, phone: string, city: string, bio: string, startingPrice: string, yearsOfExperience: string, artistType: string
     let profilePhotoFile: File | null = null
 
     const contentType = request.headers.get('content-type') || ''
@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       bio = formData.get('bio') as string || ''
       startingPrice = formData.get('startingPrice') as string || ''
       yearsOfExperience = formData.get('yearsOfExperience') as string || ''
+      artistType = formData.get('artistType') as string || ''
       profilePhotoFile = formData.get('profilePhoto') as File | null
       if (!profilePhotoFile || profilePhotoFile.size === 0) profilePhotoFile = null
     } else {
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
       bio = body.bio || ''
       startingPrice = body.startingPrice || ''
       yearsOfExperience = body.yearsOfExperience || ''
+      artistType = body.artistType || ''
     }
 
     // Input validation
@@ -78,6 +80,10 @@ export async function POST(request: NextRequest) {
       }
       if (!yearsOfExperience || isNaN(Number(yearsOfExperience)) || Number(yearsOfExperience) < 0) {
         return NextResponse.json({ error: 'Please enter your years of experience' }, { status: 400 })
+      }
+      const validArtistTypes = ['mehndi-artists', 'photographers', 'makeup-artists', 'decor-event-planners']
+      if (!artistType || !validArtistTypes.includes(artistType)) {
+        return NextResponse.json({ error: 'Please select a valid artist type' }, { status: 400 })
       }
     }
 
@@ -131,6 +137,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Auto-link artist to the matching service from the services collection
+      let linkedServiceIds: number[] = []
+      try {
+        const { docs: matchedServices } = await payload.find({
+          collection: 'services',
+          where: { slug: { equals: artistType } },
+          limit: 1,
+        })
+        if (matchedServices.length > 0) {
+          linkedServiceIds = [matchedServices[0].id]
+        }
+      } catch (err) {
+        console.error('Failed to auto-link service:', err)
+      }
+
       artistProfile = await payload.create({
         collection: 'artists',
         data: {
@@ -142,6 +163,8 @@ export async function POST(request: NextRequest) {
           city: typeof city === 'string' ? city.trim().slice(0, 100) : 'Ahmedabad',
           startingPrice: Number(startingPrice) || 0,
           yearsOfExperience: Number(yearsOfExperience) || 0,
+          artistType: artistType,
+          ...(linkedServiceIds.length > 0 ? { services: linkedServiceIds } : {}),
           ...(profilePhotoId ? { profilePhoto: profilePhotoId } : {}),
           verified: false,
           approvalStatus: 'pending',
@@ -160,6 +183,7 @@ export async function POST(request: NextRequest) {
         email: email.trim().toLowerCase(),
         phone: typeof phone === 'string' ? phone.trim() : undefined,
         city: typeof city === 'string' ? city.trim() : undefined,
+        artistType: artistType || undefined,
       }).catch(() => {})
     }
 
