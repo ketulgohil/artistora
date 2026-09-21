@@ -61,7 +61,7 @@ export const Media: CollectionConfig = {
 
               // Determine service category from artist's specializations
               const specs = (artist as any).specializations || ''
-              let serviceCategory = 'other'
+              let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
               if (specs.toLowerCase().includes('mehndi')) serviceCategory = 'mehndi'
               else if (specs.toLowerCase().includes('photo')) serviceCategory = 'photography'
               else if (specs.toLowerCase().includes('make') || specs.toLowerCase().includes('beauty')) serviceCategory = 'makeup'
