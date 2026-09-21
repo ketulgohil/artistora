@@ -9,6 +9,40 @@ Artistora is an **artist marketplace** connecting customers with verified artist
 
 ---
 
+## ⚠️ CRITICAL: Database Migration Safety
+
+**NEVER run `npx payload migrate` on the live database without:**
+
+1. **Creating a backup first:**
+   ```bash
+   DATABASE_URL="..." ./scripts/backup-db.sh
+   ```
+
+2. **Testing on a copy first** (if possible)
+
+3. **Understanding what `migrate` does:** It DROPs and recreates tables, causing DATA LOSS
+
+**Safe workflow for schema changes:**
+
+```bash
+# 1. Make changes to collection files in src/collections/
+# 2. Start dev server (auto-pushes schema safely)
+npm run dev
+
+# 3. Verify changes work locally
+# 4. Commit and push to GitHub
+# 5. Vercel will auto-deploy with safe schema push
+```
+
+**NEVER do this on production:**
+```bash
+# ❌ DANGEROUS - data loss!
+npx payload migrate
+echo "y" | npx payload migrate
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
