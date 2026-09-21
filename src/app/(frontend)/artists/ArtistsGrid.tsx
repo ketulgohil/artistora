@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
+import { mediaFileUrl } from '@/lib/media-url'
 
 function Star({ filled = true }: { filled?: boolean }) {
   return (
@@ -29,15 +30,11 @@ function VerifiedBadge() {
   )
 }
 
-function mediaFileUrl(filename: string) {
-  return `/api/media/file/${filename}`
-}
-
 function getMediaUrl(media: any): string {
   if (!media) return ''
   if (typeof media === 'string') return mediaFileUrl(media)
-  if (media.url) return media.url
   if (media.filename) return mediaFileUrl(media.filename)
+  if (media.url) return media.url
   return ''
 }
 
