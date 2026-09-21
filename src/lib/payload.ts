@@ -185,6 +185,8 @@ export async function getFeaturedArtists(limit = 4) {
       isFeatured: true,
       rating: true,
       reviewCount: true,
+      artistType: true,
+      yearsOfExperience: true,
     },
   })
   return docs

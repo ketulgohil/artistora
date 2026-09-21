@@ -415,7 +415,15 @@ export default async function HomePage() {
           <div className={CONTAINER}>
             <SectionHeading title="Featured Artists" subtitle="Top Rated" />
             <div className="grid gap-6! sm:grid-cols-2 lg:grid-cols-4">
-              {featuredArtists.map((artist: any) => (
+              {featuredArtists.map((artist: any) => {
+                const typeLabels: Record<string, string> = {
+                  'mehndi-artists': 'Mehndi Artist',
+                  'photographers': 'Photographer',
+                  'makeup-artists': 'Makeup Artist',
+                  'decor-event-planners': 'Decor & Events',
+                }
+                const artistTypeLabel = typeLabels[artist.artistType] || ''
+                return (
                 <Link
                   key={artist.id}
                   href={`/artists/${artist.slug}`}
@@ -425,7 +433,7 @@ export default async function HomePage() {
                     <div className="relative mb-4!">
                       {artist.profilePhoto?.filename ? (
                         <Image
-                          src={`/api/media/file/${artist.profilePhoto.filename}`}
+                          src={mediaFileUrl(artist.profilePhoto.filename)}
                           alt={artist.displayName}
                           width={80}
                           height={80}
@@ -443,6 +451,11 @@ export default async function HomePage() {
                         </span>
                       )}
                     </div>
+                    {artistTypeLabel && (
+                      <span className="mb-1! rounded-full bg-brand/10 px-3! py-0.5! text-[0.65rem] font-semibold tracking-wide text-brand">
+                        {artistTypeLabel}
+                      </span>
+                    )}
                     <h3 className="font-display text-center text-[1.05rem]! font-semibold text-ink group-hover:text-brand transition-colors">
                       {artist.displayName}
                     </h3>
@@ -468,7 +481,8 @@ export default async function HomePage() {
                     )}
                   </div>
                 </Link>
-              ))}
+                )
+              })}
             </div>
             <div className="mt-10! text-center">
               <Link
