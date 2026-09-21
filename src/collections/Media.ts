@@ -27,6 +27,69 @@ export const Media: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        // Auto-create portfolio item when an artist uploads an image
+        if (operation === 'create' && req.user && doc.id) {
+          try {
+            // Find artist linked to this user
+            const artists = await req.payload.find({
+              collection: 'artists',
+              where: { user: { equals: req.user.id } },
+              limit: 1,
+            })
+
+            if (artists.docs.length > 0) {
+              const artist = artists.docs[0]
+
+              // Get the first portfolio category for this artist's service type
+              const categories = await req.payload.find({
+                collection: 'portfolio-categories',
+                limit: 10,
+              })
+
+              // Determine service category from artist's specializations
+              const specs = (artist as any).specializations || ''
+              let serviceCategory = 'other'
+              if (specs.toLowerCase().includes('mehndi')) serviceCategory = 'mehndi'
+              else if (specs.toLowerCase().includes('photo')) serviceCategory = 'photography'
+              else if (specs.toLowerCase().includes('make') || specs.toLowerCase().includes('beauty')) serviceCategory = 'makeup'
+              else if (specs.toLowerCase().includes('decor') || specs.toLowerCase().includes('event')) serviceCategory = 'decor'
+
+              // Find matching category
+              const categoryMap: Record<string, string> = {
+                mehndi: 'bridal-mehndi',
+                photography: 'wedding-photography',
+                makeup: 'bridal-makeup',
+                decor: 'event-decor',
+                other: 'event-decor',
+              }
+              const targetSlug = categoryMap[serviceCategory] || 'event-decor'
+              const category = categories.docs.find((c: any) => c.slug === targetSlug) || categories.docs[0]
+
+              if (category) {
+                await req.payload.create({
+                  collection: 'portfolio-items',
+                  data: {
+                    image: doc.id,
+                    category: category.id,
+                    serviceCategory,
+                    artist: artist.id,
+                    altText: doc.alt || `Portfolio image by ${(artist as any).displayName}`,
+                    featured: false,
+                  },
+                })
+                console.log(`[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`)
+              }
+            }
+          } catch (err: any) {
+            // Don't fail upload if portfolio creation fails
+            console.error('[Media] Failed to auto-create portfolio item:', err.message)
+          }
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {
