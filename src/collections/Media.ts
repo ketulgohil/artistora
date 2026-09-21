@@ -92,6 +92,26 @@ export const Media: CollectionConfig = {
                 })
                 console.log(`[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`)
               }
+
+              // Also add to artist's portfolioImages array (used by artist profile page)
+              const existingPortfolio = (artist as any).portfolioImages || []
+              const alreadyHasImage = existingPortfolio.some((item: any) => {
+                const imgId = typeof item.image === 'object' ? item.image?.id : item.image
+                return imgId === doc.id
+              })
+              if (!alreadyHasImage) {
+                await req.payload.update({
+                  collection: 'artists',
+                  id: artist.id,
+                  data: {
+                    portfolioImages: [
+                      ...existingPortfolio,
+                      { image: doc.id, caption: '' },
+                    ],
+                  },
+                })
+                console.log(`[Media] Added to artist portfolioImages for ${(artist as any).displayName}`)
+              }
             }
           } catch (err: any) {
             // Don't fail upload if portfolio creation fails
