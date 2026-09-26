@@ -195,18 +195,8 @@ export default async function HomePage() {
               name: 'Ahmedabad',
             },
             sameAs: [
-              'https://www.instagram.com/artistora',
-              'https://www.facebook.com/artistora',
+              'https://www.instagram.com/artistoraofficial',
             ],
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.9',
-              reviewCount: '150',
-            },
-            speakable: {
-              '@type': 'SpeakableSpecification',
-              cssSelector: ['.font-display'],
-            },
           }),
         }}
       />

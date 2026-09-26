@@ -59,7 +59,7 @@ const organizationSchema = {
   '@type': 'Organization',
   name: 'Artistora',
   url: 'https://www.artistora.com',
-  logo: 'https://www.artistora.com/artistora/logo-white.png',
+  logo: 'https://www.artistora.com/artistora/logo-full-white.png',
   description: 'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
   address: {
     '@type': 'PostalAddress',
