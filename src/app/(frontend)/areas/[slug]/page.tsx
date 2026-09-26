@@ -1,7 +1,11 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { withDefaultSeo } from '@/lib/seo'
+import { getArtistsByArea } from '@/lib/payload'
+import { mediaFileUrl } from '@/lib/media-url'
 import SectionHeading from '@/components/SectionHeading'
+import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import type { Metadata } from 'next'
 
@@ -11,7 +15,7 @@ const SECTION = 'py-16! md:py-24!'
 const areasData: Record<string, { name: string; description: string; landmarks: string[]; services: string[] }> = {
   satellite: {
     name: 'Satellite',
-    description: 'Satellite is Ahmedabad\'s premium event hub, home to some of the city\'s finest banquet halls and open-air venues. Find top-rated photographers, makeup artists, and mehndi artists for weddings, receptions, and corporate events.',
+    description: 'Satellite is Ahmedabad\'s premium event hub, home to some of the city\'s finest banquet halls and open-air venues. Find verified photographers, makeup artists, and mehndi artists for weddings, receptions, and corporate events.',
     landmarks: ['Iscon Mall', 'Satellite Cross Roads', 'Jodhpur Village', 'Husain Dargah'],
     services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
   },
@@ -139,7 +143,7 @@ export async function generateMetadata({ params }: AreaPageProps): Promise<Metad
   if (!area) return { title: 'Area Not Found' }
 
   return withDefaultSeo({
-    title: `${area.name} Artists — Book Verified Professionals | Artistora`,
+    title: `${area.name} Artists — Book Verified Professionals`,
     description: `Find verified photographers, makeup artists, mehndi artists, and event planners in ${area.name}, Ahmedabad. Home-visit services available.`,
     alternates: {
       canonical: `https://www.artistora.com/areas/${slug}`,
@@ -157,6 +161,16 @@ export default async function AreaPage({ params }: AreaPageProps) {
   const { slug } = await params
   const area = areasData[slug]
   if (!area) notFound()
+
+  // Real inventory: approved artists serving this area (or all of Ahmedabad)
+  const artists = await getArtistsByArea(slug)
+
+  const typeLabels: Record<string, string> = {
+    'mehndi-artists': 'Mehndi Artist',
+    'photographers': 'Photographer',
+    'makeup-artists': 'Makeup Artist',
+    'decor-event-planners': 'Decor & Events',
+  }
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -235,6 +249,84 @@ export default async function AreaPage({ params }: AreaPageProps) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Real artists serving this area */}
+      <section className={`${SECTION} bg-white/60`}>
+        <div className={CONTAINER}>
+          <SectionHeading
+            title={`Verified Artists for ${area.name}`}
+            subtitle={artists.length > 0 ? 'Available for Home Visits' : 'Serving All of Ahmedabad'}
+          />
+          {artists.length > 0 ? (
+            <>
+              <div className="mx-auto mt-10! grid max-w-5xl! gap-4! sm:grid-cols-2 lg:grid-cols-3">
+                {artists.map((artist: any) => (
+                  <Link
+                    key={artist.id}
+                    href={`/artists/${artist.slug}`}
+                    className="group flex items-center gap-4! rounded-2xl border border-line bg-white p-5! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+                  >
+                    <div className="relative shrink-0">
+                      {artist.profilePhoto?.filename ? (
+                        <Image
+                          src={mediaFileUrl(artist.profilePhoto.filename)}
+                          alt={artist.displayName}
+                          width={64}
+                          height={64}
+                          className="h-14! w-14! rounded-full object-contain ring-2 ring-brand/15"
+                          sizes="56px"
+                        />
+                      ) : (
+                        <ArtistPlaceholder name={artist.displayName} size="sm" className="ring-2 ring-brand/15" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      {artist.artistType && typeLabels[artist.artistType] && (
+                        <span className="inline-block rounded-full bg-brand/10 px-2.5! py-0.5! text-[0.6rem] font-semibold text-brand">
+                          {typeLabels[artist.artistType]}
+                        </span>
+                      )}
+                      <h3 className="font-display truncate text-base! font-semibold text-ink group-hover:text-brand transition-colors">
+                        {artist.displayName}
+                      </h3>
+                      <p className="mt-0.5! text-xs text-ink-muted">
+                        {artist.area && artist.area === slug
+                          ? `Based in ${area.name}`
+                          : `Home service in ${area.name}`}
+                        {artist.rating > 0 && ` · ★ ${artist.rating.toFixed(1)}`}
+                        {artist.startingPrice > 0 && ` · From ₹${artist.startingPrice.toLocaleString('en-IN')}`}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-8! text-center">
+                <Link
+                  href="/get-quote"
+                  className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+                >
+                  Get Free Quotes in {area.name}
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="mx-auto mt-10! max-w-xl! rounded-2xl border border-line bg-white p-8! text-center shadow-soft">
+              <p className="text-sm leading-relaxed text-ink-soft">
+                Our verified artists offer home-visit services across Ahmedabad, including {area.name}.
+                Share your event details and we&apos;ll match you with artists available in your locality.
+              </p>
+              <div className="mt-5!">
+                <Link
+                  href="/get-quote"
+                  className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+                >
+                  Get Quotes in {area.name}
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

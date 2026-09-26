@@ -209,6 +209,48 @@ export async function getFeaturedArtists(limit = 4) {
   return docs
 }
 
+// Artists serving a specific area: exact area match first, then artists
+// with no assigned area (they serve all of Ahmedabad via home visits).
+// Used by /areas/[slug] pages so each locality page shows real inventory.
+export async function getArtistsByArea(areaSlug: string, limit = 12) {
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'artists',
+    where: {
+      and: [
+        { approvalStatus: { equals: 'approved' } },
+        {
+          or: [
+            { area: { equals: areaSlug } },
+            { area: { exists: false } },
+          ],
+        },
+      ],
+    },
+    sort: '-isFeatured,-rating,-reviewCount',
+    depth: 1,
+    limit,
+    select: {
+      displayName: true,
+      slug: true,
+      area: true,
+      artistType: true,
+      rating: true,
+      reviewCount: true,
+      startingPrice: true,
+      yearsOfExperience: true,
+      profilePhoto: true,
+      verified: true,
+    },
+  })
+  // Exact area matches first, then city-wide artists
+  return [...docs].sort((a: any, b: any) => {
+    const am = a.area === areaSlug ? 0 : 1
+    const bm = b.area === areaSlug ? 0 : 1
+    return am - bm
+  })
+}
+
 export const getArtistBySlug = cache(async (slug: string) => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
