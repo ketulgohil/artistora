@@ -207,6 +207,21 @@ Payments/advance booking, artist analytics, featured listings/subscriptions, sea
 
 ---
 
+## 🔍 Artist Indexability Policy
+
+**Policy (documented):** A profile is public/indexable ONLY when it has `approvalStatus = 'approved'`. The `verified` flag is a separate trust badge and does NOT grant indexability.
+
+**Quality gate before sitemap inclusion** (`isArtistIndexable()` in `src/lib/payload.ts`):
+- Display name, city, service (`artistType`), bio (≥10 chars)
+- At least one portfolio image
+- Usable contact (phone/whatsapp) and quote path (slug)
+
+Applied in:
+- `getArtists` / `getFeaturedArtists` / `getArtistBySlug` → require `approvalStatus = approved`
+- `src/app/(frontend)/sitemap.ts` → additionally applies `isArtistIndexable()`
+
+---
+
 ## 🎨 Design Tokens
 
 **Colors:**

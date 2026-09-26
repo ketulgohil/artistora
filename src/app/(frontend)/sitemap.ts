@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getPayloadClient } from '@/lib/payload'
+import { getPayloadClient, isArtistIndexable } from '@/lib/payload'
 
 const BASE_URL = 'https://www.artistora.com'
 
@@ -38,21 +38,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  // Dynamic artist profile pages
+  // Dynamic artist profile pages — quality-gated before sitemap inclusion.
+  // Policy: approvalStatus = 'approved' AND passes isArtistIndexable()
+  // (display name, city, service, bio, portfolio image, contact, quote path).
   const { docs: artists } = await payload.find({
     collection: 'artists',
     where: {
-      or: [
-        { approvalStatus: { equals: 'approved' } },
-        { verified: { equals: true } },
-      ],
+      approvalStatus: { equals: 'approved' },
     },
-    select: { slug: true, updatedAt: true },
+    select: {
+      slug: true,
+      updatedAt: true,
+      displayName: true,
+      city: true,
+      artistType: true,
+      bio: true,
+      portfolioImages: true,
+      phone: true,
+      whatsappNumber: true,
+      approvalStatus: true,
+    },
+    depth: 1,
     limit: 500,
   })
 
   const artistPages: MetadataRoute.Sitemap = artists
-    .filter((a) => a.slug)
+    .filter((a) => a.slug && isArtistIndexable(a))
     .map((artist) => ({
       url: `${BASE_URL}/artists/${artist.slug}`,
       lastModified: new Date(artist.updatedAt),

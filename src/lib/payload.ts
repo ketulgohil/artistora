@@ -14,6 +14,28 @@ export async function getPayloadClient() {
   return _payload
 }
 
+// ── Artist Quality Gate ──────────────────────────────────────────
+// Indexability policy: a profile is public/indexable only when it has
+// approvalStatus = 'approved' AND passes the profile-quality threshold.
+// `verified` is a separate trust badge and does NOT grant indexability.
+//
+// Quality threshold requires: display name, city, service (artistType),
+// a meaningful bio, at least one portfolio image, a usable contact path,
+// and a slug (which enables the /artists/[slug] page and quote flow).
+export function isArtistIndexable(artist: any): boolean {
+  if (artist?.approvalStatus !== 'approved') return false
+
+  const hasDisplayName = !!artist.displayName && String(artist.displayName).trim().length > 0
+  const hasCity = !!artist.city && String(artist.city).trim().length > 0
+  const hasService = !!artist.artistType
+  const hasBio = !!artist.bio && String(artist.bio).trim().length >= 10
+  const hasPortfolio = Array.isArray(artist.portfolioImages) && artist.portfolioImages.length > 0
+  const hasContact = !!(artist.phone || artist.whatsappNumber)
+  const hasQuotePath = !!artist.slug
+
+  return hasDisplayName && hasCity && hasService && hasBio && hasPortfolio && hasContact && hasQuotePath
+}
+
 // ── Site Settings ──
 export async function getSiteSettings() {
   const payload = await getPayloadClient()
@@ -122,11 +144,10 @@ export async function getStaticPage(slug: string) {
 // ── Artists ──
 export async function getArtists(city?: string, limit = 50) {
   const payload = await getPayloadClient()
+  // Indexability policy: approved only. `verified` is a trust badge, not an
+  // indexability grant. See isArtistIndexable() for the quality threshold.
   const where: Where = {
-    or: [
-      { approvalStatus: { equals: 'approved' } },
-      { verified: { equals: true } },
-    ],
+    approvalStatus: { equals: 'approved' },
     ...(city ? { city: { equals: city } } : {}),
   }
   const { docs } = await payload.find({
@@ -160,12 +181,8 @@ export async function getFeaturedArtists(limit = 4) {
     collection: 'artists',
     where: {
       and: [
-        {
-          or: [
-            { approvalStatus: { equals: 'approved' } },
-            { verified: { equals: true } },
-          ],
-        },
+        // Indexability policy: approved only (verified = trust badge, not gate)
+        { approvalStatus: { equals: 'approved' } },
         { isFeatured: { equals: true } },
       ],
     },
@@ -199,12 +216,8 @@ export const getArtistBySlug = cache(async (slug: string) => {
     where: {
       and: [
         { slug: { equals: slug } },
-        {
-          or: [
-            { approvalStatus: { equals: 'approved' } },
-            { verified: { equals: true } },
-          ],
-        },
+        // Indexability policy: approved only (verified = trust badge, not gate)
+        { approvalStatus: { equals: 'approved' } },
       ],
     },
     depth: 2,
