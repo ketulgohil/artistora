@@ -40,9 +40,9 @@ The highest-impact problems are operational and trust-related rather than missin
 
 **Why it matters:** Search engines can still crawl in the absence of robots, but the missing endpoint removes the intended crawl directives and sitemap declaration. It also creates a clear technical-health failure in crawlers and SEO tools.
 
-**Repository status:** `src/app/(frontend)/robots.ts` exists and correctly declares disallow rules plus the sitemap. This indicates deployment drift, route-generation failure, or an outdated production deployment rather than a missing source file.
+**Repository status:** The original `src/app/(frontend)/robots.ts` route existed, but production did not serve it. The route has now been replaced with a static `public/robots.txt` asset so the file is emitted directly at the root URL during deployment.
 
-**Fix:** Deploy the current branch and verify the generated route. If it still 404s, move the metadata route to `src/app/robots.ts` and remove the route-group copy so there is only one route for `/robots.txt`.
+**Fix applied:** Added `public/robots.txt` and removed the route-group metadata handler. Deploy the current source and verify the static asset is served.
 
 **Acceptance test:**
 
@@ -249,6 +249,7 @@ Track monthly:
 - `src/app/(frontend)/page.tsx` — removed unsupported homepage aggregate-rating/speakable markup and aligned social identity.
 - `src/app/(frontend)/sitemap.ts` — stopped generating synthetic modification dates for unchanged static and area URLs.
 - `src/components/Breadcrumbs.tsx` — switched the home breadcrumb to Next.js `Link` for crawlable client navigation and lint compliance.
+- `public/robots.txt` — added a static production-safe robots file; removed the route-group `robots.ts` handler.
 
 ## Final priority order
 

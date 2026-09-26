@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /my-bookings
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /quotes/
+Disallow: /api/
+Disallow: /admin/
+
+Sitemap: https://www.artistora.com/sitemap.xml
