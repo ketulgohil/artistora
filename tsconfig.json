@@ -40,6 +40,13 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "scripts",
+    "src/outreach/scrapers",
+    "src/outreach/senders",
+    "src/migrate-media-to-s3.ts",
+    "src/save-instagram-session.ts",
+    "src/run-scraper.ts",
+    "src/run-scrapers.ts"
   ]
 }
