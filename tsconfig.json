@@ -42,8 +42,7 @@
   "exclude": [
     "node_modules",
     "scripts",
-    "src/outreach/scrapers",
-    "src/outreach/senders",
+    "src/outreach",
     "src/migrate-media-to-s3.ts",
     "src/save-instagram-session.ts",
     "src/run-scraper.ts",
