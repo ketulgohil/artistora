@@ -11,11 +11,11 @@
  *   npx tsx src/outreach/run-campaign.ts --stats             # Show stats
  */
 
-import { Client, LocalAuth } from 'whatsapp-web.js'
 import { createRequire } from 'module'
 import * as fs from 'fs'
 import * as path from 'path'
 import { config } from 'dotenv'
+import { queueMessage, validateAndNormalizePhone } from './whatsapp/queue-send'
 
 const require = createRequire(import.meta.url)
 
@@ -25,7 +25,6 @@ config({ path: path.resolve(process.cwd(), '.env') })
 // Database connection
 const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || ''
 
-const SESSION_DIR = './whatsapp-session'
 const SENT_LOG = './outreach-sent.json'
 const DRY_RUN = !process.argv.includes('--send')
 const LIMIT = parseInt(process.argv.find((_, i, a) => a[i - 1] === '--limit') || '999')
@@ -146,7 +145,6 @@ Questions? Just reply here!
 
 // ── Message Randomization (makes each message slightly unique) ──
 
-const GREETINGS = ['🙏 નમસ્તે', '🙏 નમસ્કાર', 'Hello', 'Hi']
 const CLOSINGS = ['— Team Artistora', '— Artistora Team', '— Artistora', 'Artistora Team']
 const CTA_EMOJIS = ['👉', '▶️', '🔗', '📱']
 const ENDING_LINES = [
@@ -159,19 +157,19 @@ function randomizeMessage(message: string): string {
   // Randomly swap closing
   const closingIdx = Math.floor(Math.random() * CLOSINGS.length)
   message = message.replace(/— Team Artistora$/m, CLOSINGS[closingIdx])
-  
+
   // Randomly swap CTA emoji
   if (Math.random() > 0.5) {
     const emoji = CTA_EMOJIS[Math.floor(Math.random() * CTA_EMOJIS.length)]
     message = message.replace(/👉/g, emoji)
   }
-  
+
   // Randomly swap ending line
   if (Math.random() > 0.7) {
     const ending = ENDING_LINES[Math.floor(Math.random() * ENDING_LINES.length)]
     message = message.replace(/કોઈ પ્રશ્ન હોય તો અહીં Reply કરો! 😊/, ending)
   }
-  
+
   return message
 }
 
@@ -190,7 +188,18 @@ function saveSentLog(log: Record<string, string>): void {
   fs.writeFileSync(SENT_LOG, JSON.stringify(log, null, 2))
 }
 
-function generateBusinessLine(artist: any): string {
+function generateBusinessLine(artist: any, templateId: string): string {
+  const isEnglish = templateId.startsWith('english')
+  if (artist.rating && artist.rating >= 4.5 && artist.review_count && artist.review_count >= 5) {
+    return isEnglish
+      ? `We noticed your great work and ${artist.rating}★ rating on ${artist.source || 'online listings'}!`
+      : `અમે તમારું સુંદર કામ અને ${artist.rating}★ રેટિંગ જોયું!`
+  }
+  if (artist.business_name && artist.name && artist.business_name !== artist.name) {
+    return isEnglish
+      ? `We came across ${artist.business_name} and love your portfolio.`
+      : `અમે ${artist.business_name} વિશે જાણ્યું અને તમારું કામ ગમ્યું.`
+  }
   return ''
 }
 
@@ -201,43 +210,46 @@ async function queryArtists(filters: { area?: string; service?: string; limit: n
   const pg = new PgClient({ connectionString: DB_URL })
   await pg.connect()
 
-  let where = 'WHERE phone IS NOT NULL AND phone != \'\''
-  const params: any[] = []
+  try {
+    let where = "WHERE phone IS NOT NULL AND phone != ''"
+    const params: any[] = []
 
-  if (filters.area) {
-    params.push(`%${filters.area}%`)
-    where += ` AND (area ILIKE $${params.length} OR city ILIKE $${params.length})`
+    if (filters.area) {
+      params.push(`%${filters.area}%`)
+      where += ` AND (area ILIKE $${params.length} OR city ILIKE $${params.length})`
+    }
+    if (filters.service) {
+      params.push(`%${filters.service}%`)
+      where += ` AND specializations ILIKE $${params.length}`
+    }
+
+    // Exclude already sent (check both JSON log and database)
+    const sent = loadSentLog()
+    const sentIds = Object.keys(sent)
+    if (sentIds.length > 0) {
+      params.push(sentIds)
+      where += ` AND id::text != ALL($${params.length}::text[])`
+    }
+    // Also exclude artists already contacted in database
+    where += ` AND (outreach_attempts IS NULL OR outreach_attempts = 0)`
+
+    params.push(filters.limit)
+    params.push(filters.offset)
+
+    const query = `
+      SELECT DISTINCT ON (phone) id, business_name, name, phone, whatsapp_number, specializations,
+             area, city, rating, review_count, source, lead_score
+      FROM discovered_artists
+      ${where}
+      ORDER BY phone, lead_score DESC NULLS LAST, rating DESC NULLS LAST
+      LIMIT $${params.length - 1} OFFSET $${params.length}
+    `
+
+    const result = await pg.query(query, params)
+    return result.rows
+  } finally {
+    await pg.end()
   }
-  if (filters.service) {
-    params.push(`%${filters.service}%`)
-    where += ` AND specializations ILIKE $${params.length}`
-  }
-
-  // Exclude already sent (check both JSON log and database)
-  const sent = loadSentLog()
-  const sentIds = Object.keys(sent)
-  if (sentIds.length > 0) {
-    params.push(sentIds)
-    where += ` AND id::text != ALL($${params.length}::text[])`
-  }
-  // Also exclude artists already contacted in database
-  where += ` AND (outreach_attempts IS NULL OR outreach_attempts = 0)`
-
-  params.push(filters.limit)
-  params.push(filters.offset)
-
-  const query = `
-    SELECT DISTINCT ON (phone) id, business_name, name, phone, whatsapp_number, specializations,
-           area, city, rating, review_count, source, lead_score
-    FROM discovered_artists
-    ${where}
-    ORDER BY phone, lead_score DESC NULLS LAST, rating DESC NULLS LAST
-    LIMIT $${params.length - 1} OFFSET $${params.length}
-  `
-
-  const result = await pg.query(query, params)
-  await pg.end()
-  return result.rows
 }
 
 async function countArtists(filters: { area?: string; service?: string }) {
@@ -245,28 +257,31 @@ async function countArtists(filters: { area?: string; service?: string }) {
   const pg = new PgClient({ connectionString: DB_URL })
   await pg.connect()
 
-  let where = 'WHERE phone IS NOT NULL AND phone != \'\''
-  const params: any[] = []
+  try {
+    let where = "WHERE phone IS NOT NULL AND phone != ''"
+    const params: any[] = []
 
-  if (filters.area) {
-    params.push(`%${filters.area}%`)
-    where += ` AND (area ILIKE $${params.length} OR city ILIKE $${params.length})`
-  }
-  if (filters.service) {
-    params.push(`%${filters.service}%`)
-    where += ` AND specializations ILIKE $${params.length}`
-  }
+    if (filters.area) {
+      params.push(`%${filters.area}%`)
+      where += ` AND (area ILIKE $${params.length} OR city ILIKE $${params.length})`
+    }
+    if (filters.service) {
+      params.push(`%${filters.service}%`)
+      where += ` AND specializations ILIKE $${params.length}`
+    }
 
-  const sent = loadSentLog()
-  const sentIds = Object.keys(sent)
-  if (sentIds.length > 0) {
-    params.push(sentIds)
-    where += ` AND id::text != ALL($${params.length}::text[])`
-  }
+    const sent = loadSentLog()
+    const sentIds = Object.keys(sent)
+    if (sentIds.length > 0) {
+      params.push(sentIds)
+      where += ` AND id::text != ALL($${params.length}::text[])`
+    }
 
-  const result = await pg.query(`SELECT COUNT(*) as total FROM discovered_artists ${where}`, params)
-  await pg.end()
-  return parseInt(result.rows[0].total)
+    const result = await pg.query(`SELECT COUNT(*) as total FROM discovered_artists ${where}`, params)
+    return parseInt(result.rows[0].total)
+  } finally {
+    await pg.end()
+  }
 }
 
 // ── Stats ──
@@ -276,61 +291,63 @@ async function showStats() {
   const pg = new PgClient({ connectionString: DB_URL })
   await pg.connect()
 
-  const total = await pg.query('SELECT COUNT(*) as total, COUNT(phone) as with_phone FROM discovered_artists')
-  const byService = await pg.query(`
-    SELECT specializations, COUNT(*) as count
-    FROM discovered_artists
-    WHERE phone IS NOT NULL AND specializations IS NOT NULL
-    GROUP BY specializations ORDER BY count DESC LIMIT 10
-  `)
-  const byArea = await pg.query(`
-    SELECT COALESCE(area, 'Unknown') as area, COUNT(*) as count
-    FROM discovered_artists
-    WHERE phone IS NOT NULL
-    GROUP BY area ORDER BY count DESC LIMIT 10
-  `)
-  const outreach = await pg.query(`
-    SELECT 
-      outreach_status,
-      COUNT(*) as count
-    FROM discovered_artists
-    GROUP BY outreach_status
-  `)
-  const recentlyContacted = await pg.query(`
-    SELECT COUNT(*) as count 
-    FROM discovered_artists 
-    WHERE last_contacted_at > NOW() - INTERVAL '7 days'
-  `)
-  const messagesSent = await pg.query(`
-    SELECT COUNT(*) as count 
-    FROM outreach_messages 
-    WHERE sent_at > NOW() - INTERVAL '7 days'
-  `)
+  try {
+    const total = await pg.query('SELECT COUNT(*) as total, COUNT(phone) as with_phone FROM discovered_artists')
+    const byService = await pg.query(`
+      SELECT specializations, COUNT(*) as count
+      FROM discovered_artists
+      WHERE phone IS NOT NULL AND specializations IS NOT NULL
+      GROUP BY specializations ORDER BY count DESC LIMIT 10
+    `)
+    const byArea = await pg.query(`
+      SELECT COALESCE(area, 'Unknown') as area, COUNT(*) as count
+      FROM discovered_artists
+      WHERE phone IS NOT NULL
+      GROUP BY area ORDER BY count DESC LIMIT 10
+    `)
+    const outreach = await pg.query(`
+      SELECT
+        outreach_status,
+        COUNT(*) as count
+      FROM discovered_artists
+      GROUP BY outreach_status
+    `)
+    const recentlyContacted = await pg.query(`
+      SELECT COUNT(*) as count
+      FROM discovered_artists
+      WHERE last_contacted_at > NOW() - INTERVAL '7 days'
+    `)
+    const messagesSent = await pg.query(`
+      SELECT COUNT(*) as count
+      FROM outreach_messages
+      WHERE sent_at > NOW() - INTERVAL '7 days'
+    `)
 
-  const sent = loadSentLog()
+    const sent = loadSentLog()
 
-  console.log('\n📊 Outreach Stats')
-  console.log('─'.repeat(50))
-  console.log(`Total Artists: ${total.rows[0].total}`)
-  console.log(`With Phone: ${total.rows[0].with_phone}`)
-  console.log(`Already Sent (JSON): ${Object.keys(sent).length}`)
-  console.log(`Contacted (DB): ${recentlyContacted.rows[0].count} (last 7 days)`)
-  console.log(`Messages Sent (DB): ${messagesSent.rows[0].count} (last 7 days)`)
-  console.log('\nBy Status:')
-  outreach.rows.forEach((r: any) => console.log(`  ${r.outreach_status}: ${r.count}`))
-  console.log(`Remaining: ${parseInt(total.rows[0].with_phone) - Object.keys(sent).length}`)
+    console.log('\n📊 Outreach Stats')
+    console.log('─'.repeat(50))
+    console.log(`Total Artists: ${total.rows[0].total}`)
+    console.log(`With Phone: ${total.rows[0].with_phone}`)
+    console.log(`Already Sent (JSON): ${Object.keys(sent).length}`)
+    console.log(`Contacted (DB): ${recentlyContacted.rows[0].count} (last 7 days)`)
+    console.log(`Messages Sent (DB): ${messagesSent.rows[0].count} (last 7 days)`)
+    console.log('\nBy Status:')
+    outreach.rows.forEach((r: any) => console.log(`  ${r.outreach_status}: ${r.count}`))
+    console.log(`Remaining: ${parseInt(total.rows[0].with_phone) - Object.keys(sent).length}`)
 
-  console.log('\n📌 By Service:')
-  for (const row of byService.rows) {
-    console.log(`  ${row.specializations}: ${row.count}`)
+    console.log('\n📌 By Service:')
+    for (const row of byService.rows) {
+      console.log(`  ${row.specializations}: ${row.count}`)
+    }
+
+    console.log('\n📍 By Area:')
+    for (const row of byArea.rows) {
+      console.log(`  ${row.area}: ${row.count}`)
+    }
+  } finally {
+    await pg.end()
   }
-
-  console.log('\n📍 By Area:')
-  for (const row of byArea.rows) {
-    console.log(`  ${row.area}: ${row.count}`)
-  }
-
-  await pg.end()
 }
 
 // ── Main ──
@@ -379,12 +396,13 @@ async function main() {
   console.log('─'.repeat(60))
   for (let i = 0; i < Math.min(5, artists.length); i++) {
     const a = artists[i]
-    const phone = a.whatsapp_number || a.phone
+    const rawPhone = a.whatsapp_number || a.phone || ''
+    const normPhone = validateAndNormalizePhone(rawPhone) || rawPhone
     const rawName = a.name || a.business_name || ''
     const name = rawName === 'Results' ? '' : rawName
     const displayName = name || 'Artist'
     const services = a.specializations || 'Art'
-    const businessLine = generateBusinessLine(a)
+    const businessLine = generateBusinessLine(a, TEMPLATE_ID)
 
     // Use generic greeting if no valid name
     const greeting = name ? `🙏 નમસ્તે ${name},` : '🙏 નમસ્તે,'
@@ -393,7 +411,7 @@ async function main() {
     message = message.replace(/\n{3,}/g, '\n\n')
     message = randomizeMessage(message) // Add slight variation
 
-    console.log(`\n[${i + 1}] ${displayName} | ${phone} | Score: ${a.lead_score || 'N/A'}`)
+    console.log(`\n[${i + 1}] ${displayName} | ${normPhone} | Score: ${a.lead_score || 'N/A'}`)
     console.log(`    Area: ${a.area || 'N/A'} | Services: ${services}`)
     console.log(`    Message (${message.length} chars):`)
     console.log(`    ${message.substring(0, 200)}...`)
@@ -410,96 +428,105 @@ async function main() {
   // ── Actually Send via Queue ──
   console.log('\n📤 Queuing messages for WhatsApp service...')
 
-  const fs = require('fs')
-  const path = require('path')
-  const queueDir = path.join(process.cwd(), '.whatsapp-queue')
-  fs.mkdirSync(queueDir, { recursive: true })
-
   const sentLog = loadSentLog()
   let sent = 0
   let failed = 0
 
-  for (let i = 0; i < artists.length; i++) {
-    const a = artists[i]
-    const rawPhone = (a.whatsapp_number || a.phone).replace(/[^\d]/g, '')
-    // Normalize: strip leading 0, ensure 91 prefix for Indian numbers
-    const phone = rawPhone.startsWith('0') ? `91${rawPhone.slice(1)}` : rawPhone.length === 10 ? `91${rawPhone}` : rawPhone
-    const rawName = a.name || a.business_name || ''
-    const name = rawName === 'Results' ? '' : rawName
-    const displayName = name || 'Artist'
-    const services = a.specializations || 'Art'
-    const businessLine = generateBusinessLine(a)
-    const greeting = name ? `🙏 નમસ્તે ${name},` : '🙏 નમસ્તે,'
-    let message = templateFn({ name: name || '', services, area: a.area || '', businessLine }).replace(/^🙏 નમસ્તે [^,]*,/, greeting)
-    message = message.replace(/\n{3,}/g, '\n\n')
-    message = randomizeMessage(message) // Add slight variation
+  const { Client: PgClient } = require('pg')
+  const pg = new PgClient({ connectionString: DB_URL })
+  let pgConnected = false
 
-    try {
-      // Write to queue file
-      const filename = `${phone}_${Date.now()}.json`
-      fs.writeFileSync(path.join(queueDir, filename), JSON.stringify({ phone, message, queuedAt: new Date().toISOString() }))
-      sentLog[a.id] = new Date().toISOString()
-      sent++
+  try {
+    await pg.connect()
+    pgConnected = true
+  } catch (err: any) {
+    console.warn(`[Campaign] ⚠️ DB connection for status logging failed: ${err.message}`)
+  }
 
-      // Update database tracking
-      try {
-        const { Client: PgClient } = require('pg')
-        const pg = new PgClient({ connectionString: DB_URL })
-        await pg.connect()
-        
-        // Update discovered_artists
-        await pg.query(`
-          UPDATE discovered_artists 
-          SET outreach_status = 'contacted',
-              outreach_attempts = COALESCE(outreach_attempts, 0) + 1,
-              last_contacted_at = NOW(),
-              last_campaign = $1,
-              last_template_used = $2,
-              message_status = 'sent',
-              campaign_history = COALESCE(campaign_history, '[]'::jsonb) || $3::jsonb
-          WHERE id = $4
-        `, [
-          CAMPAIGN_NAME,
-          TEMPLATE_ID,
-          JSON.stringify([{
-            campaign: CAMPAIGN_NAME,
-            template: TEMPLATE_ID,
-            sentAt: new Date().toISOString(),
-            status: 'sent'
-          }]),
-          a.id
-        ])
+  try {
+    for (let i = 0; i < artists.length; i++) {
+      const a = artists[i]
+      const rawPhone = a.whatsapp_number || a.phone || ''
+      const phone = validateAndNormalizePhone(rawPhone)
+      const rawName = a.name || a.business_name || ''
+      const name = rawName === 'Results' ? '' : rawName
+      const displayName = name || 'Artist'
 
-        // Log to outreach_messages
-        await pg.query(`
-          INSERT INTO outreach_messages (artist, channel, template_used, body, status, sent_at, queued_at, campaign_name)
-          SELECT $1, 'whatsapp', $2, $3, 'sent', NOW(), NOW(), $4
-          WHERE NOT EXISTS (
-            SELECT 1 FROM outreach_messages 
-            WHERE artist = $1 AND sent_at > NOW() - INTERVAL '24 hours'
-          )
-        `, [a.id, TEMPLATE_ID, message.substring(0, 1000), CAMPAIGN_NAME])
-
-        await pg.end()
-      } catch (dbErr: any) {
-        console.log(`    ⚠️  DB update failed: ${dbErr.message}`)
+      if (!phone) {
+        failed++
+        console.log(`  [${i + 1}/${artists.length}] ⏭️  Skipped ${displayName}: invalid phone "${rawPhone}"`)
+        continue
       }
 
-      console.log(`  [${i + 1}/${artists.length}] ✅ Queued for ${displayName} (${phone})`)
-    } catch (err: any) {
-      failed++
-      console.log(`  [${i + 1}/${artists.length}] ❌ ${displayName} (${phone}): ${err.message}`)
-    }
+      const services = a.specializations || 'Art'
+      const businessLine = generateBusinessLine(a, TEMPLATE_ID)
+      const greeting = name ? `🙏 નમસ્તે ${name},` : '🙏 નમસ્તે,'
+      let message = templateFn({ name: name || '', services, area: a.area || '', businessLine }).replace(/^🙏 નમસ્તે [^,]*,/, greeting)
+      message = message.replace(/\n{3,}/g, '\n\n')
+      message = randomizeMessage(message)
 
-    // Save progress every 5 messages
-    if ((i + 1) % 5 === 0) {
-      saveSentLog(sentLog)
-    }
+      try {
+        const queued = await queueMessage(phone, message, { campaign: CAMPAIGN_NAME, template: TEMPLATE_ID })
+        if (!queued) {
+          failed++
+          continue
+        }
 
-    // Rate limit: 5-10 seconds between messages
-    if (i < artists.length - 1) {
-      const delay = 5000 + Math.random() * 5000
-      await new Promise(r => setTimeout(r, delay))
+        sentLog[a.id] = new Date().toISOString()
+        sent++
+
+        // Update database tracking on the shared connection
+        if (pgConnected) {
+          try {
+            await pg.query(`
+              UPDATE discovered_artists
+              SET outreach_status = 'contacted',
+                  outreach_attempts = COALESCE(outreach_attempts, 0) + 1,
+                  last_contacted_at = NOW(),
+                  last_campaign = $1,
+                  last_template_used = $2,
+                  message_status = 'sent',
+                  campaign_history = COALESCE(campaign_history, '[]'::jsonb) || $3::jsonb
+              WHERE id = $4
+            `, [
+              CAMPAIGN_NAME,
+              TEMPLATE_ID,
+              JSON.stringify([{
+                campaign: CAMPAIGN_NAME,
+                template: TEMPLATE_ID,
+                sentAt: new Date().toISOString(),
+                status: 'sent'
+              }]),
+              a.id
+            ])
+
+            await pg.query(`
+              INSERT INTO outreach_messages (artist, channel, template_used, body, status, sent_at, queued_at, campaign_name)
+              SELECT $1, 'whatsapp', $2, $3, 'sent', NOW(), NOW(), $4
+              WHERE NOT EXISTS (
+                SELECT 1 FROM outreach_messages
+                WHERE artist = $1 AND sent_at > NOW() - INTERVAL '24 hours'
+              )
+            `, [a.id, TEMPLATE_ID, message.substring(0, 1000), CAMPAIGN_NAME])
+          } catch (dbErr: any) {
+            console.log(`    ⚠️  DB update failed for ${a.id}: ${dbErr.message}`)
+          }
+        }
+
+        console.log(`  [${i + 1}/${artists.length}] ✅ Queued for ${displayName} (${phone})`)
+      } catch (err: any) {
+        failed++
+        console.log(`  [${i + 1}/${artists.length}] ❌ ${displayName} (${phone}): ${err.message}`)
+      }
+
+      // Save progress every 5 messages
+      if ((i + 1) % 5 === 0) {
+        saveSentLog(sentLog)
+      }
+    }
+  } finally {
+    if (pgConnected) {
+      await pg.end().catch(() => {})
     }
   }
 
@@ -508,7 +535,7 @@ async function main() {
   console.log('\n' + '='.repeat(60))
   console.log(`[Campaign] Done!`)
   console.log(`  Queued: ${sent}`)
-  console.log(`  Failed: ${failed}`)
+  console.log(`  Failed/Skipped: ${failed}`)
   console.log(`  Total sent (all time): ${Object.keys(sentLog).length}`)
   console.log('='.repeat(60))
   console.log('\n💡 Messages are queued. The WhatsApp service will send them automatically.')

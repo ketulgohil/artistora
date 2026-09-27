@@ -15,10 +15,14 @@ Artistora is an **artist marketplace** connecting customers with verified artist
 
 1. **Creating a backup first:**
    ```bash
-   DATABASE_URL="..." ./scripts/backup-db.sh
+   npm run db:backup
+   # or: ./scripts/backup-db.sh
    ```
 
-2. **Testing on a copy first** (if possible)
+2. **Restoring if needed:**
+   ```bash
+   npm run db:restore -- backups/db_backup_YYYYMMDD_HHMMSS.sql
+   ```
 
 3. **Understanding what `migrate` does:** It DROPs and recreates tables, causing DATA LOSS
 

@@ -2,7 +2,7 @@
  * Pre-built scrape configurations for all Artistora service categories.
  * Each config defines search queries optimized for each scraping source.
  *
- * Services: Mehndi, Photography, Makeup, Decor, Music
+ * Services: Mehndi, Photography, Makeup, Decor
  * City: Ahmedabad, Gujarat
  */
 
@@ -96,39 +96,17 @@ export const decorQueries: ScrapeQuery[] = [
   { source: 'weddingwire', query: 'wedding-decorators', city: 'Ahmedabad', maxResults: 50, category: 'decor' },
 ]
 
-// ─── Music / DJ ─────────────────────────────────────────────────
-export const musicQueries: ScrapeQuery[] = [
-  // Google Maps
-  { source: 'google_maps', query: 'wedding band', city: 'Ahmedabad', maxResults: 30, category: 'music' },
-  { source: 'google_maps', query: 'wedding DJ', city: 'Ahmedabad', maxResults: 40, category: 'music' },
-  { source: 'google_maps', query: 'live band wedding', city: 'Ahmedabad', maxResults: 20, category: 'music' },
-  // Instagram
-  { source: 'instagram', query: 'wedding DJ ahmedabad', city: 'Ahmedabad', maxResults: 30, category: 'music' },
-  { source: 'instagram', query: 'wedding band ahmedabad', city: 'Ahmedabad', maxResults: 20, category: 'music' },
-  // Justdial
-  { source: 'justdial', query: 'wedding DJ', city: 'Ahmedabad', maxResults: 40, category: 'music' },
-  { source: 'justdial', query: 'wedding band', city: 'Ahmedabad', maxResults: 30, category: 'music' },
-  // Sulekha
-  { source: 'sulekha', query: 'wedding DJ', city: 'Ahmedabad', maxResults: 30, category: 'music' },
-  // WedMeGood
-  { source: 'wedmegood', query: 'djs', city: 'Ahmedabad', maxResults: 40, category: 'music' },
-  { source: 'wedmegood', query: 'wedding-bands', city: 'Ahmedabad', maxResults: 30, category: 'music' },
-  // WeddingWire
-  { source: 'weddingwire', query: 'djs', city: 'Ahmedabad', maxResults: 40, category: 'music' },
-]
-
 // ─── All Queries Combined ───────────────────────────────────────
 export const allQueries: ScrapeQuery[] = [
   ...mehndiQueries,
   ...photographyQueries,
   ...makeupQueries,
   ...decorQueries,
-  ...musicQueries,
 ]
 
 // ─── Summary ────────────────────────────────────────────────────
 export const scrapeSummary = {
-  services: ['Mehndi', 'Photography', 'Makeup', 'Decor', 'Music'],
+  services: ['Mehndi', 'Photography', 'Makeup', 'Decor'],
   sources: ['google_maps', 'instagram', 'justdial', 'sulekha', 'wedmegood', 'weddingwire'],
   city: 'Ahmedabad',
   totalQueries: allQueries.length,

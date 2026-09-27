@@ -23,16 +23,15 @@ export function calculateLeadScore(artist: ScrapedArtist): LeadScoreBreakdown {
   // 2. Rating Score (0-25)
   let ratingScore = 0
   if (artist.rating && artist.rating > 0) {
-    // Map 0-5 rating to 0-25
-    ratingScore = Math.round((artist.rating / 5) * 20)
-    // Bonus for high review count
+    const cappedRating = Math.min(5, artist.rating)
+    ratingScore = Math.round((cappedRating / 5) * 20)
     if (artist.reviewCount && artist.reviewCount > 10) {
       ratingScore += 3
     }
     if (artist.reviewCount && artist.reviewCount > 50) {
       ratingScore += 2
     }
-    factors.push(`Rating: ${artist.rating}/5 (${artist.reviewCount || 0} reviews) (+${ratingScore})`)
+    factors.push(`Rating: ${cappedRating}/5 (${artist.reviewCount || 0} reviews) (+${ratingScore})`)
   } else {
     factors.push('No rating available (+0)')
   }

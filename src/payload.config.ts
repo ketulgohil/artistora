@@ -1,6 +1,12 @@
+import { config as loadDotenv } from 'dotenv'
+import path from 'path'
+loadDotenv({ path: path.resolve(process.cwd(), '.env') })
+if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) {
+  loadDotenv({ path: path.resolve(process.cwd(), '.env.local') })
+}
+
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -54,7 +60,7 @@ const s3Plugin = useS3
     })
   : null
 
-const dbUrl = process.env.DATABASE_URL || ''
+const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || ''
 const isRemoteDb =
   dbUrl.includes('sslmode=') ||
   dbUrl.includes('supabase.com') ||
@@ -67,7 +73,7 @@ const connectionString = dbUrl
 
 const isProd = process.env.NODE_ENV === 'production'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder')
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Artistora <hello@artistora.com>'
 
 export default buildConfig({
@@ -111,19 +117,7 @@ export default buildConfig({
       titleSuffix: ' — Artistora CMS',
       description: 'Artistora Artist Marketplace CMS',
     },
-    components: {
-      afterNavLinks: process.env.ENABLE_SCRAPER
-        ? [{ path: '@/app/(payload)/admin/views/ScraperNavLink#default' }]
-        : [],
-      views: process.env.ENABLE_SCRAPER
-        ? {
-            scraper: {
-              Component: '@/app/(payload)/admin/views/ScraperDashboard#default',
-              path: '/scraper',
-            },
-          }
-        : {},
-    },
+    components: {},
   },
   collections: [
     Users,
@@ -148,7 +142,7 @@ export default buildConfig({
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: process.env.PAYLOAD_SECRET || 'artistora-secret-key-fallback-2026',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

@@ -1,15 +1,13 @@
 // Service categories for artists in Ahmedabad
-export type ServiceCategory = 
-  | 'mehndi' 
-  | 'photography' 
-  | 'makeup' 
-  | 'decor' 
-  | 'music' 
-  | 'dj' 
-  | 'videography' 
-  | 'anchoring' 
-  | 'catering' 
-  | 'dance' 
+export type ServiceCategory =
+  | 'mehndi'
+  | 'photography'
+  | 'makeup'
+  | 'decor'
+  | 'videography'
+  | 'anchoring'
+  | 'catering'
+  | 'dance'
   | 'other'
 
 export type ScrapingSource = 

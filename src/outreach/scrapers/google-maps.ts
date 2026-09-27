@@ -1,7 +1,6 @@
-import { chromium, type Browser, type Page } from 'playwright'
+import type { Browser, Page } from 'playwright'
 import type { Scraper, ScrapeParams, ScrapedArtist } from '../types'
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+import { launchBrowser, BROWSER_CONTEXT_OPTIONS, jitteredSleep, retryWithBackoff, normalizePhone } from './utils'
 
 export class GoogleMapsScraper implements Scraper {
   source = 'google_maps' as const
@@ -14,27 +13,28 @@ export class GoogleMapsScraper implements Scraper {
     console.log(`[GoogleMaps] Starting scrape: "${query}" in ${city}`)
 
     try {
-      this.browser = await chromium.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      })
-
-      const context = await this.browser.newContext({
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        viewport: { width: 1366, height: 768 },
-        locale: 'en-IN',
-        timezoneId: 'Asia/Kolkata',
-      })
-
+      this.browser = await launchBrowser()
+      const context = await this.browser.newContext(BROWSER_CONTEXT_OPTIONS)
       const page = await context.newPage()
 
       // === PHASE 1: Collect all place URLs from search results ===
       const searchQuery = encodeURIComponent(`${query} in ${city}`)
-      await page.goto(`https://www.google.com/maps/search/${searchQuery}`, {
-        waitUntil: 'domcontentloaded',
-        timeout: 30000,
-      })
-      await sleep(4000)
+      await retryWithBackoff(() =>
+        page.goto(`https://www.google.com/maps/search/${searchQuery}`, {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000,
+        })
+      )
+      await jitteredSleep(3000)
+
+      // Dismiss cookie/consent banner if shown
+      try {
+        const consentBtn = page.locator('button:has-text("Accept all"), button:has-text("Reject all"), button:has-text("I agree"), form[action*="consent"] button').first()
+        if (await consentBtn.isVisible({ timeout: 2000 })) {
+          await consentBtn.click()
+          await jitteredSleep(1000)
+        }
+      } catch {}
 
       const feedSelector = '[role="feed"]'
       try {
@@ -76,41 +76,54 @@ export class GoogleMapsScraper implements Scraper {
           }
         }
 
-        // Scroll for more results
         try {
           const feed = page.locator(feedSelector).first()
           await feed.evaluate((el) => { el.scrollTop = el.scrollHeight })
-          await sleep(2500)
+          await jitteredSleep(2500)
           scrollAttempts++
         } catch {
           break
         }
       }
 
-      console.log(`[GoogleMaps] Collected ${placeUrls.length} place URLs, now visiting each...`)
+      // Fallback: If Google Maps directly redirected to a single place page
+      if (placeUrls.length === 0 && page.url().includes('/maps/place/')) {
+        const singleName = (await page.locator('h1.DUwDvf, h1').first().textContent()) || query
+        placeUrls.push({ name: singleName.trim(), href: page.url() })
+      }
 
-      // === PHASE 2: Visit each place URL and extract details ===
-      for (let i = 0; i < placeUrls.length; i++) {
-        const { name, href } = placeUrls[i]
-        try {
-          await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 15000 })
-          await sleep(2500)
+      console.log(`[GoogleMaps] Collected ${placeUrls.length} place URLs, visiting in parallel batches...`)
 
-          const artist = await this.extractPlaceDetails(page, name, params)
+      // === PHASE 2: Visit place URLs in parallel batches of 4 ===
+      const BATCH_SIZE = 4
+      for (let i = 0; i < placeUrls.length; i += BATCH_SIZE) {
+        const batch = placeUrls.slice(i, i + BATCH_SIZE)
+        const batchResults = await Promise.all(
+          batch.map(async ({ name, href }) => {
+            const tabPage = await context.newPage()
+            try {
+              await retryWithBackoff(() =>
+                tabPage.goto(href, { waitUntil: 'domcontentloaded', timeout: 15000 })
+              )
+              await jitteredSleep(2000)
 
-          // Extract sourceId from URL
-          const cidMatch = href.match(/!1s(0x[0-9a-f]+)/i)
-          const sourceId = cidMatch ? cidMatch[1] : undefined
-
-          if (artist) {
-            artist.sourceId = sourceId
-            results.push(artist)
-            console.log(`[GoogleMaps] [${i + 1}/${placeUrls.length}] ${artist.name} — phone: ${artist.phone || 'none'}`)
-          }
-        } catch (err) {
-          console.log(`[GoogleMaps] Error visiting ${name}: ${err}`)
-          continue
-        }
+              const artist = await this.extractPlaceDetails(tabPage, name, params)
+              if (artist) {
+                const cidMatch = href.match(/!1s(0x[0-9a-f]+)/i)
+                artist.sourceId = cidMatch ? cidMatch[1] : undefined
+                console.log(`[GoogleMaps] ${name} — phone: ${artist.phone || 'none'}`)
+              }
+              return artist
+            } catch (err) {
+              console.log(`[GoogleMaps] Error visiting ${name}: ${err}`)
+              return null
+            } finally {
+              await tabPage.close()
+            }
+          })
+        )
+        results.push(...batchResults.filter((a): a is ScrapedArtist => a !== null))
+        console.log(`[GoogleMaps] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${results.length} total so far`)
       }
     } catch (error) {
       console.error('[GoogleMaps] Scrape error:', error)
@@ -130,56 +143,87 @@ export class GoogleMapsScraper implements Scraper {
     params: ScrapeParams
   ): Promise<ScrapedArtist | null> {
     try {
-      // Use full page — on direct nav, details are in the page body
-      const panel = page.locator('body')
+      try {
+        await page.waitForSelector('h1.DUwDvf, div.Io6YTe, div.rogA2c, [data-item-id]', { timeout: 4000 })
+      } catch {}
+      await jitteredSleep(500)
 
-      // Wait a bit for content to load
-      await sleep(500)
-
-      // Business name — Google Maps sometimes shows a different name in the header
       let businessName: string | undefined
       try {
-        const bizNameSelectors = [
-          'h1.DUwDvf',           // main heading in details panel
-          'h1[class*="header"]',
-          '[data-attrid="title"]',
-          'h1',
-        ]
+        const bizNameSelectors = ['h1.DUwDvf', 'h1[class*="header"]', '[data-attrid="title"]', 'h1']
         for (const sel of bizNameSelectors) {
-          const el = panel.locator(sel).first()
+          const el = page.locator(sel).first()
           if (await el.count() > 0) {
             const text = (await el.textContent())?.trim()
-            if (text && text !== name) {
-              businessName = text
+            if (text && text !== name) { businessName = text; break }
+          }
+        }
+      } catch {}
+
+      // Phone: extract from div.Io6YTe (primary Google Maps text node), tel link, data-item-id, aria-label
+      let phone: string | undefined
+      try {
+        // 1. Primary: inspect all div.Io6YTe and div.rogA2c text elements
+        const ioElements = await page.locator('div.Io6YTe, div.rogA2c').allTextContents()
+        for (const rawText of ioElements) {
+          const text = rawText.trim()
+          if (!text) continue
+          const normalized = normalizePhone(text)
+          if (normalized) {
+            phone = normalized
+            break
+          }
+          const match = text.match(/(?:\+?91[\s-]?)?0?[6-9]\d{4}[\s-]?\d{5}|(?:\+?91[\s-]?)?0?[6-9]\d{9}/)
+          if (match) {
+            const num = normalizePhone(match[0])
+            if (num) {
+              phone = num
               break
             }
           }
         }
-      } catch {}
 
-      // Phone number — on direct nav, a[href^="tel:"] has the phone
-      let phone: string | undefined
-      try {
-        // Priority 1: tel: link (most reliable on direct nav)
-        const telLink = page.locator('a[href^="tel:"]').first()
-        if (await telLink.count() > 0) {
-          const href = await telLink.getAttribute('href')
-          if (href && href.startsWith('tel:')) {
-            phone = href.replace('tel:', '').replace(/[^\d+]/g, '')
+        // 2. Tel link
+        if (!phone) {
+          const telLinks = await page.locator('a[href^="tel:"]').all()
+          for (const link of telLinks) {
+            const href = await link.getAttribute('href')
+            if (href?.startsWith('tel:')) {
+              const num = normalizePhone(href.replace('tel:', ''))
+              if (num) { phone = num; break }
+            }
           }
         }
 
-        // Priority 2: page-wide text pattern fallback
-        if (!phone || phone.length < 10) {
-          const bodyText = await page.textContent('body')
-          const phoneMatch = bodyText?.match(/(\+?91[\s-]?\d{5}[\s-]?\d{5}|\+?91[\s-]?\d{10}|0\d{10}|\d{10})/)
-          if (phoneMatch) {
-            phone = phoneMatch[1].replace(/[^\d+]/g, '')
+        // 3. data-item-id with phone:
+        if (!phone) {
+          const phoneBtns = await page.locator('[data-item-id*="phone"], [data-item-id^="phone:"]').all()
+          for (const btn of phoneBtns) {
+            const itemId = await btn.getAttribute('data-item-id')
+            const ariaLabel = await btn.getAttribute('aria-label')
+            const text = await btn.textContent()
+            const num =
+              normalizePhone(itemId?.replace(/^phone:tel:/, '')?.replace(/^phone:/, '')) ||
+              normalizePhone(ariaLabel || undefined) ||
+              normalizePhone(text || undefined)
+            if (num) { phone = num; break }
+          }
+        }
+
+        // 4. aria-label or tooltip containing phone
+        if (!phone) {
+          const phoneElements = await page
+            .locator('[aria-label*="Phone" i], [aria-label*="phone" i], button[data-tooltip*="phone" i]')
+            .all()
+          for (const el of phoneElements) {
+            const label = await el.getAttribute('aria-label')
+            const text = await el.textContent()
+            const num = normalizePhone(label || undefined) || normalizePhone(text || undefined)
+            if (num) { phone = num; break }
           }
         }
       } catch {}
 
-      // Website
       let website: string | undefined
       try {
         const websiteSelectors = [
@@ -197,7 +241,6 @@ export class GoogleMapsScraper implements Scraper {
         }
       } catch {}
 
-      // Rating
       let rating: number | undefined
       let reviewCount: number | undefined
       try {
@@ -211,14 +254,10 @@ export class GoogleMapsScraper implements Scraper {
           if (await el.count() > 0) {
             const label = await el.getAttribute('aria-label') || ''
             const match = label.match(/([\d.]+)/)
-            if (match) {
-              rating = parseFloat(match[1])
-              break
-            }
+            if (match) { rating = Math.min(5, parseFloat(match[1])); break }
           }
         }
 
-        // Reviews count
         const reviewSelectors = [
           'span[aria-label*="review"]',
           'span[aria-label*="Review"]',
@@ -230,16 +269,12 @@ export class GoogleMapsScraper implements Scraper {
             const text = await el.textContent()
             if (text) {
               const match = text.match(/(\d[\d,]*)/)
-              if (match) {
-                reviewCount = parseInt(match[1].replace(/,/g, ''))
-                break
-              }
+              if (match) { reviewCount = parseInt(match[1].replace(/,/g, '')); break }
             }
           }
         }
       } catch {}
 
-      // Address
       let area: string | undefined
       try {
         const addrSelectors = [
@@ -251,31 +286,24 @@ export class GoogleMapsScraper implements Scraper {
         for (const sel of addrSelectors) {
           const el = page.locator(sel).first()
           if (await el.count() > 0) {
-            area = (await el.textContent()) || undefined
+            area = (await el.textContent())?.trim() || undefined
             if (area) break
           }
         }
       } catch {}
 
-      // Category / specializations
       let specializations: string | undefined
       try {
-        // Google Maps shows category as a button or text in the details
-        const catSelectors = [
-          'button[jsaction*="category"]',
-          'span.DkEaL',
-          '[data-item-id="category"]',
-        ]
+        const catSelectors = ['button[jsaction*="category"]', 'span.DkEaL', '[data-item-id="category"]']
         for (const sel of catSelectors) {
           const el = page.locator(sel).first()
           if (await el.count() > 0) {
-            specializations = (await el.textContent()) || undefined
+            specializations = (await el.textContent())?.trim() || undefined
             if (specializations) break
           }
         }
       } catch {}
 
-      // Instagram from links
       let instagramHandle: string | undefined
       try {
         const igLinks = await page.locator('a[href*="instagram.com"]').all()
@@ -291,14 +319,18 @@ export class GoogleMapsScraper implements Scraper {
         }
       } catch {}
 
-      // Map category
       const catLower = (specializations || params.query || '').toLowerCase()
-      let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'music' | 'other' = 'other'
+      let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
       if (catLower.includes('mehndi') || catLower.includes('henna')) serviceCategory = 'mehndi'
       else if (catLower.includes('photo')) serviceCategory = 'photography'
-      else if (catLower.includes('makeup') || catLower.includes('beauty')) serviceCategory = 'makeup'
+      else if (catLower.includes('makeup') || catLower.includes('beauty') || catLower.includes('parlour')) serviceCategory = 'makeup'
       else if (catLower.includes('decor') || catLower.includes('decoration')) serviceCategory = 'decor'
-      else if (catLower.includes('music') || catLower.includes('dj')) serviceCategory = 'music'
+      else if (params.category && ['mehndi', 'photography', 'makeup', 'decor'].includes(params.category)) {
+        serviceCategory = params.category as any
+      }
+
+      // Only set whatsappNumber if it's a valid mobile (normalizePhone already validates this)
+      const whatsappNumber = phone
 
       return {
         name,
@@ -306,7 +338,7 @@ export class GoogleMapsScraper implements Scraper {
         source: 'google_maps',
         sourceUrl: page.url(),
         phone,
-        whatsappNumber: phone, // In India, business phone = WhatsApp
+        whatsappNumber,
         website,
         instagramHandle,
         instagramProfileUrl: instagramHandle ? `https://instagram.com/${instagramHandle}` : undefined,

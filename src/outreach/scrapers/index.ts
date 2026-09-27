@@ -6,32 +6,33 @@ import { SulekhaScraper } from './sulekha'
 import { WedMeGoodScraper } from './wedmegood'
 import { WeddingWireScraper } from './weddingwire'
 
-const scrapers: Record<ScrapingSource, Scraper> = {
-  google_maps: new GoogleMapsScraper(),
-  instagram: new InstagramScraper(),
-  justdial: new JustdialScraper(),
-  sulekha: new SulekhaScraper(),
-  wedmegood: new WedMeGoodScraper(),
-  weddingwire: new WeddingWireScraper(),
+const scraperClasses: Record<ScrapingSource, new () => Scraper> = {
+  google_maps: GoogleMapsScraper,
+  instagram: InstagramScraper,
+  justdial: JustdialScraper,
+  sulekha: SulekhaScraper,
+  wedmegood: WedMeGoodScraper,
+  weddingwire: WeddingWireScraper,
 }
 
 export async function runScrape(
   source: ScrapingSource,
   params: ScrapeParams
 ): Promise<{ artists: ScrapedArtist[]; error?: string }> {
-  const scraper = scrapers[source]
-  
-  if (!scraper) {
+  const ScraperClass = scraperClasses[source]
+
+  if (!ScraperClass) {
     return { artists: [], error: `Scraper for ${source} is not implemented yet` }
   }
 
   try {
-    console.log(`[Scraper] Running ${source} scraper...`)
+    const scraper = new ScraperClass()
+    console.log(`[Scraper] Running ${source} scraper for "${params.query}"...`)
     const artists = await scraper.scrape(params)
     return { artists }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    console.error(`[Scraper] ${source} failed:`, message)
+    console.error(`[Scraper] ${source} failed for "${params.query}":`, message)
     return { artists: [], error: message }
   }
 }

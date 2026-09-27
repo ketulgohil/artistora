@@ -1,21 +1,20 @@
 /**
- * Rate limiter for outreach messaging using Upstash Redis.
+ * Rate limiter for outreach messaging using Unified Redis (Local Redis / Upstash).
  * Falls back to in-memory rate limiting if Redis is not configured.
  *
  * This prevents WhatsApp/Instagram from banning the account
  * due to excessive message sending.
  */
 
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import { getUnifiedRedis, UnifiedRedis } from './redis-client'
 
-// Try to connect to Upstash Redis if configured
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
-
-const redis = redisUrl && redisToken
-  ? new Redis({ url: redisUrl, token: redisToken })
-  : null
+function getRedis(): UnifiedRedis | null {
+  try {
+    return getUnifiedRedis()
+  } catch {
+    return null
+  }
+}
 
 // Channel-specific rate limits
 const RATE_LIMITS = {
@@ -63,6 +62,7 @@ export async function canSend(
   if (!limits) return { allowed: false, reason: `Unknown channel: ${channel}` }
 
   const campaignSuffix = campaignId ? `:${campaignId}` : ''
+  const redis = getRedis()
 
   // Check hourly limit
   const hourlyKey = `outreach:rate:${channel}${campaignSuffix}:hour:${Math.floor(Date.now() / 3600000)}`
@@ -70,9 +70,10 @@ export async function canSend(
   const dailyKey = `outreach:rate:${channel}${campaignSuffix}:day:${new Date().toISOString().split('T')[0]}`
 
   if (redis) {
-    // Use Upstash Redis
-    const hourlyCount = await redis.get<number>(hourlyKey) || 0
-    const dailyCount = await redis.get<number>(dailyKey) || 0
+    const rawHourly = await redis.get<number | string>(hourlyKey)
+    const rawDaily = await redis.get<number | string>(dailyKey)
+    const hourlyCount = rawHourly ? Number(rawHourly) : 0
+    const dailyCount = rawDaily ? Number(rawDaily) : 0
 
     if (hourlyCount >= limits.messagesPerHour) {
       const hourResetMs = Math.ceil(Date.now() / 3600000) * 3600000 - Date.now()
@@ -106,20 +107,19 @@ export async function recordSent(
   campaignId?: string
 ): Promise<void> {
   const campaignSuffix = campaignId ? `:${campaignId}` : ''
+  const redis = getRedis()
 
   if (redis) {
     const hourlyKey = `outreach:rate:${channel}${campaignSuffix}:hour:${Math.floor(Date.now() / 3600000)}`
     const dailyKey = `outreach:rate:${channel}${campaignSuffix}:day:${new Date().toISOString().split('T')[0]}`
 
-    // Increment counters with TTL
-    const pipeline = redis.pipeline()
-    pipeline.incr(hourlyKey)
-    pipeline.expire(hourlyKey, 3600)
-    pipeline.incr(dailyKey)
-    pipeline.expire(dailyKey, 86400)
-    await pipeline.exec()
+    try {
+      await redis.incr(hourlyKey)
+      await redis.expire(hourlyKey, 3600)
+      await redis.incr(dailyKey)
+      await redis.expire(dailyKey, 86400)
+    } catch {}
   }
-  // In-memory: already incremented in canSend check
 }
 
 // Get current usage stats for a channel
@@ -129,13 +129,16 @@ export async function getUsageStats(
   const limits = RATE_LIMITS[channel]
   const hourlyKey = `outreach:rate:${channel}:hour:${Math.floor(Date.now() / 3600000)}`
   const dailyKey = `outreach:rate:${channel}:day:${new Date().toISOString().split('T')[0]}`
+  const redis = getRedis()
 
   let hourlyUsed = 0
   let dailyUsed = 0
 
   if (redis) {
-    hourlyUsed = await redis.get<number>(hourlyKey) || 0
-    dailyUsed = await redis.get<number>(dailyKey) || 0
+    const rawHourly = await redis.get<number | string>(hourlyKey)
+    const rawDaily = await redis.get<number | string>(dailyKey)
+    hourlyUsed = rawHourly ? Number(rawHourly) : 0
+    dailyUsed = rawDaily ? Number(rawDaily) : 0
   } else {
     const hourlyEntry = memoryStore.get(hourlyKey)
     const dailyEntry = memoryStore.get(dailyKey)

@@ -60,3 +60,6 @@ scraper-progress.json
 fix-whatsapp.ts
 promote-admin.ts
 instagram-session/
+
+# Database backups
+backups/
