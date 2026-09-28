@@ -11,6 +11,7 @@ const WHATSAPP_URL = 'https://wa.me/917405387720'
 interface NavLink {
   to: string
   label: string
+  desktopLabel?: string
   icon: (props: { className?: string }) => React.ReactNode
   badge?: string
 }
@@ -19,6 +20,7 @@ const mainNavLinks: NavLink[] = [
   {
     to: '/',
     label: 'Home',
+    desktopLabel: 'Home',
     icon: ({ className }) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -29,6 +31,7 @@ const mainNavLinks: NavLink[] = [
   {
     to: '/artists',
     label: 'Verified Artists',
+    desktopLabel: 'Artists',
     badge: 'Popular',
     icon: ({ className }) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
@@ -39,6 +42,7 @@ const mainNavLinks: NavLink[] = [
   {
     to: '/services',
     label: 'Services Offered',
+    desktopLabel: 'Services',
     icon: ({ className }) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
         <rect x="3" y="3" width="7" height="7" />
@@ -51,6 +55,7 @@ const mainNavLinks: NavLink[] = [
   {
     to: '/portfolio',
     label: 'Portfolio Gallery',
+    desktopLabel: 'Portfolio',
     icon: ({ className }) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -62,6 +67,7 @@ const mainNavLinks: NavLink[] = [
   {
     to: '/how-it-works',
     label: 'How It Works',
+    desktopLabel: 'How It Works',
     icon: ({ className }) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
         <circle cx="12" cy="12" r="10" />
@@ -72,6 +78,7 @@ const mainNavLinks: NavLink[] = [
   {
     to: '/contact',
     label: 'Contact Us',
+    desktopLabel: 'Contact',
     icon: ({ className }) => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -191,11 +198,11 @@ export default function Header() {
             isScrolled ? 'shadow-[0_10px_30px_rgba(4,34,75,0.08)] bg-[rgba(253,238,238,0.96)]' : ''
           } ${isHiddenOnScroll ? '-translate-y-full' : 'translate-y-0'}`}
         >
-          <nav className="mx-auto flex max-w-6xl items-center justify-between px-3.5! py-2! sm:px-4! md:px-6!" aria-label="Main Navigation">
+          <nav className="mx-auto flex max-w-7xl items-center justify-between px-3.5! py-2! sm:px-4! md:px-6! lg:px-8!" aria-label="Main Navigation">
             {/* ── Brand Logo & Title ── */}
             <Link
               href="/"
-              className="flex min-w-0 items-center gap-2! sm:gap-2.5! group"
+              className="flex shrink-0 items-center gap-2! sm:gap-2.5! group"
               onClick={() => setIsOpen(false)}
               aria-label="Artistora Home"
             >
@@ -204,40 +211,35 @@ export default function Header() {
                 alt="Artistora Lotus Mark"
                 width={56}
                 height={56}
-                className="h-9! w-auto shrink-0 object-contain transition-transform duration-300 group-hover:scale-105 sm:h-10! md:h-11!"
+                className="h-8! w-auto shrink-0 object-contain transition-transform duration-300 group-hover:scale-105 sm:h-9! md:h-10!"
                 priority
               />
-              <span className="flex min-w-0 flex-col leading-tight">
-                <strong className="font-display text-lg! font-bold tracking-tight text-brand-deep sm:text-xl! md:text-2xl!">
+              <span className="flex shrink-0 flex-col leading-tight">
+                <strong className="font-display text-lg! font-bold tracking-tight text-brand-deep sm:text-xl! md:text-2xl! whitespace-nowrap">
                   Artistora
                 </strong>
-                <small className="hidden text-[0.56rem] font-bold tracking-[0.2em] text-brand uppercase sm:block md:text-[0.62rem]">
+                <small className="hidden text-[0.54rem] font-bold tracking-[0.18em] text-brand uppercase xl:block md:text-[0.58rem] whitespace-nowrap">
                   Ahmedabad&apos;s Verified Artists
                 </small>
               </span>
             </Link>
 
             {/* ── Desktop Nav Links (Visible on lg+) ── */}
-            <div className="hidden items-center gap-1! lg:flex">
-              <ul className="flex items-center gap-1!">
+            <div className="hidden items-center gap-2! lg:flex xl:gap-5!">
+              <ul className="flex items-center gap-0.5! xl:gap-1.5!">
                 {mainNavLinks.map((item) => {
                   const active = isActive(item.to)
                   return (
-                    <li key={item.to}>
+                    <li key={item.to} className="shrink-0">
                       <Link
                         href={item.to}
-                        className={`relative rounded-full px-3.5! py-2! text-[0.92rem] font-semibold transition-all duration-200 ${
+                        className={`relative inline-flex items-center rounded-full px-2.5! py-1.5! text-[0.82rem] font-semibold whitespace-nowrap transition-all duration-200 xl:px-3.5! xl:py-2! xl:text-[0.88rem] ${
                           active
                             ? 'bg-brand/12 text-brand-deep shadow-xs font-bold'
                             : 'text-ink-soft hover:bg-brand/8 hover:text-brand'
                         }`}
                       >
-                        {item.label}
-                        {item.badge && (
-                          <span className="ml-1.5 rounded-full bg-brand/15 px-1.5! py-0.5! text-[0.6rem] font-bold text-brand uppercase">
-                            {item.badge}
-                          </span>
-                        )}
+                        {item.desktopLabel || item.label}
                       </Link>
                     </li>
                   )
@@ -245,10 +247,10 @@ export default function Header() {
               </ul>
 
               {/* Desktop Right CTAs */}
-              <div className="ml-4! flex items-center gap-3!">
+              <div className="flex shrink-0 items-center gap-2! pl-1! xl:gap-3! xl:pl-2!">
                 <Link
                   href={BOOKING_URL}
-                  className="inline-flex min-h-[42px] cursor-pointer items-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-5! py-2! text-xs font-bold text-white shadow-[0_4px_14px_rgba(236,103,131,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(236,103,131,0.4)] active:scale-98"
+                  className="inline-flex min-h-[38px] cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-4! py-1.5! text-xs font-bold text-white shadow-[0_3px_12px_rgba(236,103,131,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(236,103,131,0.38)] active:scale-98 whitespace-nowrap xl:min-h-[40px] xl:px-5! xl:py-2! xl:text-[0.82rem]!"
                 >
                   Get Free Quote
                 </Link>
@@ -256,22 +258,34 @@ export default function Header() {
                 {user ? (
                   user.role === 'artist' ? (
                     <Link
-                      className="inline-flex min-h-[42px] cursor-pointer items-center rounded-full border border-brand/30 bg-white px-4! py-2! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5"
+                      className="inline-flex min-h-[38px] cursor-pointer items-center justify-center gap-1.5! rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5 whitespace-nowrap xl:min-h-[40px] xl:px-4! xl:py-2! xl:text-[0.82rem]!"
                       href="/dashboard"
                     >
-                      Dashboard
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-brand">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                      <span>Dashboard</span>
                     </Link>
                   ) : (
                     <Link
-                      className="inline-flex min-h-[42px] cursor-pointer items-center rounded-full border border-brand/30 bg-white px-4! py-2! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5"
+                      className="inline-flex min-h-[38px] cursor-pointer items-center justify-center gap-1.5! rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5 whitespace-nowrap xl:min-h-[40px] xl:px-4! xl:py-2! xl:text-[0.82rem]!"
                       href="/my-bookings"
                     >
-                      My Bookings
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-brand">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                      <span>My Bookings</span>
                     </Link>
                   )
                 ) : (
                   <Link
-                    className="inline-flex min-h-[42px] cursor-pointer items-center rounded-full border border-brand/30 bg-white px-4! py-2! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5"
+                    className="inline-flex min-h-[38px] cursor-pointer items-center justify-center rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5 whitespace-nowrap xl:min-h-[40px] xl:px-4! xl:py-2! xl:text-[0.82rem]!"
                     href="/login"
                   >
                     Login
