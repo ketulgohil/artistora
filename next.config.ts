@@ -41,6 +41,26 @@ const nextConfig: NextConfig = {
   // Next's dev client may resolve localhost to 127.0.0.1 for the HMR socket.
   // Allow both loopback hostnames during local development.
   allowedDevOrigins: ['localhost', '127.0.0.1'],
+  outputFileTracingExcludes: {
+    '*': [
+      './media/**',
+      './backups/**',
+      './scripts/**',
+      './tests/**',
+      './artistora-logo-package/**',
+      './whatsapp-session/**',
+      './instagram-session/**',
+      'node_modules/@whiskeysockets/baileys/**',
+      'node_modules/whatsapp-web.js/**',
+      'node_modules/@playwright/**',
+      'node_modules/playwright/**',
+      'node_modules/puppeteer/**',
+      'node_modules/@types/**',
+      'node_modules/prettier/**',
+      'node_modules/eslint/**',
+      'node_modules/vitest/**',
+    ],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

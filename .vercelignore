@@ -1,0 +1,38 @@
+# Media & local storage
+media/
+backups/
+whatsapp-session/
+instagram-session/
+.wwebjs_cache/
+.whatsapp-queue/
+
+# Scripts & CLI tools
+scripts/
+src/outreach/
+src/run-scrapers.ts
+src/seed.ts
+src/seed-artists.ts
+src/seed-content.ts
+src/seed-outreach.ts
+src/migrate-media-to-s3.ts
+fix-whatsapp.ts
+promote-admin.ts
+
+# Tests & E2E
+tests/
+playwright.config.ts
+vitest.config.mts
+vitest.setup.ts
+
+# Documents & Assets
+artistora-logo-package/
+*.pdf
+*.md
+*.log
+scraper-progress.json
+outreach-sent.json
+test.env
+
+# Docker & Configs
+docker-compose.yml
+Dockerfile
