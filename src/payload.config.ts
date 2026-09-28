@@ -76,8 +76,26 @@ const isProd = process.env.NODE_ENV === 'production'
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder')
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Artistora <hello@artistora.com>'
 
+// Payload validates the session cookie against this allowlist (see extractJWT).
+// If the browser's Origin / Sec-Fetch-Site is not recognized, the cookie is
+// dropped and every authenticated request fails (401/403). Always include the
+// canonical production domains plus the local dev servers.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
+const ALLOWED_ORIGINS = Array.from(
+  new Set(
+    [
+      SITE_URL,
+      'https://www.artistora.com',
+      'https://artistora.com',
+      ...(isProd ? [] : ['http://localhost:3000', 'http://127.0.0.1:3000']),
+    ].filter(Boolean),
+  ),
+)
+
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com',
+  serverURL: SITE_URL,
+  cors: ALLOWED_ORIGINS,
+  csrf: ALLOWED_ORIGINS,
   email: ({ payload }) => ({
     name: 'resend',
     defaultFromAddress: FROM_EMAIL,
