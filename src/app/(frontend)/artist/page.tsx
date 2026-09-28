@@ -158,7 +158,7 @@ export default async function ArtistPage() {
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
                 Artistora is a curated marketplace that connects you with
                 verified artists in Ahmedabad &mdash; mehndi specialists,
-                photographers, makeup artists, decorators, musicians, and more.
+                photographers, makeup artists, decorators, and event planners.
                 Every artist is selected and reviewed for skill, reliability,
                 and professionalism.
               </p>

@@ -28,6 +28,7 @@ export const Reviews: CollectionConfig = {
           const booking = await req.payload.findByID({
             collection: 'bookings',
             id: data.booking,
+            req,
           }).catch(() => null)
 
           if (!booking) {
@@ -63,16 +64,21 @@ export const Reviews: CollectionConfig = {
               ],
             },
             limit: 1,
+            req,
           })
 
           if (existingReview.docs.length > 0) {
             throw new Error('You have already reviewed this booking')
           }
+
+          // Mark review as verified since it is tied to a completed booking
+          data.verifiedBooking = true
+        } else if (!isSystemOp) {
+          data.verifiedBooking = false
         }
 
         // Prevent client from setting moderation fields (allow system ops to set them)
         if (!isSystemOp) {
-          data.verifiedBooking = false
           data.helpfulCount = 0
         }
 
@@ -98,6 +104,7 @@ export const Reviews: CollectionConfig = {
                 ],
               },
               limit: 0,
+              req,
               overrideAccess: true,
             })
 
@@ -112,6 +119,7 @@ export const Reviews: CollectionConfig = {
                   rating: avgRating,
                   reviewCount: reviews.length,
                 },
+                req,
                 overrideAccess: true,
               })
             }
@@ -167,7 +175,6 @@ export const Reviews: CollectionConfig = {
       required: true,
       label: 'Related Booking',
       access: {
-        create: () => false, // Set by hook
         update: ({ req }) => req.user?.role === 'admin',
       },
       admin: {
@@ -181,7 +188,6 @@ export const Reviews: CollectionConfig = {
       required: true,
       label: 'Artist Reviewed',
       access: {
-        create: () => false, // Derived from booking by hook
         update: ({ req }) => req.user?.role === 'admin',
       },
       admin: {

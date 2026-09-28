@@ -1,5 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
+const adminOnlyFieldAccess = {
+  create: ({ req }: { req: any }) => req.user?.role === 'admin',
+  update: ({ req }: { req: any }) => req.user?.role === 'admin',
+}
+
 export const Quotes: CollectionConfig = {
   slug: 'quotes',
   labels: {
@@ -10,6 +15,61 @@ export const Quotes: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: ['lead', 'artist', 'amount', 'priceType', 'status', 'createdAt'],
     group: 'Marketplace',
+  },
+  hooks: {
+    beforeChange: [
+      async ({ data, operation, originalDoc, req }) => {
+        const isNonAdmin = Boolean(req.user && req.user.role !== 'admin')
+
+        if (operation === 'create') {
+          if (isNonAdmin) {
+            // Force status to 'sent'
+            data.status = 'sent'
+
+            // Auto-bind artist to the authenticated artist profile
+            if (req.user?.role === 'artist') {
+              const artistDocs = await req.payload.find({
+                collection: 'artists',
+                where: { user: { equals: req.user.id } },
+                limit: 1,
+                req,
+              })
+
+              const artist = artistDocs.docs[0]
+              if (!artist) {
+                throw new Error('Artist profile required to create a quote')
+              }
+              if (artist.approvalStatus !== 'approved' && !artist.verified) {
+                throw new Error('Artist profile must be approved to create a quote')
+              }
+
+              data.artist = artist.id
+            }
+          }
+        }
+
+        if (operation === 'update') {
+          if (isNonAdmin) {
+            // Non-admins cannot alter relationship bindings or quote status
+            delete data.artist
+            delete data.lead
+            delete data.status
+
+            // If quote is already accepted, lock financial terms
+            if (originalDoc?.status === 'accepted') {
+              delete data.amount
+              delete data.priceType
+              delete data.unitRate
+              delete data.units
+              delete data.travelFee
+              delete data.numberOfArtists
+            }
+          }
+        }
+
+        return data
+      },
+    ],
   },
   access: {
     read: ({ req }) => {
@@ -66,9 +126,7 @@ export const Quotes: CollectionConfig = {
       relationTo: 'artists',
       required: true,
       label: 'Artist',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
     },
     {
       name: 'priceType',
@@ -152,9 +210,7 @@ export const Quotes: CollectionConfig = {
         { label: 'Expired', value: 'expired' },
         { label: 'Withdrawn', value: 'withdrawn' },
       ],
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },

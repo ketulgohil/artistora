@@ -37,6 +37,8 @@ export const Media: CollectionConfig = {
               collection: 'artists',
               where: { profilePhoto: { equals: doc.id } },
               limit: 1,
+              req,
+              overrideAccess: true,
             })
             if (existingArtist.docs.length > 0) return doc
 
@@ -48,6 +50,8 @@ export const Media: CollectionConfig = {
               collection: 'artists',
               where: { user: { equals: req.user.id } },
               limit: 1,
+              req,
+              overrideAccess: true,
             })
 
             if (artists.docs.length > 0) {
@@ -57,6 +61,8 @@ export const Media: CollectionConfig = {
               const categories = await req.payload.find({
                 collection: 'portfolio-categories',
                 limit: 10,
+                req,
+                overrideAccess: true,
               })
 
               // Determine service category from artist's specializations
@@ -89,8 +95,10 @@ export const Media: CollectionConfig = {
                     altText: doc.alt || `Portfolio image by ${(artist as any).displayName}`,
                     featured: false,
                   },
+                  req,
+                  overrideAccess: true,
                 })
-                console.log(`[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`)
+                req.payload.logger.info(`[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`)
               }
 
               // Also add to artist's portfolioImages array (used by artist profile page)
@@ -109,8 +117,10 @@ export const Media: CollectionConfig = {
                       { image: doc.id, caption: '' },
                     ],
                   },
+                  req,
+                  overrideAccess: true,
                 })
-                console.log(`[Media] Added to artist portfolioImages for ${(artist as any).displayName}`)
+                req.payload.logger.info(`[Media] Added to artist portfolioImages for ${(artist as any).displayName}`)
               }
             }
           } catch (err: any) {
@@ -133,8 +143,8 @@ export const Media: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       access: {
-        create: () => false,
-        update: () => false,
+        create: () => true, // Allowed on create; set by beforeChange hook from authenticated session
+        update: ({ req }) => req.user?.role === 'admin',
       },
       admin: {
         position: 'sidebar',

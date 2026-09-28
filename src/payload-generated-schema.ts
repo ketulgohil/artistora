@@ -795,7 +795,7 @@ export const header_footer = pgTable('header_footer', {
   logo: integer('logo_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  footerTagline: varchar('footer_tagline').default("Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, music, and more."),
+  footerTagline: varchar('footer_tagline').default("Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, and more."),
   copyrightText: varchar('copyright_text').default("© Artistora. All rights reserved."),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),

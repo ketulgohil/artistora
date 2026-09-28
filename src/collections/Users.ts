@@ -45,7 +45,12 @@ export const Users: CollectionConfig = {
         if (operation === 'create') {
           if (data?.role === 'admin' && req.user?.role !== 'admin') {
             // Allow first user to be admin (bootstrap)
-            const { totalDocs } = await req.payload.find({ collection: 'users', limit: 0 })
+            const { totalDocs } = await req.payload.find({
+              collection: 'users',
+              limit: 0,
+              req,
+              overrideAccess: true,
+            })
             if (totalDocs > 0) {
               data.role = 'customer'
             }
@@ -55,8 +60,9 @@ export const Users: CollectionConfig = {
             data.role = 'customer'
           }
         }
-        // Prevent role change to admin unless done by existing admin
-        if (operation === 'update' && data?.role === 'admin' && req.user?.role !== 'admin') {
+        // Prevent role change unless done by existing admin or system Local API
+        const isNonAdmin = Boolean(req.user && req.user.role !== 'admin')
+        if (operation === 'update' && isNonAdmin) {
           delete data.role
         }
         return data
@@ -80,10 +86,7 @@ export const Users: CollectionConfig = {
       ],
       required: true,
       access: {
-        create: ({ req }) => {
-          // Only admins can set role during creation (all others forced to customer/artist via hook)
-          return req.user?.role === 'admin'
-        },
+        create: () => true, // Allowed on create; privilege escalation to admin is blocked in beforeChange hook
         update: ({ req }) => req.user?.role === 'admin',
       },
     },

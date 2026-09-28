@@ -277,7 +277,7 @@ export default function RegisterPage() {
                   Artist Membership
                 </div>
                 <p className="mt-1.5! text-ink-muted">
-                  You'll get an artist dashboard to showcase your portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
+                  You&apos;ll get an artist dashboard to showcase your portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
                 </p>
               </div>
             )}

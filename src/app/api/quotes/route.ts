@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { authenticateRequest } from '@/lib/payload'
 import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { verifyToken } from '@/lib/token'
 
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const authResult = await payload.auth({ headers: request.headers })
+    const authResult = await authenticateRequest(request, payload)
     const user = authResult?.user as any
 
     if (!user || user.role !== 'artist') {
@@ -213,7 +214,7 @@ export async function GET(request: NextRequest) {
 
     if (!isAuthorized) {
       try {
-        const authResult = await payload.auth({ headers: request.headers })
+        const authResult = await authenticateRequest(request, payload)
         if (authResult?.user) {
           const user = authResult.user as any
           if (user.role === 'admin') {

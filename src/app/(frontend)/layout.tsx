@@ -27,7 +27,7 @@ export const metadata = {
     template: '%s | Artistora',
   },
   description:
-    'Artistora connects you with verified artists in Ahmedabad — mehndi, photography, makeup, decor, music, and more. Compare quotes and book in minutes.',
+    'Artistora connects you with verified artists in Ahmedabad — mehndi, photography, makeup, decor, and more. Compare quotes and book in minutes.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',

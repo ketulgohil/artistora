@@ -2,9 +2,79 @@ import type { CollectionConfig } from 'payload'
 import { sendArtistApprovedNotification } from '../lib/email'
 import { revalidatePath } from 'next/cache'
 
+const adminOnlyFieldAccess = {
+  create: ({ req }: { req: any }) => req.user?.role === 'admin',
+  update: ({ req }: { req: any }) => req.user?.role === 'admin',
+}
+
 export const Artists: CollectionConfig = {
   slug: 'artists',
   hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        const isNonAdmin = Boolean(req.user && req.user.role !== 'admin')
+
+        if (operation === 'create') {
+          if (isNonAdmin) {
+            // Enforce safe initial defaults for non-admin creates
+            data.approvalStatus = 'pending'
+            data.verified = false
+            data.rating = 0
+            data.reviewCount = 0
+            data.searchRank = 0
+            data.isFeatured = false
+            delete data.featuredUntil
+            data.subscriptionPlan = 'free'
+            delete data.subscriptionExpiresAt
+            data.subscriptionStatus = 'active'
+            delete data.subscriptionStartedAt
+            delete data.subscriptionRenewsAt
+            delete data.subscriptionCancelledAt
+            data.maxPortfolioItems = 10
+            data.profileViews = 0
+            data.leadsReceived = 0
+            data.quotesSent = 0
+            data.bookingsWon = 0
+            data.totalEarnings = 0
+            delete data.order
+
+            // Bind user to authenticated user session
+            if (req.user) {
+              data.user = req.user.id
+            }
+          }
+        }
+
+        if (operation === 'update') {
+          if (isNonAdmin) {
+            // Strip privileged and protected fields from non-admin updates
+            delete data.user
+            delete data.verified
+            delete data.approvalStatus
+            delete data.rating
+            delete data.reviewCount
+            delete data.searchRank
+            delete data.isFeatured
+            delete data.featuredUntil
+            delete data.subscriptionPlan
+            delete data.subscriptionExpiresAt
+            delete data.subscriptionStatus
+            delete data.subscriptionStartedAt
+            delete data.subscriptionRenewsAt
+            delete data.subscriptionCancelledAt
+            delete data.maxPortfolioItems
+            delete data.profileViews
+            delete data.leadsReceived
+            delete data.quotesSent
+            delete data.bookingsWon
+            delete data.totalEarnings
+            delete data.order
+          }
+        }
+
+        return data
+      },
+    ],
     afterChange: [
       async ({ doc, operation, previousDoc, req }) => {
         // Revalidate cache on any artist profile change
@@ -100,6 +170,7 @@ export const Artists: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       unique: true,
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -243,9 +314,7 @@ export const Artists: CollectionConfig = {
       name: 'verified',
       type: 'checkbox',
       defaultValue: false,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -260,9 +329,7 @@ export const Artists: CollectionConfig = {
         { label: 'Rejected', value: 'rejected' },
         { label: 'Suspended', value: 'suspended' },
       ],
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -273,9 +340,7 @@ export const Artists: CollectionConfig = {
       min: 0,
       max: 5,
       defaultValue: 0,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -285,9 +350,7 @@ export const Artists: CollectionConfig = {
       type: 'number',
       min: 0,
       defaultValue: 0,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -298,6 +361,7 @@ export const Artists: CollectionConfig = {
       type: 'number',
       defaultValue: 0,
       label: 'Search Rank Score',
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,
@@ -317,17 +381,13 @@ export const Artists: CollectionConfig = {
           type: 'checkbox',
           defaultValue: false,
           label: 'Featured Artist',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
         {
           name: 'featuredUntil',
           type: 'date',
           label: 'Featured Until',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
           admin: {
             condition: (_, siblingData) => siblingData?.isFeatured === true,
             date: {
@@ -345,17 +405,13 @@ export const Artists: CollectionConfig = {
             { label: 'Pro', value: 'basic' },
             { label: 'Premium', value: 'premium' },
           ],
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
         {
           name: 'subscriptionExpiresAt',
           type: 'date',
           label: 'Subscription Expires',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
           admin: {
             condition: (_, siblingData) => siblingData?.subscriptionPlan !== 'free',
             date: {
@@ -375,42 +431,32 @@ export const Artists: CollectionConfig = {
             { label: 'Cancelled', value: 'cancelled' },
             { label: 'Expired', value: 'expired' },
           ],
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
         {
           name: 'subscriptionStartedAt',
           type: 'date',
           label: 'Subscription Started',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
         {
           name: 'subscriptionRenewsAt',
           type: 'date',
           label: 'Renews At',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
         {
           name: 'subscriptionCancelledAt',
           type: 'date',
           label: 'Cancelled At',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
         {
           name: 'maxPortfolioItems',
           type: 'number',
           label: 'Max Portfolio Items',
           defaultValue: 10,
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
           admin: {
             description: 'Free: 10, Pro: 25, Premium: 50',
           },
@@ -429,6 +475,7 @@ export const Artists: CollectionConfig = {
           name: 'profileViews',
           type: 'number',
           defaultValue: 0,
+          access: adminOnlyFieldAccess,
           admin: {
             readOnly: true,
           },
@@ -437,6 +484,7 @@ export const Artists: CollectionConfig = {
           name: 'leadsReceived',
           type: 'number',
           defaultValue: 0,
+          access: adminOnlyFieldAccess,
           admin: {
             readOnly: true,
           },
@@ -445,6 +493,7 @@ export const Artists: CollectionConfig = {
           name: 'quotesSent',
           type: 'number',
           defaultValue: 0,
+          access: adminOnlyFieldAccess,
           admin: {
             readOnly: true,
           },
@@ -453,6 +502,7 @@ export const Artists: CollectionConfig = {
           name: 'bookingsWon',
           type: 'number',
           defaultValue: 0,
+          access: adminOnlyFieldAccess,
           admin: {
             readOnly: true,
           },
@@ -461,6 +511,7 @@ export const Artists: CollectionConfig = {
           name: 'totalEarnings',
           type: 'number',
           defaultValue: 0,
+          access: adminOnlyFieldAccess,
           admin: {
             readOnly: true,
             description: 'Total earnings in INR from completed bookings',
@@ -471,6 +522,7 @@ export const Artists: CollectionConfig = {
     {
       name: 'order',
       type: 'number',
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },

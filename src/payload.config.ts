@@ -5,6 +5,7 @@ if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) {
   loadDotenv({ path: path.resolve(process.cwd(), '.env.local') })
 }
 
+import { s3Storage } from '@payloadcms/storage-s3'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
@@ -42,7 +43,7 @@ const dirname = path.dirname(filename)
 // have not been uploaded to the remote bucket yet.
 const useS3 = process.env.PAYLOAD_S3_ENABLED === 'true'
 const s3Plugin = useS3
-  ? (await import('@payloadcms/storage-s3')).s3Storage({
+  ? s3Storage({
       bucket: process.env.PAYLOAD_S3_BUCKET || '',
       config: {
         endpoint: process.env.PAYLOAD_S3_ENDPOINT || '',
@@ -87,8 +88,14 @@ const ALLOWED_ORIGINS = Array.from(
       SITE_URL,
       'https://www.artistora.com',
       'https://artistora.com',
-      ...(isProd ? [] : ['http://localhost:3000', 'http://127.0.0.1:3000']),
-    ].filter(Boolean),
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+      process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
+      process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null,
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3001',
+    ].filter(Boolean) as string[],
   ),
 )
 

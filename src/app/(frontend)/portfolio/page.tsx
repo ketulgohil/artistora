@@ -21,7 +21,7 @@ interface PortfolioItem {
     title: string
     slug: string
   }
-  serviceCategory?: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'music' | 'other'
+  serviceCategory?: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other'
   artist?: {
     id: string
     displayName: string

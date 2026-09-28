@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
+import { getPayloadClient, authenticateRequest } from '@/lib/payload'
 
 export async function GET(request: NextRequest) {
   try {
     const payload = await getPayloadClient()
 
-    const authResult = await payload.auth({ headers: request.headers })
+    const authResult = await authenticateRequest(request, payload)
     if (!authResult?.user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }

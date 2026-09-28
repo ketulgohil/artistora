@@ -376,16 +376,31 @@ export default async function AreaPage({ params }: AreaPageProps) {
             <section className={`${SECTION} bg-cream/50`}>
               <div className={CONTAINER}>
                 <SectionHeading title={`Frequently Asked Questions`} subtitle={`${area.name}`} />
-                <div className="mx-auto mt-10! max-w-3xl! space-y-4!">
+                <div className="mx-auto mt-10! max-w-3xl! space-y-3.5!">
                   {areaFaqs.map((faq) => (
-                    <details key={faq.q} className="group rounded-2xl border border-line bg-white p-6! shadow-soft">
-                      <summary className="flex cursor-pointer items-center justify-between gap-4! font-display text-base! font-semibold text-ink">
-                        {faq.q}
-                        <svg className="h-5! w-5! shrink-0 text-ink-muted transition-transform duration-200 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 12 15 18 9" />
-                        </svg>
+                    <details
+                      key={faq.q}
+                      className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
+                    >
+                      <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
+                        <span className="flex items-center gap-3.5!">
+                          <span
+                            aria-hidden="true"
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
+                          >
+                            ?
+                          </span>
+                          <span>{faq.q}</span>
+                        </span>
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
+                          <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </span>
                       </summary>
-                      <p className="mt-3! text-sm leading-relaxed text-ink-soft">{faq.a}</p>
+                      <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
+                        <p className="text-sm leading-relaxed text-ink-soft">{faq.a}</p>
+                      </div>
                     </details>
                   ))}
                 </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { authenticateRequest } from '@/lib/payload'
 import { verifyToken } from '@/lib/token'
 
 // GET /api/my-bookings — Fetch bookings for authenticated user or via access token
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     const bookingToken = searchParams.get('bookingToken')
 
     // Path 1: Authenticated user
-    const authResult = await payload.auth({ headers: request.headers }).catch(() => null)
+    const authResult = await authenticateRequest(request, payload).catch(() => null)
     if (authResult?.user) {
       const user = authResult.user as any
 

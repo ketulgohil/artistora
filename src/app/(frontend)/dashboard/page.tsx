@@ -28,8 +28,8 @@ function ChartFallback() {
   return <div className="flex h-64! items-center justify-center text-sm text-ink-muted">Loading chart...</div>
 }
 
-const CONTAINER = 'mx-auto max-w-5xl! px-4! md:px-6!'
-const SECTION = 'py-10! md:py-16!'
+const CONTAINER = 'mx-auto max-w-5xl! px-3.5! sm:px-4! md:px-6!'
+const SECTION = 'py-4! sm:py-8! md:py-14!'
 
 const STYLE_OPTIONS: Record<string, string[]> = {
   'photographers': ['Wedding', 'Portrait', 'Candid', 'Traditional', 'Pre-Wedding', 'Event', 'Product', 'Fashion', 'Documentary', 'Drone/Aerial'],
@@ -128,11 +128,12 @@ interface LeadItem {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'bookings' | 'leads' | 'availability' | 'profile' | 'analytics'>('bookings')
+  const [activeTab, setActiveTab] = useState<'profile' | 'leads' | 'bookings' | 'availability' | 'analytics'>('profile')
 
   const [user, setUser] = useState<UserData | null>(null)
   const [artist, setArtist] = useState<ArtistData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileChecklistOpen, setProfileChecklistOpen] = useState(false)
 
   // Profile Form state
   const [saving, setSaving] = useState(false)
@@ -225,31 +226,30 @@ export default function DashboardPage() {
         }
         setServiceMap(map)
 
-        if (data.artistProfile) {
-          const artistRes = await fetch(`/api/artists?where[slug][equals]=${data.artistProfile.slug}&depth=1`, { credentials: 'include' })
-          const artistData = await artistRes.json()
-          const a = artistData.docs?.[0]
-          if (a) {
-            setArtist(a)
-            const serviceSlugs = (a.services || []).map((s: any) => {
-              if (typeof s === 'object' && s?.slug) return s.slug
-              if (typeof s === 'number' || typeof s === 'string') return idToSlug[Number(s)]
-              return null
-            }).filter(Boolean)
-            setForm({
-              displayName: a.displayName || '',
-              phone: a.phone || '',
-              whatsappNumber: a.whatsappNumber || '',
-              bio: a.bio || '',
-              city: a.city || 'Ahmedabad',
-              area: a.area || '',
-              yearsOfExperience: a.yearsOfExperience?.toString() || '',
-              priceType: a.priceType || 'package',
-              startingPrice: a.startingPrice?.toString() || '',
-              styles: a.styles?.map((s: any) => s.style) || [],
-              services: serviceSlugs,
-            })
-          }
+        // Fetch full artist profile
+        const profileRes = await fetch('/api/dashboard/profile', { credentials: 'include' })
+        const profileData = await profileRes.json()
+        const a = profileData.artist
+        if (a) {
+          setArtist(a)
+          const serviceSlugs = (a.services || []).map((s: any) => {
+            if (typeof s === 'object' && s?.slug) return s.slug
+            if (typeof s === 'number' || typeof s === 'string') return idToSlug[Number(s)]
+            return null
+          }).filter(Boolean)
+          setForm({
+            displayName: a.displayName || '',
+            phone: a.phone || '',
+            whatsappNumber: a.whatsappNumber || '',
+            bio: a.bio || '',
+            city: a.city || 'Ahmedabad',
+            area: a.area || '',
+            yearsOfExperience: a.yearsOfExperience?.toString() || '',
+            priceType: a.priceType || 'package',
+            startingPrice: a.startingPrice?.toString() || '',
+            styles: a.styles?.map((s: any) => s.style) || [],
+            services: serviceSlugs,
+          })
         }
       } catch {
         router.push('/login')
@@ -335,9 +335,11 @@ export default function DashboardPage() {
 
   // Fetch bookings + leads on initial load for stats
   useEffect(() => {
-    fetchBookings()
-    fetchLeads()
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const initData = async () => {
+      await fetchBookings()
+      await fetchLeads()
+    }
+    void initData()
   }, [])
 
   // Handle Booking Accept / Decline / Cancel / Complete
@@ -493,7 +495,7 @@ export default function DashboardPage() {
     setSaved(false)
 
     try {
-      const res = await fetch(`/api/artists/${artist.id}`, {
+      const res = await fetch('/api/dashboard/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -513,17 +515,14 @@ export default function DashboardPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
         throw new Error(data.error || 'Save failed')
       }
 
       const updated = await res.json()
-      const idToSlug: Record<number, string> = {}
-      Object.entries(serviceMap).forEach(([slug, id]) => { idToSlug[id] = slug })
-      setArtist({
-        ...updated.doc,
-        services: form.services.map((slug) => ({ slug, title: SERVICE_OPTIONS.find(s => s.slug === slug)?.label || slug, id: serviceMap[slug] })),
-      })
+      if (updated.doc) {
+        setArtist(updated.doc)
+      }
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {
@@ -543,25 +542,35 @@ export default function DashboardPage() {
       formData.append('file', file)
       formData.append('alt', `${form.displayName} profile photo`)
 
-      const uploadRes = await fetch('/api/media', {
+      const uploadRes = await fetch('/api/dashboard/upload', {
         method: 'POST',
         credentials: 'include',
         body: formData,
       })
 
-      if (!uploadRes.ok) throw new Error('Upload failed')
+      if (!uploadRes.ok) {
+        const errData = await uploadRes.json().catch(() => ({}))
+        throw new Error(errData.error || 'Upload failed')
+      }
       const media = await uploadRes.json()
 
-      const patchRes = await fetch(`/api/artists/${artist.id}`, {
+      const patchRes = await fetch('/api/dashboard/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profilePhoto: media.doc.id }),
       })
 
-      if (!patchRes.ok) throw new Error('Failed to update profile')
-
-      setArtist((prev) => (prev ? { ...prev, profilePhoto: media.doc } : prev))
+      if (!patchRes.ok) {
+        const errData = await patchRes.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to update profile')
+      }
+      const updated = await patchRes.json()
+      if (updated.doc) {
+        setArtist(updated.doc)
+      } else {
+        setArtist((prev) => (prev ? { ...prev, profilePhoto: media.doc } : prev))
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -598,29 +607,38 @@ export default function DashboardPage() {
         formData.append('file', file)
         formData.append('alt', `${form.displayName} portfolio ${i + 1}`)
 
-        const uploadRes = await fetch('/api/media', {
+        const uploadRes = await fetch('/api/dashboard/upload', {
           method: 'POST',
           credentials: 'include',
           body: formData,
         })
 
-        if (!uploadRes.ok) throw new Error(`Upload failed for ${file.name}`)
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}))
+          throw new Error(errData.error || `Upload failed for ${file.name}`)
+        }
         const media = await uploadRes.json()
         newImages.push({ image: media.doc.id, caption: '' })
       }
 
       const updatedPortfolio = [...(artist.portfolioImages || []), ...newImages]
 
-      await fetch(`/api/artists/${artist.id}`, {
+      const patchRes = await fetch('/api/dashboard/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ portfolioImages: updatedPortfolio }),
       })
 
-      const artistRes = await fetch(`/api/artists?where[slug][equals]=${artist.slug}&depth=2`, { credentials: 'include' })
-      const artistData = await artistRes.json()
-      if (artistData.docs?.[0]) setArtist(artistData.docs[0])
+      if (!patchRes.ok) {
+        const data = await patchRes.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to update portfolio')
+      }
+
+      const updated = await patchRes.json()
+      if (updated.doc) {
+        setArtist(updated.doc)
+      }
 
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -634,19 +652,30 @@ export default function DashboardPage() {
 
   const handleDeletePortfolio = async (index: number) => {
     if (!artist) return
-    const updated = artist.portfolioImages.filter((_: any, i: number) => i !== index)
+    const updated = (artist.portfolioImages || [])
+      .filter((_: any, i: number) => i !== index)
+      .map((item: any) => ({
+        image: typeof item.image === 'object' && item.image !== null ? item.image.id : item.image,
+        caption: item.caption || '',
+      }))
 
     try {
-      await fetch(`/api/artists/${artist.id}`, {
+      const res = await fetch('/api/dashboard/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ portfolioImages: updated }),
       })
 
-      const artistRes = await fetch(`/api/artists?where[slug][equals]=${artist.slug}&depth=2`, { credentials: 'include' })
-      const artistData = await artistRes.json()
-      if (artistData.docs?.[0]) setArtist(artistData.docs[0])
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to delete portfolio image')
+      }
+
+      const updatedData = await res.json()
+      if (updatedData.doc) {
+        setArtist(updatedData.doc)
+      }
     } catch (err: any) {
       setError(err.message)
     }
@@ -714,20 +743,72 @@ export default function DashboardPage() {
     <section className={SECTION}>
       <div className={CONTAINER}>
         {/* Header */}
-        <div className="mb-8! flex flex-wrap items-center justify-between gap-4!">
-          <div>
-            <Eyebrow>Artist Dashboard</Eyebrow>
-            <h1 className="font-display text-2xl! font-semibold text-ink md:text-3xl!">
-              Welcome, {user.name}
-            </h1>
-            <p className="mt-1! text-sm text-ink-soft">
-              Manage your incoming booking requests, calendar availability, and profile
-            </p>
+        <div className="mb-4! md:mb-8! flex flex-col gap-3! sm:flex-row sm:items-center sm:justify-between sm:gap-4!">
+          <div className="flex items-center justify-between gap-3! sm:block">
+            <div>
+              <div className="flex items-center gap-2!">
+                <span className="inline-flex items-center gap-1! rounded-full bg-brand/10 px-2.5! py-0.5! text-[11px] font-semibold text-brand">
+                  Artist Portal
+                </span>
+                {artist.verified && (
+                  <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-2! py-0.5! text-[11px] font-semibold text-green">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    Verified
+                  </span>
+                )}
+              </div>
+              <h1 className="mt-1! font-display text-xl! font-semibold text-ink sm:text-2xl! md:text-3xl!">
+                Welcome, {user.name}
+              </h1>
+              <p className="mt-0.5! hidden text-xs text-ink-soft sm:block sm:text-sm">
+                Manage your incoming booking requests, calendar availability, and profile
+              </p>
+            </div>
+
+            {/* Mobile-Only Action Cluster */}
+            <div className="flex items-center gap-1.5! sm:hidden">
+              <Link
+                href={`/artists/${artist.slug}`}
+                title="View Public Profile"
+                className="inline-flex h-9! w-9! cursor-pointer items-center justify-center rounded-full border border-brand/30 bg-white text-brand-deep shadow-xs transition-colors hover:bg-brand/10"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </Link>
+              <Link
+                href="/subscription"
+                className="inline-flex h-9! cursor-pointer items-center justify-center rounded-full border border-brand/30 bg-brand/5 px-2.5! text-xs font-semibold text-brand-deep shadow-xs transition-colors hover:bg-brand/15"
+              >
+                Plans
+              </Link>
+              <button
+                onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                  router.push('/')
+                  router.refresh()
+                }}
+                title="Log Out"
+                className="inline-flex h-9! w-9! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink-muted shadow-xs transition-colors hover:border-red-200 hover:text-red-600"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="flex w-full flex-col gap-3! sm:w-auto sm:flex-row">
+
+          {/* Desktop Actions */}
+          <div className="hidden sm:flex sm:flex-row sm:items-center sm:gap-3!">
             <Link
               href={`/artists/${artist.slug}`}
-              className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-transparent px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10 sm:w-auto"
+              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-transparent px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10"
             >
               View Public Profile
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -735,10 +816,10 @@ export default function DashboardPage() {
                 <polyline points="15 3 21 3 21 9" />
                 <line x1="10" y1="14" x2="21" y2="3" />
               </svg>
-              </Link>
+            </Link>
             <Link
               href="/subscription"
-              className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-brand/5 px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10 sm:w-auto"
+              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-brand/5 px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10"
             >
               Plans &amp; Visibility
             </Link>
@@ -748,49 +829,60 @@ export default function DashboardPage() {
                 router.push('/')
                 router.refresh()
               }}
-              className="inline-flex min-h-10! w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-red-300 hover:text-red-600 sm:w-auto"
+              className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-red-300 hover:text-red-600"
             >
               Log Out
             </button>
           </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="mb-8! grid grid-cols-2 gap-4! md:grid-cols-4">
+        {/* High-Density 4-Column KPI Overview */}
+        <div className="mb-4! md:mb-6! grid grid-cols-4 gap-2! sm:gap-3! md:gap-4!">
           {[
             {
-              label: 'Pending Requests',
+              shortLabel: 'Requests',
+              fullLabel: 'Pending Requests',
               value: bookings.filter((b) => b.status === 'artist_pending' || b.status === 'requested').length,
               color: 'text-brand',
               bg: 'bg-brand/5',
+              border: 'border-brand/20',
             },
             {
-              label: 'Active Bookings',
+              shortLabel: 'Active',
+              fullLabel: 'Active Bookings',
               value: bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_progress').length,
               color: 'text-green',
               bg: 'bg-green/5',
+              border: 'border-green/20',
             },
             {
-              label: 'New Leads',
+              shortLabel: 'Leads',
+              fullLabel: 'New Leads',
               value: leads.filter((l) => !l.myQuote).length,
               color: 'text-amber-600',
               bg: 'bg-amber-50',
+              border: 'border-amber-200',
             },
             {
-              label: 'Completed',
+              shortLabel: 'Done',
+              fullLabel: 'Completed',
               value: bookings.filter((b) => b.status === 'completed').length,
               color: 'text-ink',
               bg: 'bg-cream',
+              border: 'border-line',
             },
           ].map((stat) => (
-            <div key={stat.label} className={`rounded-2xl border border-line ${stat.bg} p-4!`}>
-              <p className="text-xs font-medium text-ink-muted">{stat.label}</p>
-              <p className={`mt-1! text-2xl! font-display font-semibold ${stat.color}`}>{stat.value}</p>
+            <div key={stat.shortLabel} className={`flex flex-col justify-center rounded-xl border ${stat.border} ${stat.bg} p-2.5! text-center sm:rounded-2xl sm:p-4! sm:text-left`}>
+              <p className="text-[11px] font-medium text-ink-muted sm:text-xs">
+                <span className="sm:hidden">{stat.shortLabel}</span>
+                <span className="hidden sm:inline">{stat.fullLabel}</span>
+              </p>
+              <p className={`mt-0.5! font-display text-lg! font-semibold sm:mt-1! sm:text-2xl! ${stat.color}`}>{stat.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Profile Completion Checklist */}
+        {/* Profile Completion Widget (Collapsible for Maximum Density) */}
         {(() => {
           const checks = [
             { label: 'Profile photo', done: !!artist.profilePhoto },
@@ -800,7 +892,7 @@ export default function DashboardPage() {
             { label: 'WhatsApp number', done: !!artist.whatsappNumber },
             { label: 'City', done: !!artist.city },
             { label: 'Area / locality', done: !!artist.area },
-            { label: 'Years of experience', done: !!artist.yearsOfExperience },
+            { label: 'Years of exp.', done: !!artist.yearsOfExperience },
             { label: 'Services offered', done: !!(artist.services && artist.services.length > 0) },
             { label: 'Starting price', done: !!artist.startingPrice },
             { label: 'Portfolio images', done: !!(artist.portfolioImages && artist.portfolioImages.length > 0) },
@@ -813,67 +905,122 @@ export default function DashboardPage() {
           if (isComplete) return null
 
           return (
-            <div className="mb-8! rounded-2xl border border-brand/20 bg-gradient-to-br from-white to-brand/5 p-6! shadow-soft">
-              <div className="mb-4! flex items-center justify-between">
-                <div>
-                  <h3 className="font-display text-lg! font-semibold text-ink">Complete Your Profile</h3>
-                  <p className="mt-0.5! text-sm text-ink-soft">{completed} of {total} items done — {pct}% complete</p>
+            <div className="mb-4! md:mb-6! rounded-xl sm:rounded-2xl border border-brand/20 bg-gradient-to-br from-white to-brand/5 p-3.5! sm:p-5! shadow-xs transition-all">
+              <div className="flex items-center justify-between gap-3!">
+                <div className="flex items-center gap-3!">
+                  <div className="relative h-10! w-10! shrink-0 sm:h-12! sm:w-12!">
+                    <svg className="h-10! w-10! -rotate-90 sm:h-12! sm:w-12!" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="16" fill="none" stroke="#f1d9dc" strokeWidth="3.5" />
+                      <circle
+                        cx="18" cy="18" r="16" fill="none" stroke="#ec6783" strokeWidth="3.5"
+                        strokeDasharray={`${pct} ${100 - pct}`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-bold text-brand">{pct}%</span>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-sm! font-semibold text-ink sm:text-base!">Profile Completion</h3>
+                    <p className="text-[11px] sm:text-xs text-ink-soft">
+                      {completed}/{total} completed — <span className="text-brand font-medium">Add details to rank higher</span>
+                    </p>
+                  </div>
                 </div>
-                <div className="relative h-14! w-14!">
-                  <svg className="h-14! w-14! -rotate-90" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="16" fill="none" stroke="#f1d9dc" strokeWidth="3" />
-                    <circle
-                      cx="18" cy="18" r="16" fill="none" stroke="#ec6783" strokeWidth="3"
-                      strokeDasharray={`${pct} ${100 - pct}`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-xs! font-bold text-brand">{pct}%</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-x-6! gap-y-2! sm:grid-cols-3 lg:grid-cols-4">
-                {checks.map((check) => (
+                <div className="flex items-center gap-2!">
                   <button
-                    key={check.label}
                     onClick={() => setActiveTab('profile')}
                     type="button"
-                    className="flex items-center gap-2! rounded-lg px-3! py-2! text-left text-sm transition-colors hover:bg-brand/5 cursor-pointer"
+                    className="hidden sm:inline-flex rounded-full bg-brand px-3.5! py-1.5! text-xs font-semibold text-white shadow-xs hover:bg-brand-dark cursor-pointer"
                   >
-                    {check.done ? (
-                      <span className="flex h-5! w-5! shrink-0 items-center justify-center rounded-full bg-green/10 text-green">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                      </span>
-                    ) : (
-                      <span className="flex h-5! w-5! shrink-0 items-center justify-center rounded-full border-2 border-line text-ink-muted">
-                        <span className="h-2! w-2! rounded-full bg-ink-muted/30" />
-                      </span>
-                    )}
-                    <span className={check.done ? 'text-ink-soft line-through decoration-ink-muted/40' : 'text-ink'}>
-                      {check.label}
-                    </span>
+                    Edit Profile
                   </button>
-                ))}
+                  <button
+                    onClick={() => setProfileChecklistOpen(!profileChecklistOpen)}
+                    type="button"
+                    className="inline-flex items-center gap-1! rounded-lg border border-line bg-white px-2.5! py-1.5! text-xs font-medium text-ink-soft hover:bg-cream/60 cursor-pointer"
+                  >
+                    <span>{profileChecklistOpen ? 'Hide' : 'Checklist'}</span>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      className={`transition-transform duration-200 ${profileChecklistOpen ? 'rotate-180' : ''}`}
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <p className="mt-4! text-xs text-ink-muted">
-                A complete profile helps you get more booking requests from customers.
-              </p>
+
+              {profileChecklistOpen && (
+                <div className="mt-3.5! border-t border-brand/15 pt-3! sm:mt-4! sm:pt-4!">
+                  <div className="grid grid-cols-2 gap-x-3! gap-y-1.5! sm:grid-cols-3 lg:grid-cols-4 sm:gap-x-6! sm:gap-y-2!">
+                    {checks.map((check) => (
+                      <button
+                        key={check.label}
+                        onClick={() => setActiveTab('profile')}
+                        type="button"
+                        className="flex items-center gap-2! rounded-md px-2! py-1.5! text-left text-xs sm:text-sm transition-colors hover:bg-brand/10 cursor-pointer"
+                      >
+                        {check.done ? (
+                          <span className="flex h-4! w-4! sm:h-5! sm:w-5! shrink-0 items-center justify-center rounded-full bg-green/10 text-green">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                          </span>
+                        ) : (
+                          <span className="flex h-4! w-4! sm:h-5! sm:w-5! shrink-0 items-center justify-center rounded-full border border-line text-ink-muted">
+                            <span className="h-1.5! w-1.5! rounded-full bg-ink-muted/40" />
+                          </span>
+                        )}
+                        <span className={check.done ? 'text-ink-soft/70 line-through decoration-ink-muted/40' : 'text-ink font-medium'}>
+                          {check.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )
         })()}
 
-        {/* Navigation Tabs */}
-        <div className="mb-8! flex snap-x snap-mandatory gap-2! overflow-x-auto border-b border-line pb-4! [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Navigation Tabs (Mobile-Scrollable High-Density Strip) */}
+        <div className="mb-5! md:mb-8! flex snap-x snap-mandatory gap-1.5! sm:gap-2! overflow-x-auto border-b border-line pb-3! sm:pb-4! [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`flex shrink-0 snap-start items-center gap-1.5! sm:gap-2! rounded-full px-3.5! py-2! sm:px-5! sm:py-2.5! text-xs! sm:text-sm! font-semibold transition-all cursor-pointer ${
+              activeTab === 'profile'
+                ? 'bg-brand text-white shadow-xs'
+                : 'bg-white text-ink-soft hover:bg-cream/70 border border-line/60'
+            }`}
+          >
+            <span>Profile</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('leads')}
+            className={`flex shrink-0 snap-start items-center gap-1.5! sm:gap-2! rounded-full px-3.5! py-2! sm:px-5! sm:py-2.5! text-xs! sm:text-sm! font-semibold transition-all cursor-pointer ${
+              activeTab === 'leads'
+                ? 'bg-brand text-white shadow-xs'
+                : 'bg-white text-ink-soft hover:bg-cream/70 border border-line/60'
+            }`}
+          >
+            <span>Leads &amp; Quotes</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('bookings')}
-            className={`relative flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`relative flex shrink-0 snap-start items-center gap-1.5! sm:gap-2! rounded-full px-3.5! py-2! sm:px-5! sm:py-2.5! text-xs! sm:text-sm! font-semibold transition-all cursor-pointer ${
               activeTab === 'bookings'
-                ? 'bg-brand text-white shadow-soft'
-                : 'bg-white text-ink-soft hover:bg-cream/70'
+                ? 'bg-brand text-white shadow-xs'
+                : 'bg-white text-ink-soft hover:bg-cream/70 border border-line/60'
             }`}
           >
             <span>Bookings</span>
             {pendingBookingsCount > 0 && (
-              <span className={`rounded-full px-2! py-0.5! text-xs ${
+              <span className={`rounded-full px-1.5! py-0.2! sm:px-2! sm:py-0.5! text-[10px] sm:text-xs font-bold ${
                 activeTab === 'bookings' ? 'bg-white text-brand' : 'bg-brand text-white'
               }`}>
                 {pendingBookingsCount}
@@ -882,47 +1029,25 @@ export default function DashboardPage() {
           </button>
 
           <button
-            onClick={() => setActiveTab('leads')}
-            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'leads'
-                ? 'bg-brand text-white shadow-soft'
-                : 'bg-white text-ink-soft hover:bg-cream/70'
-            }`}
-          >
-            <span>Matched Leads & Quotes</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('availability')}
-            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex shrink-0 snap-start items-center gap-1.5! sm:gap-2! rounded-full px-3.5! py-2! sm:px-5! sm:py-2.5! text-xs! sm:text-sm! font-semibold transition-all cursor-pointer ${
               activeTab === 'availability'
-                ? 'bg-brand text-white shadow-soft'
-                : 'bg-white text-ink-soft hover:bg-cream/70'
+                ? 'bg-brand text-white shadow-xs'
+                : 'bg-white text-ink-soft hover:bg-cream/70 border border-line/60'
             }`}
           >
-            <span>Availability Calendar</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'profile'
-                ? 'bg-brand text-white shadow-soft'
-                : 'bg-white text-ink-soft hover:bg-cream/70'
-            }`}
-          >
-            <span>Profile & Portfolio</span>
+            <span>Calendar</span>
           </button>
 
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`flex shrink-0 snap-start items-center gap-2! rounded-full px-5! py-2.5! text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex shrink-0 snap-start items-center gap-1.5! sm:gap-2! rounded-full px-3.5! py-2! sm:px-5! sm:py-2.5! text-xs! sm:text-sm! font-semibold transition-all cursor-pointer ${
               activeTab === 'analytics'
-                ? 'bg-brand text-white shadow-soft'
-                : 'bg-white text-ink-soft hover:bg-cream/70'
+                ? 'bg-brand text-white shadow-xs'
+                : 'bg-white text-ink-soft hover:bg-cream/70 border border-line/60'
             }`}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
             <span>Analytics</span>
           </button>
         </div>
@@ -1836,8 +1961,10 @@ export default function DashboardPage() {
                           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                         />
                         <button
+                          type="button"
                           onClick={() => handleDeletePortfolio(i)}
-                          className="absolute top-2! right-2! flex h-7! w-7! items-center justify-center rounded-full bg-coal/70 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 cursor-pointer"
+                          title="Delete photo"
+                          className="absolute top-2! right-2! flex h-7! w-7! items-center justify-center rounded-full bg-coal/75 text-white backdrop-blur-xs transition-all duration-200 opacity-85 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110 active:scale-95 cursor-pointer shadow-xs"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
                         </button>

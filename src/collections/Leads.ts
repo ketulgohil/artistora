@@ -6,6 +6,11 @@ function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
 
+const adminOnlyFieldAccess = {
+  create: ({ req }: { req: any }) => req.user?.role === 'admin',
+  update: ({ req }: { req: any }) => req.user?.role === 'admin',
+}
+
 export const Leads: CollectionConfig = {
   slug: 'leads',
   labels: {
@@ -20,20 +25,56 @@ export const Leads: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, operation, req }) => {
-        // Auto-generate viewToken on create
-        if (operation === 'create' && !data?.viewTokenHash) {
-          const rawToken = randomBytes(32).toString('hex')
-          data.viewTokenHash = hashToken(rawToken)
-          data.viewTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          // Store raw token temporarily for the response (not persisted)
-          ;(data as any)._rawViewToken = rawToken
+        const isNonAdmin = Boolean(req.user && req.user.role !== 'admin')
+
+        if (operation === 'create') {
+          if (isNonAdmin) {
+            // Force initial status for public/client submissions
+            data.status = 'new'
+            delete data.matchedArtists
+            delete data.acceptedQuote
+            delete data.lostReason
+            delete data.assignedAdmin
+            delete data.viewTokenRevokedAt
+            delete data.bookingAccessTokenHash
+            delete data.bookingAccessTokenExpiresAt
+
+            if (req.user) {
+              data.userId = req.user.id
+            } else {
+              delete data.userId
+            }
+          }
+
+          // Auto-generate viewToken on create if not already supplied
+          if (!data?.viewTokenHash) {
+            const rawToken = randomBytes(32).toString('hex')
+            data.viewTokenHash = hashToken(rawToken)
+            data.viewTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            // Store raw token temporarily for the response (not persisted)
+            ;(data as any)._rawViewToken = rawToken
+          }
         }
-        // Prevent token updates after creation
+
         if (operation === 'update') {
-          if (data?.viewTokenHash) delete data.viewTokenHash
-          if (data?.viewTokenExpiresAt) delete data.viewTokenExpiresAt
+          if (isNonAdmin) {
+            // Prevent non-admins from modifying administrative, relationship, and token fields
+            delete data.viewTokenHash
+            delete data.viewTokenExpiresAt
+            delete data.viewTokenRevokedAt
+            delete data.bookingAccessTokenHash
+            delete data.bookingAccessTokenExpiresAt
+            delete data.matchedArtists
+            delete data.acceptedQuote
+            delete data.status
+            delete data.lostReason
+            delete data.assignedAdmin
+            delete data.userId
+          }
+
           if (data?.viewToken) delete data.viewToken
         }
+
         return data
       },
     ],
@@ -66,6 +107,7 @@ export const Leads: CollectionConfig = {
               message: `Converted from lead #${doc.id}`,
               status: 'confirmed',
             },
+            req,
             overrideAccess: true,
           })
           req.payload.logger.info(`Lead #${doc.id} converted to booking`)
@@ -84,17 +126,19 @@ export const Leads: CollectionConfig = {
               const artist = await req.payload.findByID({
                 collection: 'artists',
                 id: artistId,
+                req,
                 overrideAccess: true,
               })
 
-              if (artist.user) {
+              if (artist?.user) {
                 const user = await req.payload.findByID({
                   collection: 'users',
                   id: typeof artist.user === 'object' ? artist.user.id : artist.user,
+                  req,
                   overrideAccess: true,
                 })
 
-                if (user.email) {
+                if (user?.email) {
                   await sendArtistBookingEmail(user.email, {
                     artistName: artist.displayName || customerName,
                     customerName,
@@ -139,25 +183,31 @@ export const Leads: CollectionConfig = {
       name: 'customerName',
       type: 'text',
       required: true,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'customerPhone',
       type: 'text',
       required: true,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'customerEmail',
       type: 'email',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'userId',
       type: 'relationship',
       relationTo: 'users',
       label: 'Registered Customer',
-      access: {
-        update: () => false,
-        create: () => false,
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,
@@ -179,17 +229,26 @@ export const Leads: CollectionConfig = {
         { label: 'Legacy: Family Function', value: 'family-function' },
         { label: 'Other', value: 'other' },
       ],
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'eventDate',
       type: 'date',
       required: true,
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'eventLocation',
       type: 'text',
       required: true,
       label: 'Event venue / area in Ahmedabad',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin',
+      },
     },
     {
       name: 'guestCount',
@@ -243,18 +302,14 @@ export const Leads: CollectionConfig = {
       type: 'relationship',
       relationTo: 'artists',
       hasMany: true,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
     },
     {
       name: 'acceptedQuote',
       type: 'relationship',
       relationTo: 'quotes',
       label: 'Accepted Quote',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
     },
     {
       name: 'status',
@@ -272,9 +327,7 @@ export const Leads: CollectionConfig = {
         { label: 'Lost', value: 'lost' },
         { label: 'Closed', value: 'closed' },
       ],
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -283,9 +336,7 @@ export const Leads: CollectionConfig = {
       name: 'lostReason',
       type: 'textarea',
       label: 'Lost Reason',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'lost',
@@ -296,9 +347,7 @@ export const Leads: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       label: 'Assigned Admin',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -307,9 +356,7 @@ export const Leads: CollectionConfig = {
       name: 'viewTokenHash',
       type: 'text',
       unique: true,
-      access: {
-        update: () => false,
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,
@@ -320,9 +367,7 @@ export const Leads: CollectionConfig = {
       name: 'viewTokenExpiresAt',
       type: 'date',
       label: 'Token Expires At',
-      access: {
-        update: () => false,
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,
@@ -333,9 +378,7 @@ export const Leads: CollectionConfig = {
       name: 'viewTokenRevokedAt',
       type: 'date',
       label: 'Token Revoked At',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         description: 'Set when token is revoked (e.g. after quote acceptance)',
@@ -344,9 +387,7 @@ export const Leads: CollectionConfig = {
     {
       name: 'bookingAccessTokenHash',
       type: 'text',
-      access: {
-        update: () => false,
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,
@@ -357,9 +398,7 @@ export const Leads: CollectionConfig = {
       name: 'bookingAccessTokenExpiresAt',
       type: 'date',
       label: 'Booking Token Expires At',
-      access: {
-        update: () => false,
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,

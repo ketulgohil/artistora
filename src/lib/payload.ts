@@ -14,6 +14,31 @@ export async function getPayloadClient() {
   return _payload
 }
 
+/**
+ * Authenticate incoming HTTP request against Payload.
+ * Automatically handles cookie extraction and JWT header forwarding across all environments.
+ */
+export async function authenticateRequest(request: Request | any, payloadClient?: any) {
+  const payload = payloadClient || (await getPayloadClient())
+  const headers = new Headers(request.headers)
+
+  if (!headers.get('Authorization')) {
+    let token: string | undefined
+    if (request && 'cookies' in request && typeof request.cookies?.get === 'function') {
+      token = request.cookies.get('payload-token')?.value
+    } else {
+      const cookieHeader = headers.get('cookie') || ''
+      const match = cookieHeader.match(/(?:^|;\s*)payload-token=([^;]+)/)
+      if (match) token = decodeURIComponent(match[1])
+    }
+    if (token) {
+      headers.set('Authorization', `JWT ${token}`)
+    }
+  }
+
+  return payload.auth({ headers })
+}
+
 // ── Artist Quality Gate ──────────────────────────────────────────
 // Indexability policy: a profile is public/indexable only when it has
 // approvalStatus = 'approved' AND passes the profile-quality threshold.

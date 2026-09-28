@@ -195,7 +195,7 @@ const fallbackFaqs = [
   {
     question: 'What artist services can be booked from this page?',
     answer:
-      'You can inquire about mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals through this page.',
+      'You can inquire about mehndi artists, photographers, makeup artists, decorators, and event planners through this page.',
   },
   {
     question: 'Do you provide service outside one specific area?',
@@ -273,7 +273,7 @@ export default async function ServicesPage() {
               <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
                 Artistora connects you with verified artists across
                 Ahmedabad — mehndi specialists, photographers, makeup artists,
-                decorators, musicians, and event planners. Compare free quotes,
+                decorators, and event planners. Compare free quotes,
                 browse portfolios, and book the right artist for your event.
               </p>
               <div className="mt-5! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
@@ -546,38 +546,76 @@ export default async function ServicesPage() {
 
           <div className="mt-16! md:mt-20!">
             <SectionHeading title="Service FAQs" subtitle="Common Booking Questions" />
-            <div className="grid gap-5! md:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto mt-10! max-w-3xl! space-y-3.5!">
               {(faqs as any[]).length > 0 ? (
-                (faqs as any[]).slice(0, 3).map((faq: any) => (
-                  <article
-                    className="rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+                (faqs as any[]).slice(0, 4).map((faq: any) => (
+                  <details
                     key={faq.id}
+                    className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
                   >
-                    <span
-                      aria-hidden="true"
-                      className="mb-4! block h-1 w-9 rounded-full bg-gradient-to-r from-gold to-brand"
-                    />
-                    <h3 className="text-[1.02rem]! leading-snug font-bold text-ink">{faq.question}</h3>
-                    <p className="mt-2.5! text-sm leading-relaxed text-ink-soft">
-                      {extractLexicalText(faq.answer)}
-                    </p>
-                  </article>
+                    <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
+                      <span className="flex items-center gap-3.5!">
+                        <span
+                          aria-hidden="true"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
+                        >
+                          ?
+                        </span>
+                        <span>{faq.question}</span>
+                      </span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
+                        <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </span>
+                    </summary>
+                    <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
+                      <p className="text-sm leading-relaxed text-ink-soft">
+                        {extractLexicalText(faq.answer)}
+                      </p>
+                    </div>
+                  </details>
                 ))
               ) : (
                 fallbackFaqs.map((faq) => (
-                  <article
-                    className="rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+                  <details
                     key={faq.question}
+                    className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
                   >
-                    <span
-                      aria-hidden="true"
-                      className="mb-4! block h-1 w-9 rounded-full bg-gradient-to-r from-gold to-brand"
-                    />
-                    <h3 className="text-[1.02rem]! leading-snug font-bold text-ink">{faq.question}</h3>
-                    <p className="mt-2.5! text-sm leading-relaxed text-ink-soft">{faq.answer}</p>
-                  </article>
+                    <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
+                      <span className="flex items-center gap-3.5!">
+                        <span
+                          aria-hidden="true"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
+                        >
+                          ?
+                        </span>
+                        <span>{faq.question}</span>
+                      </span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
+                        <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </span>
+                    </summary>
+                    <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
+                      <p className="text-sm leading-relaxed text-ink-soft">{faq.answer}</p>
+                    </div>
+                  </details>
                 ))
               )}
+            </div>
+
+            <div className="mt-8! text-center">
+              <Link
+                href="/faq"
+                className="inline-flex min-h-11! cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-6! py-2.5! text-xs font-semibold text-ink shadow-soft transition-all duration-200 hover:border-brand/40 hover:text-brand"
+              >
+                <span>Read all FAQs on Artistora</span>
+                <svg className="h-3.5! w-3.5!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>

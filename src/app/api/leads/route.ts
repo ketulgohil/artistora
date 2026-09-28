@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { authenticateRequest } from '@/lib/payload'
 import { sendQuoteConfirmation, sendQuoteNotification, sendQuoteAccessLink } from '@/lib/email'
 import { createTokenPair } from '@/lib/token'
 import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     let userId: number | undefined
     try {
-      const authResult = await payload.auth({ headers: request.headers })
+      const authResult = await authenticateRequest(request, payload)
       if (authResult?.user) {
         userId = (authResult.user as any).id
       }

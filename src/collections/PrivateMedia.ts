@@ -73,8 +73,8 @@ export const PrivateMedia: CollectionConfig = {
       // only through the token-validated guest-upload endpoint.
       required: false,
       access: {
-        create: () => false,
-        update: () => false,
+        create: () => true,
+        update: ({ req }) => req.user?.role === 'admin',
       },
       admin: {
         position: 'sidebar',
@@ -87,8 +87,8 @@ export const PrivateMedia: CollectionConfig = {
       relationTo: 'leads',
       label: 'Associated Lead',
       access: {
-        create: () => false,
-        update: () => false,
+        create: () => true,
+        update: ({ req }) => req.user?.role === 'admin',
       },
       admin: {
         position: 'sidebar',

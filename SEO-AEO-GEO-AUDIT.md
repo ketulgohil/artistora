@@ -142,7 +142,7 @@ Implement these patterns on the homepage and service pages:
 
 Suggested answer block:
 
-> Artistora is an Ahmedabad-based marketplace for booking verified mehndi artists, photographers, makeup artists, decorators, musicians, and other event professionals. Customers share event details, compare quotes and portfolios, then book the artist that fits their date, style, and budget.
+> Artistora is an Ahmedabad-based marketplace for booking verified mehndi artists, photographers, makeup artists, decorators, and other event professionals. Customers share event details, compare quotes and portfolios, then book the artist that fits their date, style, and budget.
 
 ## GEO recommendations
 

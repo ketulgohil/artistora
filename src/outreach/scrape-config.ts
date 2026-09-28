@@ -18,10 +18,18 @@ export interface ScrapeQuery {
 
 // ─── Mehndi Artists ─────────────────────────────────────────────
 export const mehndiQueries: ScrapeQuery[] = [
-  // Google Maps
+  // Google Maps (Core + Locality-specific)
   { source: 'google_maps', query: 'mehndi artist', city: 'Ahmedabad', maxResults: 50, category: 'mehndi' },
   { source: 'google_maps', query: 'henna artist', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
   { source: 'google_maps', query: 'bridal mehndi', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Satellite', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Bopal', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Vastrapur', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Maninagar', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Prahlad Nagar', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Chandkheda', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Naroda', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
+  { source: 'google_maps', query: 'mehndi artist Naranpura', city: 'Ahmedabad', maxResults: 30, category: 'mehndi' },
   // Instagram
   { source: 'instagram', query: 'mehndi artist ahmedabad', city: 'Ahmedabad', maxResults: 40, category: 'mehndi' },
   { source: 'instagram', query: 'henna artist ahmedabad', city: 'Ahmedabad', maxResults: 20, category: 'mehndi' },
@@ -38,10 +46,17 @@ export const mehndiQueries: ScrapeQuery[] = [
 
 // ─── Photography ────────────────────────────────────────────────
 export const photographyQueries: ScrapeQuery[] = [
-  // Google Maps
+  // Google Maps (Core + Locality-specific)
   { source: 'google_maps', query: 'wedding photographer', city: 'Ahmedabad', maxResults: 50, category: 'photography' },
   { source: 'google_maps', query: 'photography studio', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
   { source: 'google_maps', query: 'pre wedding photographer', city: 'Ahmedabad', maxResults: 20, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer Satellite', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer Bopal', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer Vastrapur', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer Prahlad Nagar', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer SG Highway', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer Maninagar', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
+  { source: 'google_maps', query: 'wedding photographer Chandkheda', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
   // Instagram
   { source: 'instagram', query: 'wedding photographer ahmedabad', city: 'Ahmedabad', maxResults: 40, category: 'photography' },
   { source: 'instagram', query: 'candid photographer ahmedabad', city: 'Ahmedabad', maxResults: 20, category: 'photography' },
@@ -58,10 +73,17 @@ export const photographyQueries: ScrapeQuery[] = [
 
 // ─── Makeup Artists ─────────────────────────────────────────────
 export const makeupQueries: ScrapeQuery[] = [
-  // Google Maps
+  // Google Maps (Core + Locality-specific)
   { source: 'google_maps', query: 'bridal makeup artist', city: 'Ahmedabad', maxResults: 50, category: 'makeup' },
   { source: 'google_maps', query: 'makeup studio', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
   { source: 'google_maps', query: 'beauty parlour bridal', city: 'Ahmedabad', maxResults: 20, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Satellite', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Bopal', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Vastrapur', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Prahlad Nagar', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Bodakdev', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Maninagar', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
+  { source: 'google_maps', query: 'bridal makeup artist Sindhu Bhavan', city: 'Ahmedabad', maxResults: 30, category: 'makeup' },
   // Instagram
   { source: 'instagram', query: 'bridal makeup ahmedabad', city: 'Ahmedabad', maxResults: 40, category: 'makeup' },
   { source: 'instagram', query: 'makeup artist ahmedabad', city: 'Ahmedabad', maxResults: 20, category: 'makeup' },
@@ -78,10 +100,17 @@ export const makeupQueries: ScrapeQuery[] = [
 
 // ─── Decorators ─────────────────────────────────────────────────
 export const decorQueries: ScrapeQuery[] = [
-  // Google Maps
+  // Google Maps (Core + Locality-specific)
   { source: 'google_maps', query: 'wedding decorator', city: 'Ahmedabad', maxResults: 50, category: 'decor' },
   { source: 'google_maps', query: 'wedding decoration', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
   { source: 'google_maps', query: 'event decorator', city: 'Ahmedabad', maxResults: 20, category: 'decor' },
+  { source: 'google_maps', query: 'wedding decorator Satellite', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
+  { source: 'google_maps', query: 'wedding decorator Bopal', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
+  { source: 'google_maps', query: 'wedding decorator SG Highway', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
+  { source: 'google_maps', query: 'wedding decorator Sindhu Bhavan', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
+  { source: 'google_maps', query: 'wedding decorator Prahlad Nagar', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
+  { source: 'google_maps', query: 'wedding decorator Maninagar', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
+  { source: 'google_maps', query: 'mandap decorator', city: 'Ahmedabad', maxResults: 30, category: 'decor' },
   // Instagram
   { source: 'instagram', query: 'wedding decorator ahmedabad', city: 'Ahmedabad', maxResults: 40, category: 'decor' },
   { source: 'instagram', query: 'wedding decor ahmedabad', city: 'Ahmedabad', maxResults: 20, category: 'decor' },

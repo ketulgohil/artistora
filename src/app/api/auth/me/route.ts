@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadClient, authenticateRequest } from '@/lib/payload'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('payload-token')?.value
-    if (!token) {
-      return NextResponse.json({ user: null }, { status: 401 })
-    }
-
-    const payload = await getPayload({ config })
-
-    const result = await payload.auth({
-      headers: request.headers,
-    })
+    const payload = await getPayloadClient()
+    const result = await authenticateRequest(request, payload)
 
     if (!result || !result.user) {
       return NextResponse.json({ user: null }, { status: 401 })

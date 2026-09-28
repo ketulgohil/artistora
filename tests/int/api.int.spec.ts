@@ -115,7 +115,9 @@ describe('API', () => {
           phone: '9876543210',
           bio: 'Test bio',
           city: 'Ahmedabad',
-          verified: false,
+          artistType: 'mehndi-artists',
+          approvalStatus: 'approved',
+          verified: true,
         } as any,
       })
       expect(profile.id).toBeDefined()
@@ -374,15 +376,16 @@ describe('API', () => {
 
   describe('Cleanup', () => {
     it('deletes test data', async () => {
-      const reviews = await payload.find({ collection: 'reviews', where: { booking: { equals: bookingId } } })
-      for (const r of reviews.docs) await payload.delete({ collection: 'reviews', id: r.id })
-
-      await payload.delete({ collection: 'bookings', id: bookingId })
-      await payload.delete({ collection: 'quotes', id: quoteId })
-      await payload.delete({ collection: 'leads', id: leadId })
-      await payload.delete({ collection: 'artists', id: artistProfileId })
-      await payload.delete({ collection: 'users', id: customerId })
-      await payload.delete({ collection: 'users', id: artistUserId })
+      if (bookingId) {
+        const reviews = await payload.find({ collection: 'reviews', where: { booking: { equals: bookingId } } })
+        for (const r of reviews.docs) await payload.delete({ collection: 'reviews', id: r.id })
+        await payload.delete({ collection: 'bookings', id: bookingId })
+      }
+      if (quoteId) await payload.delete({ collection: 'quotes', id: quoteId })
+      if (leadId) await payload.delete({ collection: 'leads', id: leadId })
+      if (artistProfileId) await payload.delete({ collection: 'artists', id: artistProfileId })
+      if (customerId) await payload.delete({ collection: 'users', id: customerId })
+      if (artistUserId) await payload.delete({ collection: 'users', id: artistUserId })
     })
   })
 })

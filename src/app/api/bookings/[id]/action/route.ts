@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayloadClient } from '@/lib/payload'
+import { getPayloadClient, authenticateRequest } from '@/lib/payload'
 import { checkArtistAvailability } from '@/lib/availability'
 import { sendBookingCancelledEmail } from '@/lib/email'
 import { rateLimitAsync, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
@@ -42,9 +42,7 @@ export async function PATCH(
     }
 
     // 1. Authenticate the user
-    const authResult = await payload.auth({
-      headers: request.headers,
-    })
+    const authResult = await authenticateRequest(request, payload)
 
     if (!authResult?.user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
@@ -63,7 +61,22 @@ export async function PATCH(
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    // 3. Find artist profile for current user if artist
+    // 3. Find artist profile for current user if artist and enforce role-based action permissions
+    const ROLE_ALLOWED_ACTIONS: Record<string, string[]> = {
+      customer: ['cancel'],
+      artist: ['accept', 'decline', 'in_progress', 'complete', 'cancel'],
+      admin: ['accept', 'decline', 'in_progress', 'complete', 'cancel'],
+    }
+
+    const userRole = currentUser.role || 'customer'
+    const allowedRoleActions = ROLE_ALLOWED_ACTIONS[userRole] || []
+    if (!allowedRoleActions.includes(action)) {
+      return NextResponse.json(
+        { error: `Users with role "${userRole}" are not authorized to perform action "${action}"` },
+        { status: 403 },
+      )
+    }
+
     let currentArtist: any = null
     if (currentUser.role === 'artist') {
       const artistRes = await payload.find({

@@ -53,7 +53,7 @@ export const HeaderFooter: GlobalConfig = {
               name: 'footerTagline',
               type: 'textarea',
               defaultValue:
-                'Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, music, and more.',
+                'Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, and more.',
             },
             {
               name: 'copyrightText',

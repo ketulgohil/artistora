@@ -123,7 +123,7 @@ const FAQS = [
   {
     question: 'What artist services can I book on Artistora?',
     answer:
-      'You can book artists, photographers, makeup artists, decorators, musicians, and other event professionals across Ahmedabad.',
+      'You can book mehndi artists, photographers, makeup artists, decorators, event planners, and other event professionals across Ahmedabad.',
     order: 1,
   },
   {
@@ -141,7 +141,7 @@ const FAQS = [
   {
     question: 'What services can be booked on Artistora?',
     answer:
-      'You can book artists, photographers, makeup artists, decorators, musicians, and other event professionals through the platform.',
+      'You can book mehndi artists, photographers, makeup artists, decorators, event planners, and other creative professionals through the platform.',
     order: 4,
   },
   {

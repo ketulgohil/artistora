@@ -89,7 +89,6 @@ export class InstagramScraper implements Scraper {
       photography: ['weddingphotographer', 'weddingphotography', 'eventphotographer'],
       makeup: ['bridalmakeup', 'makeupartist', 'weddingmakeup'],
       decor: ['weddingdecor', 'weddingdecoration', 'eventdecor'],
-      music: ['weddingmusic', 'weddingband', 'livesinger'],
     }
 
     const category = query.toLowerCase()
@@ -193,8 +192,6 @@ export class InstagramScraper implements Scraper {
         'makeup',
         'decor',
         'decoration',
-        'dj',
-        'music',
         'videography',
         'video',
       ]

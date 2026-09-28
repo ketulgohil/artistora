@@ -2,6 +2,11 @@ import type { CollectionConfig, Where } from 'payload'
 import { sendBookingConfirmation, sendBookingNotification, sendArtistBookingEmail } from '../lib/email'
 import { checkArtistAvailability } from '../lib/availability'
 
+const adminOnlyFieldAccess = {
+  create: ({ req }: { req: any }) => req.user?.role === 'admin',
+  update: ({ req }: { req: any }) => req.user?.role === 'admin',
+}
+
 export const Bookings: CollectionConfig = {
   slug: 'bookings',
   admin: {
@@ -12,6 +17,77 @@ export const Bookings: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation, originalDoc }) => {
+        const isNonAdminUser = Boolean(req.user && req.user.role !== 'admin')
+
+        if (operation === 'create' && isNonAdminUser) {
+          // Force status to 'requested' for non-admin creations
+          data.status = 'requested'
+
+          // Strip financial, payment, and lifecycle fields
+          delete data.totalAmount
+          delete data.advanceAmount
+          delete data.remainingAmount
+          delete data.platformFee
+          delete data.artistAmount
+          data.paymentStatus = 'unpaid'
+          delete data.paymentMethod
+          delete data.paymentReference
+          delete data.refundAmount
+          delete data.refundStatus
+          delete data.cancelledBy
+          delete data.cancellationReason
+          delete data.cancelledAt
+          delete data.declineReason
+          delete data.lead
+          delete data.quote
+          delete data.assignedArtists
+
+          if (req.user?.role === 'artist') {
+            const artistDocs = await req.payload.find({
+              collection: 'artists',
+              where: { user: { equals: req.user.id } },
+              limit: 1,
+              req,
+            })
+            const artist = artistDocs.docs[0]
+            if (artist) {
+              data.artist = artist.id
+            } else {
+              delete data.artist
+            }
+          } else if (req.user) {
+            data.userId = req.user.id
+            delete data.artist
+          } else {
+            delete data.userId
+            delete data.artist
+          }
+        }
+
+        if (operation === 'update' && isNonAdminUser) {
+          // Strip privileged fields from non-admin updates
+          delete data.totalAmount
+          delete data.advanceAmount
+          delete data.remainingAmount
+          delete data.platformFee
+          delete data.artistAmount
+          delete data.paymentStatus
+          delete data.paymentMethod
+          delete data.paymentReference
+          delete data.refundAmount
+          delete data.refundStatus
+          delete data.lead
+          delete data.quote
+          delete data.artist
+          delete data.assignedArtists
+          delete data.userId
+          delete data.status
+          delete data.cancelledBy
+          delete data.cancellationReason
+          delete data.cancelledAt
+          delete data.declineReason
+        }
+
         // Availability conflict check before confirming booking
         if (data?.status === 'confirmed' && originalDoc?.status !== 'confirmed') {
           const artistId = data.artist || originalDoc?.artist
@@ -273,9 +349,7 @@ export const Bookings: CollectionConfig = {
       type: 'relationship',
       relationTo: 'leads',
       label: 'Originating Lead',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -285,9 +359,7 @@ export const Bookings: CollectionConfig = {
       type: 'relationship',
       relationTo: 'quotes',
       label: 'Accepted Quote',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -297,17 +369,13 @@ export const Bookings: CollectionConfig = {
       type: 'relationship',
       relationTo: 'artists',
       label: 'Primary / Lead Artist',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
     },
     {
       name: 'assignedArtists',
       type: 'array',
       label: 'Assigned Artists (Multi-Artist Team)',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         description: 'Manage multiple artists for large events or group functions',
       },
@@ -351,9 +419,7 @@ export const Bookings: CollectionConfig = {
           type: 'number',
           min: 0,
           label: 'Artist Payout / Fee (₹)',
-          access: {
-            update: ({ req }) => req.user?.role === 'admin',
-          },
+          access: adminOnlyFieldAccess,
         },
       ],
     },
@@ -363,9 +429,7 @@ export const Bookings: CollectionConfig = {
       type: 'number',
       label: 'Total Amount (INR)',
       min: 0,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -375,9 +439,7 @@ export const Bookings: CollectionConfig = {
       type: 'number',
       label: 'Advance Amount (INR)',
       min: 0,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -387,9 +449,7 @@ export const Bookings: CollectionConfig = {
       type: 'number',
       label: 'Remaining Amount (INR)',
       min: 0,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -399,6 +459,7 @@ export const Bookings: CollectionConfig = {
       type: 'number',
       label: 'Platform Fee (INR)',
       min: 0,
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -408,6 +469,7 @@ export const Bookings: CollectionConfig = {
       type: 'number',
       label: 'Artist Payout (INR)',
       min: 0,
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -423,6 +485,7 @@ export const Bookings: CollectionConfig = {
         { label: 'Paid', value: 'paid' },
         { label: 'Refunded', value: 'refunded' },
       ],
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -437,6 +500,7 @@ export const Bookings: CollectionConfig = {
         { label: 'Bank Transfer', value: 'bank_transfer' },
         { label: 'Online', value: 'online' },
       ],
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -445,6 +509,7 @@ export const Bookings: CollectionConfig = {
       name: 'paymentReference',
       type: 'text',
       label: 'Payment Reference / Transaction ID',
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -454,10 +519,7 @@ export const Bookings: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       label: 'Registered Customer',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-        create: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         readOnly: true,
@@ -477,10 +539,7 @@ export const Bookings: CollectionConfig = {
         { label: 'Declined', value: 'declined' },
         { label: 'Cancelled', value: 'cancelled' },
       ],
-      access: {
-        create: ({ req }) => req.user?.role === 'admin',
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
       },
@@ -489,9 +548,7 @@ export const Bookings: CollectionConfig = {
       name: 'declineReason',
       type: 'textarea',
       label: 'Decline Reason',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'declined',
@@ -507,9 +564,7 @@ export const Bookings: CollectionConfig = {
         { label: 'Admin', value: 'admin' },
         { label: 'System', value: 'system' },
       ],
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'cancelled',
@@ -519,9 +574,7 @@ export const Bookings: CollectionConfig = {
       name: 'cancellationReason',
       type: 'textarea',
       label: 'Cancellation Reason',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'cancelled',
@@ -531,9 +584,7 @@ export const Bookings: CollectionConfig = {
       name: 'cancelledAt',
       type: 'date',
       label: 'Cancelled At',
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'cancelled',
@@ -547,9 +598,7 @@ export const Bookings: CollectionConfig = {
       type: 'number',
       label: 'Refund Amount (INR)',
       min: 0,
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'cancelled',
@@ -566,9 +615,7 @@ export const Bookings: CollectionConfig = {
         { label: 'Refunded', value: 'refunded' },
         { label: 'Denied', value: 'denied' },
       ],
-      access: {
-        update: ({ req }) => req.user?.role === 'admin',
-      },
+      access: adminOnlyFieldAccess,
       admin: {
         position: 'sidebar',
         condition: (_, siblingData) => siblingData?.status === 'cancelled',
