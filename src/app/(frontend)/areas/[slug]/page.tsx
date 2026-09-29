@@ -1,3 +1,12 @@
+/**
+ * Area Detail Page with Local SEO, AdministrativeArea & ItemList Schema.
+ *
+ * Importers/Callers: Next.js App Router dynamic route `/areas/[slug]`.
+ * Affected APIs: Next.js SSR, search engine indexing.
+ * Schemas: `AdministrativeArea`, `Service`, `ItemList`, `FAQPage`, `BreadcrumbList`.
+ * User instruction: "ok work on it with subagents."
+ */
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -12,126 +21,284 @@ import type { Metadata } from 'next'
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
 
-const areasData: Record<string, { name: string; description: string; landmarks: string[]; services: string[] }> = {
+const areasData: Record<
+  string,
+  { name: string; description: string; landmarks: string[]; services: string[] }
+> = {
   satellite: {
     name: 'Satellite',
-    description: 'Satellite is Ahmedabad\'s premium event hub, home to some of the city\'s finest banquet halls and open-air venues. Find verified photographers, makeup artists, and mehndi artists for weddings, receptions, and corporate events.',
+    description:
+      "Satellite is Ahmedabad's premium event hub, home to some of the city's finest banquet halls and open-air venues. Find verified photographers, makeup artists, and mehndi artists for weddings, receptions, and corporate events.",
     landmarks: ['Iscon Mall', 'Satellite Cross Roads', 'Jodhpur Village', 'Husain Dargah'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   vastrapur: {
     name: 'Vastrapur',
-    description: 'Vastrapur is a wedding favourite in central Ahmedabad, known for its lakeside venues and cultural celebrations. Discover trusted bridal mehndi, makeup, and photography artists with years of experience.',
-    landmarks: ['Vastrapur Lake', 'Vastrapur Lake Garden', 'Shreyas Folk Museum', 'Gujarat Vidya Pith'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Catering Consultants'],
+    description:
+      'Vastrapur is a wedding favourite in central Ahmedabad, known for its lakeside venues and cultural celebrations. Discover trusted bridal mehndi, makeup, and photography artists with years of experience.',
+    landmarks: [
+      'Vastrapur Lake',
+      'Vastrapur Lake Garden',
+      'Shreyas Folk Museum',
+      'Gujarat Vidya Pith',
+    ],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Catering Consultants',
+    ],
   },
   bopal: {
     name: 'Bopal',
-    description: 'Bopal is one of Ahmedabad\'s fastest-growing residential areas, attracting new-generation artists with fresh styles. Find modern wedding artists who blend tradition with contemporary aesthetics.',
+    description:
+      "Bopal is one of Ahmedabad's fastest-growing residential areas, attracting new-generation artists with fresh styles. Find modern wedding artists who blend tradition with contemporary aesthetics.",
     landmarks: ['Bopal Bridge', 'Science City Road', 'Bopal Gymkhana', 'Shreyas Railway Crossing'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   'prahlad-nagar': {
     name: 'Prahlad Nagar',
-    description: 'Prahlad Nagar is known for its upscale banquet halls and corporate event venues. Find professional event planners, photographers, and makeup artists who specialise in grand celebrations.',
-    landmarks: ['Prahlad Nagar Garden', 'One World West', 'Iscon Emporio', 'Prahlad Nagar Cross Roads'],
-    services: ['Corporate Event Planners', 'Wedding Photographers', 'Makeup Artists', 'Bridal Mehndi Artists', 'Decor Designers'],
+    description:
+      'Prahlad Nagar is known for its upscale banquet halls and corporate event venues. Find professional event planners, photographers, and makeup artists who specialise in grand celebrations.',
+    landmarks: [
+      'Prahlad Nagar Garden',
+      'One World West',
+      'Iscon Emporio',
+      'Prahlad Nagar Cross Roads',
+    ],
+    services: [
+      'Corporate Event Planners',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Bridal Mehndi Artists',
+      'Decor Designers',
+    ],
   },
   thaltej: {
     name: 'Thaltej',
-    description: 'Thaltej is a prime residential area with experienced bridal specialists. Find mehndi artists and makeup artists who offer home-visit services and understand traditional Gujarati wedding rituals.',
+    description:
+      'Thaltej is a prime residential area with experienced bridal specialists. Find mehndi artists and makeup artists who offer home-visit services and understand traditional Gujarati wedding rituals.',
     landmarks: ['Thaltej Cross Roads', 'SG Highway', 'Thaltej Tekra', 'Jodhpur Village'],
-    services: ['Bridal Mehndi Artists', 'Makeup Artists', 'Wedding Photographers', 'Mehndi Artists', 'Event Planners'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Makeup Artists',
+      'Wedding Photographers',
+      'Mehndi Artists',
+      'Event Planners',
+    ],
   },
   gota: {
     name: 'Gota',
-    description: 'Gota offers quality artists at competitive prices. Perfect for weddings, birthdays, and festive celebrations without breaking the budget.',
+    description:
+      'Gota offers quality artists at competitive prices. Perfect for weddings, birthdays, and festive celebrations without breaking the budget.',
     landmarks: ['Gota Cross Roads', 'SP Ring Road', 'Gota Bridge', 'Sattva Golf Homes'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   'south-bopal': {
     name: 'South Bopal',
-    description: 'South Bopal is a premium residential community with verified artists who specialise in intimate home celebrations and grand events alike.',
+    description:
+      'South Bopal is a premium residential community with verified artists who specialise in intimate home celebrations and grand events alike.',
     landmarks: ['South Bopal Road', 'Shilaj Circle', 'Ghuma Santej', 'Ambli Bopal Road'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   'science-city': {
     name: 'Science City',
-    description: 'Science City area is known for its grand event venues and open-air celebration spaces. Find artists available for large-scale weddings and functions.',
+    description:
+      'Science City area is known for its grand event venues and open-air celebration spaces. Find artists available for large-scale weddings and functions.',
     landmarks: ['Science City', 'Gujarat Science City', 'Science City Road', 'Sola Bridge'],
-    services: ['Event Planners', 'Wedding Photographers', 'Makeup Artists', 'Bridal Mehndi Artists', 'Decor Designers'],
+    services: [
+      'Event Planners',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Bridal Mehndi Artists',
+      'Decor Designers',
+    ],
   },
   shela: {
     name: 'Shela',
-    description: 'Shela is an emerging area attracting fresh artistic talent. Find up-and-coming artists who bring new energy and creative ideas to weddings and celebrations.',
+    description:
+      'Shela is an emerging area attracting fresh artistic talent. Find up-and-coming artists who bring new energy and creative ideas to weddings and celebrations.',
     landmarks: ['Shela Village', 'Shela Cross Roads', 'Bopal Shela Road', 'Shela Lake'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   nikol: {
     name: 'Nikol',
-    description: 'Nikol is home to trusted local artists with deep community connections. Find reliable professionals who have served Ahmedabad\'s families for years.',
+    description:
+      "Nikol is home to trusted local artists with deep community connections. Find reliable professionals who have served Ahmedabad's families for years.",
     landmarks: ['Nikol Cross Roads', 'Naroda Road', 'Nikol Fire Station', 'Vatva GIDC'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   vastral: {
     name: 'Vastral',
-    description: 'Vastral offers quality artists at budget-friendly prices. Perfect for families looking for talented professionals without premium pricing.',
+    description:
+      'Vastral offers quality artists at budget-friendly prices. Perfect for families looking for talented professionals without premium pricing.',
     landmarks: ['Vastral Road', 'Vastral Gam', 'Ramol Cross Roads', 'Vastral Lake'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   maninagar: {
     name: 'Maninagar',
-    description: 'Maninagar is a heritage area with traditional mehndi and makeup artists who bring generational skills to modern celebrations.',
+    description:
+      'Maninagar is a heritage area with traditional mehndi and makeup artists who bring generational skills to modern celebrations.',
     landmarks: ['Maninagar Cross Roads', 'Kankaria Lake', 'Maninagar Railway Station', 'Isanpur'],
-    services: ['Bridal Mehndi Artists', 'Makeup Artists', 'Wedding Photographers', 'Event Planners', 'Mehndi Artists'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Makeup Artists',
+      'Wedding Photographers',
+      'Event Planners',
+      'Mehndi Artists',
+    ],
   },
   naroda: {
     name: 'Naroda',
-    description: 'Naroda offers complete event service providers who handle photography, decor, makeup, and mehndi all in one package.',
+    description:
+      'Naroda offers complete event service providers who handle photography, decor, makeup, and mehndi all in one package.',
     landmarks: ['Naroda GIDC', 'Naroda Patiya', 'Naroda Road', 'Isanpur Junction'],
-    services: ['Wedding Photographers', 'Event Planners', 'Makeup Artists', 'Bridal Mehndi Artists', 'Decor Designers'],
+    services: [
+      'Wedding Photographers',
+      'Event Planners',
+      'Makeup Artists',
+      'Bridal Mehndi Artists',
+      'Decor Designers',
+    ],
   },
   chandkheda: {
     name: 'Chandkheda',
-    description: 'Chandkheda is famous for its festive celebrations. Find artists specialising in Navratri, Diwali, and other Gujarati festival services.',
+    description:
+      'Chandkheda is famous for its festive celebrations. Find artists specialising in Navratri, Diwali, and other Gujarati festival services.',
     landmarks: ['Chandkheda Bus Stand', 'SG Highway', 'Chandkheda Gam', 'Motera Stadium'],
-    services: ['Mehndi Artists', 'Festival Makeup Artists', 'Wedding Photographers', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Mehndi Artists',
+      'Festival Makeup Artists',
+      'Wedding Photographers',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   motera: {
     name: 'Motera',
-    description: 'Motera is home to the world\'s largest cricket stadium. Find professional photographers and event planners for grand celebrations in the area.',
-    landmarks: ['Narendra Modi Stadium', 'Motera Cross Roads', 'Sabarmati Riverfront', 'Motera Village'],
-    services: ['Wedding Photographers', 'Event Planners', 'Makeup Artists', 'Bridal Mehndi Artists', 'Decor Designers'],
+    description:
+      "Motera is home to the world's largest cricket stadium. Find professional photographers and event planners for grand celebrations in the area.",
+    landmarks: [
+      'Narendra Modi Stadium',
+      'Motera Cross Roads',
+      'Sabarmati Riverfront',
+      'Motera Village',
+    ],
+    services: [
+      'Wedding Photographers',
+      'Event Planners',
+      'Makeup Artists',
+      'Bridal Mehndi Artists',
+      'Decor Designers',
+    ],
   },
   sola: {
     name: 'Sola',
-    description: 'Sola serves the SG Highway corridor with trusted artists who understand the needs of Ahmedabad\'s growing professional community.',
+    description:
+      "Sola serves the SG Highway corridor with trusted artists who understand the needs of Ahmedabad's growing professional community.",
     landmarks: ['Sola Bridge', 'Sola Civil Hospital', 'SG Highway', 'Science City Road'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   ghodasar: {
     name: 'Ghodasar',
-    description: 'Ghodasar is a family-oriented area with artists who specialise in intimate weddings and home celebrations.',
+    description:
+      'Ghodasar is a family-oriented area with artists who specialise in intimate weddings and home celebrations.',
     landmarks: ['Ghodasar Cross Roads', 'Ghodasar Gam', 'Vastral Road', 'Ramol'],
-    services: ['Bridal Mehndi Artists', 'Wedding Photographers', 'Makeup Artists', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Bridal Mehndi Artists',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   isanpur: {
     name: 'Isanpur',
-    description: 'Isanpur is a heritage area where artists preserve traditional Gujarati wedding styles while adding a contemporary edge.',
+    description:
+      'Isanpur is a heritage area where artists preserve traditional Gujarati wedding styles while adding a contemporary edge.',
     landmarks: ['Isanpur Junction', 'Isanpur Road', 'Ghatlodia', 'Naroda'],
-    services: ['Mehndi Artists', 'Makeup Artists', 'Wedding Photographers', 'Event Planners', 'Decor Designers'],
+    services: [
+      'Mehndi Artists',
+      'Makeup Artists',
+      'Wedding Photographers',
+      'Event Planners',
+      'Decor Designers',
+    ],
   },
   memco: {
     name: 'Memco',
-    description: 'Memco is an industrial hub with professional event services for factory functions and industrial celebrations.',
+    description:
+      'Memco is an industrial hub with professional event services for factory functions and industrial celebrations.',
     landmarks: ['Memco Cross Roads', 'Vatva GIDC', 'Nikol', 'Memco Gam'],
-    services: ['Event Planners', 'Wedding Photographers', 'Makeup Artists', 'Bridal Mehndi Artists', 'Decor Designers'],
+    services: [
+      'Event Planners',
+      'Wedding Photographers',
+      'Makeup Artists',
+      'Bridal Mehndi Artists',
+      'Decor Designers',
+    ],
   },
   daskroi: {
     name: 'Daskroi',
-    description: 'Daskroi offers a peaceful suburban setting for destination-style weddings. Find artists who bring elegance to venue celebrations.',
+    description:
+      'Daskroi offers a peaceful suburban setting for destination-style weddings. Find artists who bring elegance to venue celebrations.',
     landmarks: ['Daskroi Village', 'Dholera Road', 'Daskroi Taluka', 'Ahmedabad Border'],
-    services: ['Wedding Photographers', 'Event Planners', 'Makeup Artists', 'Bridal Mehndi Artists', 'Decor Designers'],
+    services: [
+      'Wedding Photographers',
+      'Event Planners',
+      'Makeup Artists',
+      'Bridal Mehndi Artists',
+      'Decor Designers',
+    ],
   },
 }
 
@@ -167,14 +334,42 @@ export default async function AreaPage({ params }: AreaPageProps) {
 
   const typeLabels: Record<string, string> = {
     'mehndi-artists': 'Mehndi Artist',
-    'photographers': 'Photographer',
+    photographers: 'Photographer',
     'makeup-artists': 'Makeup Artist',
     'decor-event-planners': 'Decor & Events',
   }
 
-  const jsonLd = {
+  const placeSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AdministrativeArea',
+    '@id': `https://www.artistora.com/areas/${slug}#place`,
+    name: `${area.name}, Ahmedabad`,
+    alternateName: area.name,
+    description: area.description,
+    containedInPlace: {
+      '@type': 'City',
+      name: 'Ahmedabad',
+      containedInPlace: {
+        '@type': 'AdministrativeArea',
+        name: 'Gujarat',
+        containedInPlace: {
+          '@type': 'Country',
+          name: 'India',
+        },
+      },
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: area.name,
+      addressRegion: 'Gujarat',
+      addressCountry: 'IN',
+    },
+  }
+
+  const serviceSchema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
+    '@id': `https://www.artistora.com/areas/${slug}#service`,
     name: `Artists in ${area.name}, Ahmedabad`,
     description: area.description,
     provider: {
@@ -183,25 +378,100 @@ export default async function AreaPage({ params }: AreaPageProps) {
       url: 'https://www.artistora.com',
     },
     areaServed: {
-      '@type': 'City',
-      name: 'Ahmedabad',
+      '@type': 'AdministrativeArea',
+      name: `${area.name}, Ahmedabad`,
       containedInPlace: {
-        '@type': 'State',
-        name: 'Gujarat',
+        '@type': 'City',
+        name: 'Ahmedabad',
+        containedInPlace: {
+          '@type': 'AdministrativeArea',
+          name: 'Gujarat',
+        },
       },
     },
     serviceType: area.services,
   }
 
+  const itemListSchema =
+    artists.length > 0
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          '@id': `https://www.artistora.com/areas/${slug}#artists`,
+          name: `Verified Artists in ${area.name}, Ahmedabad`,
+          description: `Browse verified bridal mehndi artists, wedding photographers, makeup artists, and event planners available in ${area.name}, Ahmedabad.`,
+          numberOfItems: artists.length,
+          itemListElement: artists.map((artist: any, index: number) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: artist.displayName,
+            url: `https://www.artistora.com/artists/${artist.slug}`,
+            item: {
+              '@type': 'ProfessionalService',
+              name: artist.displayName,
+              url: `https://www.artistora.com/artists/${artist.slug}`,
+              image: artist.profilePhoto?.filename
+                ? mediaFileUrl(artist.profilePhoto.filename)
+                : undefined,
+              ...(artist.artistType && typeLabels[artist.artistType]
+                ? { serviceType: typeLabels[artist.artistType] }
+                : {}),
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: artist.area ? `${area.name}, Ahmedabad` : 'Ahmedabad',
+                addressRegion: 'Gujarat',
+                addressCountry: 'IN',
+              },
+              areaServed: {
+                '@type': 'AdministrativeArea',
+                name: `${area.name}, Ahmedabad`,
+              },
+              ...(typeof artist.rating === 'number' && artist.rating > 0
+                ? {
+                    aggregateRating: {
+                      '@type': 'AggregateRating',
+                      ratingValue: artist.rating.toFixed(1),
+                      reviewCount: String(Math.max(1, artist.reviewCount || 1)),
+                      bestRating: '5',
+                      worstRating: '1',
+                    },
+                  }
+                : {}),
+              ...(typeof artist.startingPrice === 'number' && artist.startingPrice > 0
+                ? {
+                    priceRange: `₹${artist.startingPrice.toLocaleString('en-IN')}+`,
+                  }
+                : {}),
+            },
+          })),
+        }
+      : null
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      {itemListSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+        />
+      )}
 
       <Breadcrumbs items={[{ label: 'Areas', href: '/areas' }, { label: area.name }]} />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl"
+        />
         <div className={`relative ${CONTAINER} py-16! md:py-24!`}>
           <div className="mx-auto max-w-3xl! text-center">
             <p className="mb-4! flex items-center justify-center gap-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
@@ -212,9 +482,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
             <h1 className="font-display text-[2.3rem]! leading-[1.12] font-semibold text-ink md:text-[3.2rem]!">
               Artists in {area.name}
             </h1>
-            <p className="mt-5! text-[1.05rem] leading-relaxed text-ink-soft">
-              {area.description}
-            </p>
+            <p className="mt-5! text-[1.05rem] leading-relaxed text-ink-soft">{area.description}</p>
             <div className="mt-8! flex flex-wrap justify-center gap-4!">
               <Link
                 href="/get-quote"
@@ -239,9 +507,21 @@ export default async function AreaPage({ params }: AreaPageProps) {
           <SectionHeading title={`Services Available in ${area.name}`} subtitle="What We Offer" />
           <div className="mx-auto mt-10! grid max-w-4xl! gap-4! sm:grid-cols-2 lg:grid-cols-3">
             {area.services.map((service) => (
-              <div key={service} className="flex items-center gap-3! rounded-2xl border border-line bg-white p-5! shadow-soft">
+              <div
+                key={service}
+                className="flex items-center gap-3! rounded-2xl border border-line bg-white p-5! shadow-soft"
+              >
                 <div className="flex h-10! w-10! shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M20 6 9 17l-5-5" />
                   </svg>
                 </div>
@@ -279,7 +559,11 @@ export default async function AreaPage({ params }: AreaPageProps) {
                           sizes="56px"
                         />
                       ) : (
-                        <ArtistPlaceholder name={artist.displayName} size="sm" className="ring-2 ring-brand/15" />
+                        <ArtistPlaceholder
+                          name={artist.displayName}
+                          size="sm"
+                          className="ring-2 ring-brand/15"
+                        />
                       )}
                     </div>
                     <div className="min-w-0">
@@ -296,7 +580,8 @@ export default async function AreaPage({ params }: AreaPageProps) {
                           ? `Based in ${area.name}`
                           : `Home service in ${area.name}`}
                         {artist.rating > 0 && ` · ★ ${artist.rating.toFixed(1)}`}
-                        {artist.startingPrice > 0 && ` · From ₹${artist.startingPrice.toLocaleString('en-IN')}`}
+                        {artist.startingPrice > 0 &&
+                          ` · From ₹${artist.startingPrice.toLocaleString('en-IN')}`}
                       </p>
                     </div>
                   </Link>
@@ -314,8 +599,9 @@ export default async function AreaPage({ params }: AreaPageProps) {
           ) : (
             <div className="mx-auto mt-10! max-w-xl! rounded-2xl border border-line bg-white p-8! text-center shadow-soft">
               <p className="text-sm leading-relaxed text-ink-soft">
-                Our verified artists offer home-visit services across Ahmedabad, including {area.name}.
-                Share your event details and we&apos;ll match you with artists available in your locality.
+                Our verified artists offer home-visit services across Ahmedabad, including{' '}
+                {area.name}. Share your event details and we&apos;ll match you with artists
+                available in your locality.
               </p>
               <div className="mt-5!">
                 <Link
@@ -336,7 +622,10 @@ export default async function AreaPage({ params }: AreaPageProps) {
           <SectionHeading title={`Near ${area.name} Landmarks`} subtitle="We Cover Your Area" />
           <div className="mx-auto mt-10! flex max-w-3xl! flex-wrap justify-center gap-3!">
             {area.landmarks.map((landmark) => (
-              <span key={landmark} className="rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft shadow-soft">
+              <span
+                key={landmark}
+                className="rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft shadow-soft"
+              >
                 📍 {landmark}
               </span>
             ))}
@@ -355,24 +644,39 @@ export default async function AreaPage({ params }: AreaPageProps) {
       {/* FAQ */}
       {(() => {
         const areaFaqs = [
-          { q: `How do I find artists in ${area.name}?`, a: `Submit your event details on Artistora and receive free quotes from verified artists who serve ${area.name}, Ahmedabad. Compare pricing, portfolios, and reviews before booking.` },
-          { q: `What types of artists are available in ${area.name}?`, a: `${area.name} has verified mehndi artists, wedding photographers, makeup artists, event planners, and decor designers. All artists go through Artistora's verification process.` },
-          { q: `How much do artists cost in ${area.name}?`, a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, photographers from ₹15,000, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.` },
-          { q: `Do artists in ${area.name} offer home service?`, a: `Yes. Many verified artists in ${area.name} offer home-visit services for bridal mehndi, makeup trials, and pre-event consultations. Check individual artist profiles for home-service availability.` },
+          {
+            q: `How do I find artists in ${area.name}?`,
+            a: `Submit your event details on Artistora and receive free quotes from verified artists who serve ${area.name}, Ahmedabad. Compare pricing, portfolios, and reviews before booking.`,
+          },
+          {
+            q: `What types of artists are available in ${area.name}?`,
+            a: `${area.name} has verified mehndi artists, wedding photographers, makeup artists, event planners, and decor designers. All artists go through Artistora's verification process.`,
+          },
+          {
+            q: `How much do artists cost in ${area.name}?`,
+            a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, photographers from ₹15,000, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.`,
+          },
+          {
+            q: `Do artists in ${area.name} offer home service?`,
+            a: `Yes. Many verified artists in ${area.name} offer home-visit services for bridal mehndi, makeup trials, and pre-event consultations. Check individual artist profiles for home-service availability.`,
+          },
         ]
         return (
           <>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'FAQPage',
-                mainEntity: areaFaqs.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: { '@type': 'Answer', text: faq.a },
-                })),
-              }),
-            }} />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: areaFaqs.map((faq) => ({
+                    '@type': 'Question',
+                    name: faq.q,
+                    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+                  })),
+                }),
+              }}
+            />
             <section className={`${SECTION} bg-cream/50`}>
               <div className={CONTAINER}>
                 <SectionHeading title={`Frequently Asked Questions`} subtitle={`${area.name}`} />
@@ -393,7 +697,15 @@ export default async function AreaPage({ params }: AreaPageProps) {
                           <span>{faq.q}</span>
                         </span>
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
-                          <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <svg
+                            className="h-4! w-4!"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
                             <polyline points="6 9 12 15 18 9" />
                           </svg>
                         </span>
@@ -413,9 +725,12 @@ export default async function AreaPage({ params }: AreaPageProps) {
       {/* CTA */}
       <section className={`${SECTION} bg-coal`}>
         <div className={`${CONTAINER} text-center`}>
-          <h2 className="font-display text-2xl! font-semibold text-white md:text-3xl!">Ready to book artists in {area.name}?</h2>
+          <h2 className="font-display text-2xl! font-semibold text-white md:text-3xl!">
+            Ready to book artists in {area.name}?
+          </h2>
           <p className="mx-auto mt-3! max-w-lg! text-sm leading-relaxed text-cream/60">
-            Tell us about your event and we&apos;ll match you with the best verified artists in {area.name}.
+            Tell us about your event and we&apos;ll match you with the best verified artists in{' '}
+            {area.name}.
           </p>
           <div className="mt-8!">
             <Link

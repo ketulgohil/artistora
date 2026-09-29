@@ -4,7 +4,7 @@ import SectionHeading from '@/components/SectionHeading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const metadata = withDefaultSeo({
-  title: 'For Artists — Join Ahmedabad\'s Trusted Artist Network',
+  title: "For Artists — Join Ahmedabad's Trusted Artist Network",
   description:
     'Register on Artistora, set up your profile, and start receiving booking leads from customers in Ahmedabad. Free to join, no hidden fees.',
   alternates: {
@@ -12,8 +12,7 @@ export const metadata = withDefaultSeo({
   },
   openGraph: {
     title: 'For Artists — Artistora',
-    description:
-      'Join Ahmedabad\'s trusted artist network. Free to register, no hidden fees.',
+    description: "Join Ahmedabad's trusted artist network. Free to register, no hidden fees.",
     url: 'https://www.artistora.com/for-artists',
     type: 'website',
   },
@@ -27,37 +26,65 @@ const profileSteps = [
     num: '01',
     title: 'Add Your Profile Photo',
     tip: 'A professional photo builds trust. Use a clear headshot or a photo of your work — not a logo or group picture.',
-    fields: ['Upload a square photo (400x400px ideal)', 'Face or work sample should be clearly visible', 'Avoid blurry or dark images'],
+    fields: [
+      'Upload a square photo (400x400px ideal)',
+      'Face or work sample should be clearly visible',
+      'Avoid blurry or dark images',
+    ],
   },
   {
     num: '02',
     title: 'Write Your Bio',
     tip: 'Tell customers what makes you unique. Mention your specialty, experience, and what clients can expect.',
-    fields: ['Start with what you do (e.g. "Bridal mehndi artist with 8+ years")', 'Mention your style or specialty', 'Add what makes you different from others', 'Keep it 2-4 sentences — concise and confident'],
+    fields: [
+      'Start with what you do (e.g. "Bridal mehndi artist with 8+ years")',
+      'Mention your style or specialty',
+      'Add what makes you different from others',
+      'Keep it 2-4 sentences — concise and confident',
+    ],
   },
   {
     num: '03',
     title: 'Set Your Contact Details',
     tip: 'Customers need to reach you. Add your phone and WhatsApp number separately — WhatsApp gets 5x more responses.',
-    fields: ['Phone number with country code (+91)', 'WhatsApp number (if different from phone)', 'Email address for notifications'],
+    fields: [
+      'Phone number with country code (+91)',
+      'WhatsApp number (if different from phone)',
+      'Email address for notifications',
+    ],
   },
   {
     num: '04',
     title: 'Choose Your Services',
     tip: 'Select all services you offer. This determines which booking requests you receive.',
-    fields: ['Photographers — weddings, events, portraits', 'Makeup Artists — bridal, party, editorial', 'Decor & Event Planners — stage, floral, themed', 'Mehndi Artists — bridal, Arabic, Indo-Western'],
+    fields: [
+      'Photographers — weddings, events, portraits',
+      'Makeup Artists — bridal, party, editorial',
+      'Decor & Event Planners — stage, floral, themed',
+      'Mehndi Artists — bridal, Arabic, Indo-Western',
+    ],
   },
   {
     num: '05',
     title: 'Set Your Pricing',
     tip: 'Transparent pricing helps customers decide faster. Set your starting price and pricing model.',
-    fields: ['Package / Fixed Rate — one price for the full service', 'Hourly Rate — charge per hour of work', 'Per Person / Guest — charge per guest count', 'Custom Quote Only — price on request'],
+    fields: [
+      'Package / Fixed Rate — one price for the full service',
+      'Hourly Rate — charge per hour of work',
+      'Per Person / Guest — charge per guest count',
+      'Custom Quote Only — price on request',
+    ],
   },
   {
     num: '06',
     title: 'Upload Portfolio Images',
     tip: 'Your portfolio is your showcase. Upload 5-10 of your best work samples.',
-    fields: ['Upload high-quality images (at least 800px wide)', 'Show variety — different styles, occasions, colors', 'Add captions describing each work sample', 'Only upload work you have permission to showcase'],
+    fields: [
+      'Upload high-quality images (at least 800px wide)',
+      'Show variety — different styles, occasions, colors',
+      'Add captions describing each work sample',
+      'Only upload work you have permission to showcase',
+    ],
   },
 ]
 
@@ -72,7 +99,7 @@ const faqItems = [
   },
   {
     q: 'What happens after a customer selects me?',
-    a: 'You\'ll receive a confirmation with all event details. Coordinate directly with the customer. After the event, the customer leaves a review.',
+    a: "You'll receive a confirmation with all event details. Coordinate directly with the customer. After the event, the customer leaves a review.",
   },
   {
     q: 'Can I set my own prices?',
@@ -89,7 +116,8 @@ export default function ForArtistsPage() {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'For Artists — Join Artistora',
-    description: 'Register on Artistora, set up your profile, and start receiving booking leads from customers in Ahmedabad.',
+    description:
+      'Register on Artistora, set up your profile, and start receiving booking leads from customers in Ahmedabad.',
     url: 'https://www.artistora.com/for-artists',
     isPartOf: {
       '@type': 'WebSite',
@@ -113,7 +141,10 @@ export default function ForArtistsPage() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-deep/10 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-deep/10 blur-3xl"
+        />
         <div className={`relative ${CONTAINER} py-16! md:py-24!`}>
           <div className="mx-auto max-w-3xl! text-center">
             <p className="mb-4! flex items-center justify-center gap-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand-deep">
@@ -125,11 +156,12 @@ export default function ForArtistsPage() {
               Build Your Artist Profile on Artistora
             </h1>
             <p className="mt-5! text-[1.05rem] leading-relaxed text-ink-soft">
-              Your profile is your storefront. A complete, professional profile gets 3x more booking requests from customers in Ahmedabad.
+              Your profile is your storefront. A complete, professional profile gets 3x more booking
+              requests from customers in Ahmedabad.
             </p>
             <div className="mt-8! flex flex-wrap justify-center gap-4!">
               <Link
-                href="/register"
+                href="/register#artist"
                 className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand-deep to-brand-deep/90 px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
               >
                 Register as Artist
@@ -139,7 +171,16 @@ export default function ForArtistsPage() {
                 className="inline-flex min-h-12! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand-deep/30 bg-transparent px-7! py-3! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand-deep hover:bg-brand-deep/5"
               >
                 Go to Dashboard
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
               </Link>
@@ -153,23 +194,40 @@ export default function ForArtistsPage() {
         <div className={CONTAINER}>
           <SectionHeading title="Complete Profile Setup Guide" subtitle="Step by Step" />
           <p className="mx-auto mb-12! max-w-2xl! text-center text-sm leading-relaxed text-ink-soft">
-            Follow these steps to set up a profile that attracts customers. Each section directly impacts how often you appear in search results and how many booking requests you receive.
+            Follow these steps to set up a profile that attracts customers. Each section directly
+            impacts how often you appear in search results and how many booking requests you
+            receive.
           </p>
 
           <div className="space-y-6!">
             {profileSteps.map((step) => (
-              <div key={step.num} className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-8!">
+              <div
+                key={step.num}
+                className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-8!"
+              >
                 <div className="flex flex-col gap-6! md:flex-row md:items-start md:gap-8!">
                   <div className="flex h-12! w-12! shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-deep to-brand-deep/80 font-display text-lg! font-bold text-white">
                     {step.num}
                   </div>
                   <div className="flex-1">
                     <h3 className="font-display text-lg! font-semibold text-ink">{step.title}</h3>
-                    <p className="mt-2! text-sm leading-relaxed text-brand font-medium">{step.tip}</p>
+                    <p className="mt-2! text-sm leading-relaxed text-brand font-medium">
+                      {step.tip}
+                    </p>
                     <ul className="mt-4! space-y-2!">
                       {step.fields.map((field, i) => (
                         <li key={i} className="flex items-start gap-2.5! text-sm text-ink-soft">
-                          <svg className="mt-0.5! shrink-0 text-green" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <svg
+                            className="mt-0.5! shrink-0 text-green"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
                             <path d="M20 6 9 17l-5-5" />
                           </svg>
                           {field}
@@ -209,7 +267,7 @@ export default function ForArtistsPage() {
               },
               {
                 title: 'Keep Your Calendar Updated',
-                text: 'Block dates when you\'re unavailable. This prevents double-bookings and builds trust with customers.',
+                text: "Block dates when you're unavailable. This prevents double-bookings and builds trust with customers.",
               },
               {
                 title: 'Ask for Reviews',
@@ -224,7 +282,10 @@ export default function ForArtistsPage() {
                 text: 'Verified artists get a trust badge and appear higher in search results. Complete your profile to qualify.',
               },
             ].map((tip) => (
-              <div key={tip.title} className="rounded-2xl border border-line bg-white p-6! shadow-soft">
+              <div
+                key={tip.title}
+                className="rounded-2xl border border-line bg-white p-6! shadow-soft"
+              >
                 <h3 className="font-display text-base! font-semibold text-ink">{tip.title}</h3>
                 <p className="mt-2! text-sm leading-relaxed text-ink-soft">{tip.text}</p>
               </div>
@@ -254,7 +315,15 @@ export default function ForArtistsPage() {
                     <span>{item.q}</span>
                   </span>
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
-                    <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="h-4! w-4!"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </span>
@@ -271,13 +340,16 @@ export default function ForArtistsPage() {
       {/* ── CTA ── */}
       <section className={`${SECTION} bg-coal`}>
         <div className={`${CONTAINER} text-center`}>
-          <h2 className="font-display text-2xl! font-semibold text-white md:text-3xl!">Start receiving booking requests today</h2>
+          <h2 className="font-display text-2xl! font-semibold text-white md:text-3xl!">
+            Start receiving booking requests today
+          </h2>
           <p className="mx-auto mt-3! max-w-lg! text-sm leading-relaxed text-cream/60">
-            Join Ahmedabad&apos;s growing network of verified artists. It&apos;s free to register and start receiving leads.
+            Join Ahmedabad&apos;s growing network of verified artists. It&apos;s free to register
+            and start receiving leads.
           </p>
           <div className="mt-8!">
             <Link
-              href="/register"
+              href="/register#artist"
               className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark px-7! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
             >
               Register as Artist — Free

@@ -17,7 +17,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => { if (!r.ok) return null; return r.json() })
+      .then((r) => {
+        if (!r.ok) return null
+        return r.json()
+      })
       .then((data) => {
         if (data?.user) {
           router.replace(data.user.role === 'artist' ? '/dashboard' : '/')
@@ -74,16 +77,18 @@ export default function LoginPage() {
         <div className="rounded-3xl border border-line bg-white p-8! shadow-soft md:p-10!">
           <div className="mb-8! text-center">
             <p className="mb-3! flex items-center justify-center gap-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
-              <span aria-hidden="true" className="h-px w-9 bg-gradient-to-r from-transparent to-brand/60" />
+              <span
+                aria-hidden="true"
+                className="h-px w-9 bg-gradient-to-r from-transparent to-brand/60"
+              />
               Welcome Back
-              <span aria-hidden="true" className="h-px w-9 bg-gradient-to-l from-transparent to-brand/60" />
+              <span
+                aria-hidden="true"
+                className="h-px w-9 bg-gradient-to-l from-transparent to-brand/60"
+              />
             </p>
-            <h1 className="font-display text-2xl! font-semibold text-ink md:text-3xl!">
-              Log In
-            </h1>
-            <p className="mt-2! text-sm text-ink-soft">
-              Access your artist dashboard
-            </p>
+            <h1 className="font-display text-2xl! font-semibold text-ink md:text-3xl!">Log In</h1>
+            <p className="mt-2! text-sm text-ink-soft">Access your artist dashboard</p>
           </div>
 
           {error && (
@@ -94,7 +99,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5!">
             <div>
-              <label className="mb-1.5! block text-sm font-medium text-ink-soft">Email Address *</label>
+              <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                Email Address *
+              </label>
               <input
                 type="email"
                 value={form.email}
@@ -108,7 +115,10 @@ export default function LoginPage() {
             <div>
               <div className="mb-1.5! flex items-center justify-between">
                 <label className="text-sm font-medium text-ink-soft">Password *</label>
-                <Link href="/forgot-password" className="text-xs font-medium text-brand hover:text-brand-deep transition-colors">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-brand hover:text-brand-deep transition-colors"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -128,14 +138,32 @@ export default function LoginPage() {
                   tabIndex={-1}
                 >
                   {showPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
                       <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
                       <path d="M14.12 14.12a3 3 0 11-4.24-4.24" />
                       <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
@@ -151,7 +179,15 @@ export default function LoginPage() {
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="animate-spin"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                   </svg>
                   Logging In...
@@ -164,7 +200,10 @@ export default function LoginPage() {
 
           <p className="mt-6! text-center text-sm text-ink-soft">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-semibold text-brand underline decoration-gold/60 underline-offset-4 hover:text-brand-deep">
+            <Link
+              href="/register#artist"
+              className="font-semibold text-brand underline decoration-gold/60 underline-offset-4 hover:text-brand-deep"
+            >
               Register as Artist
             </Link>
           </p>

@@ -1,3 +1,12 @@
+/**
+ * Registration page for customers and artists with URL hash (#artist, #customer) and query parameter support.
+ *
+ * Importers/Callers: Next.js App Router route `/register`.
+ * Affected APIs: `/api/auth/register`, `/api/auth/me`.
+ * Schemas: `users` and `artists` registration payload.
+ * User instruction: "i would like to go to register page with artist radio button selected when anyone click on register as an artist button on our website, also when we switch the customer and artist on register page then please add # on url so that i can copy."
+ */
+
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
@@ -56,17 +65,59 @@ function RegisterForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Keep form role and artistType synced when query parameters update
+  // Keep form role and artistType synced when query parameters or URL hash update
   useEffect(() => {
-    if (roleParam === 'artist' || (Boolean(initialArtistType) && roleParam !== 'customer')) {
+    const getHashRole = (): 'customer' | 'artist' | null => {
+      if (typeof window === 'undefined') return null
+      const rawHash = window.location.hash.toLowerCase().replace(/^#/, '').trim()
+      if (rawHash === 'artist' || rawHash === 'role=artist') return 'artist'
+      if (rawHash === 'customer' || rawHash === 'role=customer') return 'customer'
+      return null
+    }
+
+    const hashRole = getHashRole()
+
+    if (hashRole) {
+      setForm((previous) => ({
+        ...previous,
+        role: hashRole,
+        artistType:
+          hashRole === 'artist' ? previous.artistType || initialArtistType : previous.artistType,
+      }))
+    } else if (roleParam === 'artist' || (Boolean(initialArtistType) && roleParam !== 'customer')) {
       setForm((previous) => ({
         ...previous,
         role: 'artist',
         artistType: previous.artistType || initialArtistType,
       }))
+      // Sync hash so address bar can be copied
+      try {
+        window.history.replaceState(null, '', '#artist')
+      } catch {}
     } else if (roleParam === 'customer') {
       setForm((previous) => ({ ...previous, role: 'customer' }))
+      try {
+        window.history.replaceState(null, '', '#customer')
+      } catch {}
     }
+
+    // Listen for hash changes (e.g., user navigates with back/forward or clicks #artist anchor)
+    const handleHashChange = () => {
+      const currentHashRole = getHashRole()
+      if (currentHashRole) {
+        setForm((previous) => ({
+          ...previous,
+          role: currentHashRole,
+          artistType:
+            currentHashRole === 'artist'
+              ? previous.artistType || initialArtistType
+              : previous.artistType,
+        }))
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
   }, [roleParam, initialArtistType])
 
   useEffect(() => {
@@ -90,6 +141,9 @@ function RegisterForm() {
   const handleRoleChange = (role: 'customer' | 'artist') => {
     setForm((previous) => ({ ...previous, role }))
     setError('')
+    try {
+      window.history.replaceState(null, '', `#${role}`)
+    } catch {}
   }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

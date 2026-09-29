@@ -501,7 +501,11 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 >
                   <Image
                     src={mediaUrl(item.image)}
-                    alt={item.caption || `${artist.displayName} portfolio ${i + 1}`}
+                    alt={
+                      item.caption
+                        ? `${item.caption} — ${artist.displayName} in ${artist.city || 'Ahmedabad'}`
+                        : `${artist.displayName} — Portfolio sample ${i + 1} in ${artist.city || 'Ahmedabad'}`
+                    }
                     width={400}
                     height={533}
                     className="aspect-[3/4] w-full object-cover transition-transform duration-500 group-hover:scale-105"

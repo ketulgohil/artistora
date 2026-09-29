@@ -1,3 +1,12 @@
+/**
+ * Services Directory & Service Catalog Page with Enhanced Local SEO & Schemas.
+ *
+ * Importers/Callers: Next.js App Router route `/services`.
+ * Affected APIs: Next.js SSR, search engine indexing.
+ * Schemas: `ItemList`, `Service`, `FAQPage`, `BreadcrumbList`.
+ * User instruction: "ok work on it with subagents."
+ */
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { getServices, getSiteSettings, getFAQs, mediaUrl, mediaDimensions } from '@/lib/payload'
@@ -7,16 +16,25 @@ import SectionHeading from '@/components/SectionHeading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const metadata = withDefaultSeo({
-  title: 'Services — Photography, Mehndi, Makeup, Decor & More in Ahmedabad',
+  title:
+    'Wedding & Event Artist Services in Ahmedabad — Mehndi, Photography, Makeup & Decor | Artistora',
   description:
-    'Browse verified artist services on Artistora — wedding photography, bridal mehndi, makeup artists, event decor, and entertainment in Ahmedabad.',
+    'Browse verified artist services on Artistora — bridal mehndi, wedding photography, makeup artists, event decor, and entertainment in Ahmedabad. Compare free quotes and book online.',
+  keywords: [
+    'wedding artist services ahmedabad',
+    'bridal mehndi artist ahmedabad',
+    'wedding photographer ahmedabad',
+    'bridal makeup artist ahmedabad',
+    'event decor planner ahmedabad',
+    'artist booking ahmedabad',
+  ],
   alternates: {
     canonical: 'https://www.artistora.com/services',
   },
   openGraph: {
-    title: 'Services — Artistora',
+    title: 'Wedding & Event Artist Services in Ahmedabad — Artistora',
     description:
-      'Photography, mehndi, makeup, decor, and more — verified artist services in Ahmedabad.',
+      'Photography, bridal mehndi, makeup, decor, and more — book verified artist services in Ahmedabad with home-visit availability.',
     url: 'https://www.artistora.com/services',
     type: 'website',
   },
@@ -44,7 +62,13 @@ const BTN_OUTLINE =
 const BTN_LIGHT =
   'inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-white px-7! py-3! text-sm font-bold text-brand-deep shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift'
 
-function Eyebrow({ children, tone = 'brand' }: { children: React.ReactNode; tone?: 'brand' | 'light' }) {
+function Eyebrow({
+  children,
+  tone = 'brand',
+}: {
+  children: React.ReactNode
+  tone?: 'brand' | 'light'
+}) {
   return (
     <p
       className={`mb-4! flex items-center gap-3! text-[0.7rem] font-semibold tracking-[0.3em] uppercase ${
@@ -102,7 +126,17 @@ function WhatsAppIcon() {
 
 function PinIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
@@ -117,14 +151,19 @@ const serviceTags = [
 ]
 
 const serviceImages: Record<string, string> = {
-  'Photographers': '/services/photographers.jpg',
+  Photographers: '/services/photographers.jpg',
   'Makeup Artists': '/services/makeup.jpg',
   'Decor & Event Planners': '/services/decor.jpg',
   'Mehndi Artists': '/api/media/file/Bridal.webp',
 }
 
 // Filter to show only main service categories
-const MAIN_SERVICES = ['Photographers', 'Makeup Artists', 'Decor & Event Planners', 'Mehndi Artists']
+const MAIN_SERVICES = [
+  'Photographers',
+  'Makeup Artists',
+  'Decor & Event Planners',
+  'Mehndi Artists',
+]
 
 const promisePoints = [
   {
@@ -216,6 +255,61 @@ export default async function ServicesPage() {
     getFAQs(),
   ])
 
+  const activeFaqs =
+    (faqs as any[]).length > 0
+      ? (faqs as any[]).map((f: any) => ({
+          question: f.question,
+          answer: extractLexicalText(f.answer),
+        }))
+      : fallbackFaqs
+
+  const servicesItemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Artistora Services in Ahmedabad',
+    description:
+      'Professional wedding and event artist services in Ahmedabad — photography, makeup, decor, mehndi, and more.',
+    numberOfItems: (services as any[]).length,
+    itemListElement: (services as any[]).map((service: any, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Service',
+        name: service.title,
+        serviceType: service.title,
+        description:
+          service.description ||
+          `Professional ${service.title} services in Ahmedabad by verified artists.`,
+        provider: {
+          '@type': 'Organization',
+          name: 'Artistora',
+          url: 'https://www.artistora.com',
+        },
+        areaServed: {
+          '@type': 'City',
+          name: 'Ahmedabad',
+          containedInPlace: {
+            '@type': 'AdministrativeArea',
+            name: 'Gujarat',
+          },
+        },
+      },
+    })),
+  }
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: activeFaqs.map((faq: any) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  }
+
   const bookingUrl = '/get-quote'
 
   return (
@@ -224,28 +318,13 @@ export default async function ServicesPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            name: 'Artistora Services',
-            description: 'Professional artist services in Ahmedabad — photography, makeup, decor, mehndi, and more.',
-            itemListElement: services.map((service, i) => ({
-              '@type': 'ListItem',
-              position: i + 1,
-              item: {
-                '@type': 'Service',
-                name: service.title,
-                provider: {
-                  '@type': 'Organization',
-                  name: 'Artistora',
-                },
-                areaServed: {
-                  '@type': 'City',
-                  name: 'Ahmedabad',
-                },
-              },
-            })),
-          }),
+          __html: JSON.stringify(servicesItemListSchema),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema),
         }}
       />
 
@@ -271,9 +350,8 @@ export default async function ServicesPage() {
                 Mehndi, photography, makeup, decor, and more — for every celebration.
               </h1>
               <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
-                Artistora connects you with verified artists across
-                Ahmedabad — mehndi specialists, photographers, makeup artists,
-                decorators, and event planners. Compare free quotes,
+                Artistora connects you with verified artists across Ahmedabad — mehndi specialists,
+                photographers, makeup artists, decorators, and event planners. Compare free quotes,
                 browse portfolios, and book the right artist for your event.
               </p>
               <div className="mt-5! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
@@ -283,7 +361,9 @@ export default async function ServicesPage() {
                 >
                   Browse all artists
                 </Link>
-                <span aria-hidden="true" className="text-line">/</span>
+                <span aria-hidden="true" className="text-line">
+                  /
+                </span>
                 <Link
                   className="font-semibold text-brand-deep underline decoration-gold/60 underline-offset-4 transition-colors duration-200 hover:text-brand"
                   href="/get-quote"
@@ -332,47 +412,55 @@ export default async function ServicesPage() {
             {(services as any[])
               .filter((service: any) => MAIN_SERVICES.includes(service.title))
               .map((service: any, index: number) => (
-              <article
-                className="grid items-center gap-10! lg:grid-cols-2 lg:gap-16!"
-                key={service.id}
-              >
-                <div className={`group relative ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
-                  <div
-                    aria-hidden="true"
-                    className="absolute -inset-3 -rotate-1 rounded-[2.4rem] border border-dashed border-gold/40"
-                  />
-                  <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
-                    <Image
-                      src={serviceImages[service.title] || (service.image ? mediaUrl(service.image) : mediaFileUrl('engagement.webp'))}
-                      alt={service.title}
-                      width={800}
-                      height={600}
-                      className="aspect-[4/3] w-full rounded-[1.7rem] object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
+                <article
+                  className="grid items-center gap-10! lg:grid-cols-2 lg:gap-16!"
+                  key={service.id}
+                >
+                  <div className={`group relative ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                    <div
+                      aria-hidden="true"
+                      className="absolute -inset-3 -rotate-1 rounded-[2.4rem] border border-dashed border-gold/40"
                     />
+                    <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
+                      <Image
+                        src={
+                          serviceImages[service.title] ||
+                          (service.image
+                            ? mediaUrl(service.image)
+                            : mediaFileUrl('engagement.webp'))
+                        }
+                        alt={service.title}
+                        width={800}
+                        height={600}
+                        className="aspect-[4/3] w-full rounded-[1.7rem] object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-                  <Eyebrow>Signature Service</Eyebrow>
-                  <h3 className="font-display text-[1.7rem]! leading-snug font-semibold text-ink md:text-[2rem]!">
-                    {service.title}
-                  </h3>
-                  <p className="mt-3! text-[0.95rem] leading-relaxed text-ink-soft">
-                    {service.description}
-                  </p>
-                  {service.points?.length > 0 && (
-                    <ul className="mt-6! flex flex-col gap-3!">
-                      {(service.points).map((p: any, i: number) => (
-                        <li key={i} className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft">
-                          <GoldCheck />
-                          <span>{p.point || p}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </article>
-            ))}
+                  <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
+                    <Eyebrow>Signature Service</Eyebrow>
+                    <h3 className="font-display text-[1.7rem]! leading-snug font-semibold text-ink md:text-[2rem]!">
+                      {service.title}
+                    </h3>
+                    <p className="mt-3! text-[0.95rem] leading-relaxed text-ink-soft">
+                      {service.description}
+                    </p>
+                    {service.points?.length > 0 && (
+                      <ul className="mt-6! flex flex-col gap-3!">
+                        {service.points.map((p: any, i: number) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft"
+                          >
+                            <GoldCheck />
+                            <span>{p.point || p}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </article>
+              ))}
           </div>
         </div>
       </section>
@@ -418,8 +506,12 @@ export default async function ServicesPage() {
                     <Star key={i} />
                   ))}
                 </div>
-                <strong className="font-display mt-2! block text-3xl! font-bold text-brand">5.0</strong>
-                <span className="mt-1! block text-xs text-ink-muted">Google rating with 114+ reviews</span>
+                <strong className="font-display mt-2! block text-3xl! font-bold text-brand">
+                  5.0
+                </strong>
+                <span className="mt-1! block text-xs text-ink-muted">
+                  Google rating with 114+ reviews
+                </span>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-5! md:grid-cols-2">
@@ -458,7 +550,10 @@ export default async function ServicesPage() {
               </h3>
               <ul className="mt-6! flex flex-col gap-3!">
                 {serviceAreaNotes.map((item) => (
-                  <li key={item} className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft">
+                  <li
+                    key={item}
+                    className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft"
+                  >
                     <GoldCheck />
                     <span>{item}</span>
                   </li>
@@ -472,7 +567,10 @@ export default async function ServicesPage() {
               </h3>
               <ol className="mt-6! flex flex-col gap-3.5!">
                 {planningPoints.map((item, i) => (
-                  <li key={item} className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft">
+                  <li
+                    key={item}
+                    className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft"
+                  >
                     <span
                       aria-hidden="true"
                       className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark text-xs font-bold text-white"
@@ -495,7 +593,10 @@ export default async function ServicesPage() {
               </h3>
               <ol className="mt-6! flex flex-col gap-3.5!">
                 {bookingSteps.map((step, i) => (
-                  <li key={step} className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft">
+                  <li
+                    key={step}
+                    className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft"
+                  >
                     <span
                       aria-hidden="true"
                       className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-brand to-brand-dark text-xs font-bold text-white"
@@ -514,7 +615,10 @@ export default async function ServicesPage() {
               </h3>
               <ul className="mt-6! flex flex-col gap-3!">
                 {addOns.map((item) => (
-                  <li key={item.title} className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft">
+                  <li
+                    key={item.title}
+                    className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft"
+                  >
                     <GoldCheck />
                     <span>{item.title}</span>
                   </li>
@@ -530,80 +634,99 @@ export default async function ServicesPage() {
         <div className={CONTAINER}>
           <div className="mx-auto max-w-2xl! text-center">
             <p className="mb-3! flex items-center justify-center gap-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
-              <span aria-hidden="true" className="h-px w-8 bg-gradient-to-r from-transparent to-brand/60" />
+              <span
+                aria-hidden="true"
+                className="h-px w-8 bg-gradient-to-r from-transparent to-brand/60"
+              />
               Booking Details
-              <span aria-hidden="true" className="h-px w-8 bg-gradient-to-l from-transparent to-brand/60" />
+              <span
+                aria-hidden="true"
+                className="h-px w-8 bg-gradient-to-l from-transparent to-brand/60"
+              />
             </p>
             <h3 className="font-display text-xl! leading-snug font-semibold text-ink md:text-2xl!">
               Plan your event booking with the details that matter most.
             </h3>
             <p className="mt-3! text-sm leading-relaxed text-ink-soft">
-              Clients often like to confirm service area coverage, booking lead
-              time, bridal package preferences, and event requirements before
-              finalizing their appointment.
+              Clients often like to confirm service area coverage, booking lead time, bridal package
+              preferences, and event requirements before finalizing their appointment.
             </p>
           </div>
 
           <div className="mt-16! md:mt-20!">
             <SectionHeading title="Service FAQs" subtitle="Common Booking Questions" />
             <div className="mx-auto mt-10! max-w-3xl! space-y-3.5!">
-              {(faqs as any[]).length > 0 ? (
-                (faqs as any[]).slice(0, 4).map((faq: any) => (
-                  <details
-                    key={faq.id}
-                    className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
-                  >
-                    <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
-                      <span className="flex items-center gap-3.5!">
-                        <span
-                          aria-hidden="true"
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
-                        >
-                          ?
+              {(faqs as any[]).length > 0
+                ? (faqs as any[]).slice(0, 4).map((faq: any) => (
+                    <details
+                      key={faq.id}
+                      className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
+                    >
+                      <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
+                        <span className="flex items-center gap-3.5!">
+                          <span
+                            aria-hidden="true"
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
+                          >
+                            ?
+                          </span>
+                          <span>{faq.question}</span>
                         </span>
-                        <span>{faq.question}</span>
-                      </span>
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
-                        <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 12 15 18 9" />
-                        </svg>
-                      </span>
-                    </summary>
-                    <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
-                      <p className="text-sm leading-relaxed text-ink-soft">
-                        {extractLexicalText(faq.answer)}
-                      </p>
-                    </div>
-                  </details>
-                ))
-              ) : (
-                fallbackFaqs.map((faq) => (
-                  <details
-                    key={faq.question}
-                    className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
-                  >
-                    <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
-                      <span className="flex items-center gap-3.5!">
-                        <span
-                          aria-hidden="true"
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
-                        >
-                          ?
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
+                          <svg
+                            className="h-4! w-4!"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
                         </span>
-                        <span>{faq.question}</span>
-                      </span>
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
-                        <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 12 15 18 9" />
-                        </svg>
-                      </span>
-                    </summary>
-                    <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
-                      <p className="text-sm leading-relaxed text-ink-soft">{faq.answer}</p>
-                    </div>
-                  </details>
-                ))
-              )}
+                      </summary>
+                      <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
+                        <p className="text-sm leading-relaxed text-ink-soft">
+                          {extractLexicalText(faq.answer)}
+                        </p>
+                      </div>
+                    </details>
+                  ))
+                : fallbackFaqs.map((faq) => (
+                    <details
+                      key={faq.question}
+                      className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
+                    >
+                      <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
+                        <span className="flex items-center gap-3.5!">
+                          <span
+                            aria-hidden="true"
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
+                          >
+                            ?
+                          </span>
+                          <span>{faq.question}</span>
+                        </span>
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
+                          <svg
+                            className="h-4! w-4!"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </span>
+                      </summary>
+                      <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
+                        <p className="text-sm leading-relaxed text-ink-soft">{faq.answer}</p>
+                      </div>
+                    </details>
+                  ))}
             </div>
 
             <div className="mt-8! text-center">
@@ -612,7 +735,15 @@ export default async function ServicesPage() {
                 className="inline-flex min-h-11! cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-6! py-2.5! text-xs font-semibold text-ink shadow-soft transition-all duration-200 hover:border-brand/40 hover:text-brand"
               >
                 <span>Read all FAQs on Artistora</span>
-                <svg className="h-3.5! w-3.5!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="h-3.5! w-3.5!"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </Link>
