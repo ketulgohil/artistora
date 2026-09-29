@@ -48,7 +48,7 @@ const customerFaq = [
   },
   {
     q: 'What if I need to cancel?',
-    a: 'You can cancel a booking from your My Bookings page. Cancellation policies vary by artist and are communicated during the booking confirmation. Check our Booking Policy for details.',
+    a: 'You can contact your booked artist directly or reach out to Artistora support to request a cancellation. Cancellation policies vary by artist and are communicated during the booking confirmation. Check our Booking Policy for details.',
   },
   {
     q: 'Can I leave a review after the event?',

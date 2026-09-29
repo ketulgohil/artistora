@@ -29,7 +29,6 @@ const navSections: NavSection[] = [
       { label: 'Portfolio Gallery', to: '/portfolio' },
       { label: 'Areas We Serve', to: '/areas' },
       { label: 'How It Works', to: '/how-it-works' },
-      { label: 'Track My Bookings', to: '/my-bookings', badge: 'Live' },
     ],
   },
   {

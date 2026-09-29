@@ -1,3 +1,12 @@
+/**
+ * Public Artist Profile dynamic route page.
+ *
+ * Importers/Callers: Next.js App Router dynamic route for `/artists/[slug]`.
+ * Affected APIs: Frontend artist profile SSR and dynamic params.
+ * Schemas: `artists` collection (`bio`, `displayName`, `services`, `styles`, `portfolioImages`).
+ * User instruction: "see this artist bio https://www.artistora.com/artists/rr-s-makeovers-114 the bio does look like paragrpah it should be well structure what we can do aboout it?"
+ */
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -6,22 +15,29 @@ import { withDefaultSeo } from '@/lib/seo'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import StructuredArtistBio, { parseStructuredBio } from '@/components/StructuredArtistBio'
 import type { Metadata } from 'next'
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
   const { slug } = await params
   const artist = await getArtistBySlug(slug)
   if (!artist) return { title: 'Artist Not Found' }
   const name = artist.displayName || 'Artist'
   const service = (artist.services?.[0] as any)?.title || ''
   const location = artist.city || 'Ahmedabad'
-  const title = (artist as any).metaTitle
-    || (service
+  const title =
+    (artist as any).metaTitle ||
+    (service
       ? `${name} — ${service} in ${location} | Artistora`
       : `${name} — Verified Artist in ${location} | Artistora`)
-  const description = (artist as any).metaDescription
-    || artist.bio?.slice(0, 160)
-    || `Book ${name} for ${service || 'events'} in ${location}. ${artist.yearsOfExperience || 0}+ years experience. Verified on Artistora.`
+  const description =
+    (artist as any).metaDescription ||
+    artist.bio?.slice(0, 160) ||
+    `Book ${name} for ${service || 'events'} in ${location}. ${artist.yearsOfExperience || 0}+ years experience. Verified on Artistora.`
   const ogImage = (artist as any).ogImage
     ? mediaUrl((artist as any).ogImage)
     : artist.profilePhoto
@@ -56,7 +72,11 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 
 function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
   return (
-    <span className="inline-flex" role="img" aria-label={label || (filled ? 'Filled star' : 'Empty star')}>
+    <span
+      className="inline-flex"
+      role="img"
+      aria-label={label || (filled ? 'Filled star' : 'Empty star')}
+    >
       <svg
         className={filled ? 'h-4 w-4 text-gold' : 'h-4 w-4 text-line'}
         viewBox="0 0 20 20"
@@ -72,7 +92,17 @@ function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
 function VerifiedBadge() {
   return (
     <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-3! py-1! text-xs font-semibold text-green">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M20 6 9 17l-5-5" />
       </svg>
       Verified Artist
@@ -90,7 +120,17 @@ function WhatsAppIcon() {
 
 function PhoneIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   )
@@ -98,7 +138,17 @@ function PhoneIcon() {
 
 function PinIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
@@ -107,7 +157,18 @@ function PinIcon() {
 
 function GoldCheck() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-gold">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="shrink-0 text-gold"
+    >
       <path d="M20 6 9 17l-5-5" />
     </svg>
   )
@@ -119,13 +180,16 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
 
   if (!artist) notFound()
 
-  // Increment profile views (fire-and-forget, don't block rendering)
+  // Increment profile views (fire-and-forget, don't block rendering or trigger SSR revalidation)
   getPayloadClient().then((payload) =>
-    payload.update({
-      collection: 'artists',
-      id: artist.id,
-      data: { profileViews: (artist.profileViews || 0) + 1 },
-    }).catch(() => {}),
+    payload
+      .update({
+        collection: 'artists',
+        id: artist.id,
+        data: { profileViews: (artist.profileViews || 0) + 1 },
+        context: { skipRevalidate: true },
+      })
+      .catch(() => {}),
   )
 
   const phone = artist.whatsappNumber || artist.phone
@@ -133,6 +197,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   const phoneUrl = phone ? `tel:+91${phone.replace(/\D/g, '').replace(/^91/, '')}` : ''
   const name = artist.displayName || 'Artist'
   const location = artist.city || 'Ahmedabad'
+  const parsedBio = artist.bio ? parseStructuredBio(artist.bio) : null
 
   return (
     <>
@@ -144,7 +209,8 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
             '@context': 'https://schema.org',
             '@type': 'ProfessionalService',
             name: name,
-            description: artist.bio?.slice(0, 300) || `${name} — Verified artist on Artistora in ${location}`,
+            description:
+              artist.bio?.slice(0, 300) || `${name} — Verified artist on Artistora in ${location}`,
             url: `https://www.artistora.com/artists/${slug}`,
             image: artist.profilePhoto ? mediaUrl(artist.profilePhoto) : undefined,
             telephone: phone ? `+91${phone.replace(/\D/g, '').replace(/^91/, '')}` : undefined,
@@ -158,21 +224,28 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
               '@type': 'City',
               name: artist.city || 'Ahmedabad',
             },
-            aggregateRating: typeof artist.rating === 'number' && artist.rating > 0 ? {
-              '@type': 'AggregateRating',
-              ratingValue: artist.rating.toString(),
-              reviewCount: (artist.reviewCount || 0).toString(),
-              bestRating: '5',
-              worstRating: '1',
-            } : undefined,
-            offers: artist.startingPrice ? {
-              '@type': 'AggregateOffer',
-              lowPrice: artist.startingPrice,
-              priceCurrency: 'INR',
-              offerCount: '1',
-              availability: 'https://schema.org/InStock',
-            } : undefined,
-            priceRange: artist.startingPrice ? `₹${artist.startingPrice.toLocaleString('en-IN')}+` : undefined,
+            aggregateRating:
+              typeof artist.rating === 'number' && artist.rating > 0
+                ? {
+                    '@type': 'AggregateRating',
+                    ratingValue: artist.rating.toString(),
+                    reviewCount: (artist.reviewCount || 0).toString(),
+                    bestRating: '5',
+                    worstRating: '1',
+                  }
+                : undefined,
+            offers: artist.startingPrice
+              ? {
+                  '@type': 'AggregateOffer',
+                  lowPrice: artist.startingPrice,
+                  priceCurrency: 'INR',
+                  offerCount: '1',
+                  availability: 'https://schema.org/InStock',
+                }
+              : undefined,
+            priceRange: artist.startingPrice
+              ? `₹${artist.startingPrice.toLocaleString('en-IN')}+`
+              : undefined,
           }),
         }}
       />
@@ -181,13 +254,19 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl"
+        />
         <div className={`relative ${CONTAINER} py-14! md:py-20!`}>
           <div className="grid items-center gap-10! lg:grid-cols-[1fr_1.2fr] lg:gap-16!">
             {/* Profile Photo */}
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
-                <div aria-hidden="true" className="absolute -inset-3 -rotate-1 rounded-[2.4rem] border border-dashed border-gold/40" />
+                <div
+                  aria-hidden="true"
+                  className="absolute -inset-3 -rotate-1 rounded-[2.4rem] border border-dashed border-gold/40"
+                />
                 <div className="relative overflow-hidden rounded-[2rem] border border-line/60 bg-white p-2! shadow-lift ring-1 ring-line/60">
                   {artist.profilePhoto ? (
                     <Image
@@ -200,7 +279,11 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                       sizes="(max-width: 1024px) 340px, 340px"
                     />
                   ) : (
-                    <ArtistPlaceholder name={artist.displayName} size="lg" className="aspect-square w-full max-w-[340px]" />
+                    <ArtistPlaceholder
+                      name={artist.displayName}
+                      size="lg"
+                      className="aspect-square w-full max-w-[340px]"
+                    />
                   )}
                 </div>
               </div>
@@ -229,7 +312,9 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                   {typeof artist.reviewCount === 'number' && artist.reviewCount > 0 && (
                     <span className="text-sm text-ink-muted">({artist.reviewCount} reviews)</span>
                   )}
-                  <span className="sr-only">{artist.rating.toFixed(1)} out of 5 stars, {artist.reviewCount || 0} reviews</span>
+                  <span className="sr-only">
+                    {artist.rating.toFixed(1)} out of 5 stars, {artist.reviewCount || 0} reviews
+                  </span>
                 </div>
               )}
 
@@ -238,12 +323,23 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 {artist.area && (
                   <span className="flex items-center gap-1.5!">
                     <PinIcon />
-                    {artist.area}{artist.city ? `, ${artist.city}` : ''}
+                    {artist.area}
+                    {artist.city ? `, ${artist.city}` : ''}
                   </span>
                 )}
                 {typeof artist.yearsOfExperience === 'number' && artist.yearsOfExperience > 0 && (
                   <span className="flex items-center gap-1.5!">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <circle cx="12" cy="12" r="10" />
                       <polyline points="12 6 12 12 16 14" />
                     </svg>
@@ -252,10 +348,37 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 )}
               </div>
 
-              {/* Bio */}
-              <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
-                {artist.bio}
-              </p>
+              {/* Bio Summary */}
+              {artist.bio && (
+                <div className="mt-5!">
+                  <p className="text-[0.95rem] leading-relaxed text-ink-soft">
+                    {parsedBio?.isStructured && parsedBio.intro.length > 0
+                      ? parsedBio.intro[0]
+                      : artist.bio}
+                  </p>
+                  {parsedBio?.isStructured && parsedBio.sections.length > 0 && (
+                    <a
+                      href="#about-artist"
+                      className="mt-2.5! inline-flex items-center gap-1.5! text-xs font-semibold text-brand transition-colors hover:text-brand-deep"
+                    >
+                      <span>Explore highlights & celebrity spotlight</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              )}
 
               {/* Price */}
               {typeof artist.startingPrice === 'number' && artist.startingPrice > 0 && (
@@ -301,6 +424,23 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
         </div>
       </section>
 
+      {/* ── Structured Bio / About Section ── */}
+      {artist.bio && parsedBio?.isStructured && (
+        <section id="about-artist" className={`${SECTION} scroll-mt-20!`}>
+          <div className={CONTAINER}>
+            <SectionHeading title="About & Highlights" subtitle="Artist Profile" />
+            <div className="mx-auto max-w-4xl!">
+              <StructuredArtistBio
+                bio={artist.bio}
+                artistName={name}
+                yearsOfExperience={artist.yearsOfExperience ?? undefined}
+                city={location}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Styles & Services ── */}
       <section className={SECTION}>
         <div className={CONTAINER}>
@@ -309,7 +449,9 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
             {Boolean(artist.styles && artist.styles.length > 0) && (
               <div className="rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift md:p-8!">
                 <Eyebrow>Styles</Eyebrow>
-                <h3 className="font-display text-xl! font-semibold text-ink">Design specializations</h3>
+                <h3 className="font-display text-xl! font-semibold text-ink">
+                  Design specializations
+                </h3>
                 <div className="mt-5! flex flex-wrap gap-2!">
                   {artist.styles!.map((s: any, i: number) => (
                     <span
@@ -331,7 +473,10 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 <h3 className="font-display text-xl! font-semibold text-ink">What you can book</h3>
                 <ul className="mt-5! flex flex-col gap-3!">
                   {(artist.services as any[]).map((svc: any) => (
-                    <li key={svc.id || svc} className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft">
+                    <li
+                      key={svc.id || svc}
+                      className="flex items-start gap-3! text-sm leading-relaxed text-ink-soft"
+                    >
                       <GoldCheck />
                       <span>{svc.title || svc}</span>
                     </li>
@@ -378,8 +523,14 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
       <section className={SECTION}>
         <div className={CONTAINER}>
           <div className="relative overflow-hidden rounded-[2rem] bg-coal px-6! py-14! shadow-lift md:px-12! md:py-16!">
-            <div aria-hidden="true" className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-brand/20 blur-3xl" />
-            <div aria-hidden="true" className="pointer-events-none absolute -right-20 -bottom-28 h-72 w-72 rounded-full bg-gold/10 blur-3xl" />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-brand/20 blur-3xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-20 -bottom-28 h-72 w-72 rounded-full bg-gold/10 blur-3xl"
+            />
             <div className="relative mx-auto max-w-2xl! text-center">
               <h2 className="font-display text-3xl! leading-snug font-semibold text-white md:text-[2.4rem]!">
                 Ready to Book {artist.displayName}?

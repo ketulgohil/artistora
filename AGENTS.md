@@ -83,7 +83,6 @@ shivamehndiart-v2/
 │   │   │   ├── artists/[slug]/page.tsx  # Artist profile
 │   │   │   ├── get-quote/page.tsx # Quote request form (public)
 │   │   │   ├── book/page.tsx     # Booking form (logged-in)
-│   │   │   ├── my-bookings/page.tsx # Customer booking lookup
 │   │   │   ├── quotes/[leadId]/page.tsx # Quote comparison
 │   │   │   ├── register/page.tsx
 │   │   │   ├── login/page.tsx
@@ -97,7 +96,6 @@ shivamehndiart-v2/
 │   │   │   ├── quotes/route.ts   # POST artist quote, GET customer quotes
 │   │   │   ├── quotes/[id]/accept/route.ts
 │   │   │   ├── bookings/route.ts # POST booking, PATCH status
-│   │   │   ├── my-bookings/route.ts # GET by phone
 │   │   │   └── analytics/route.ts # GET aggregated analytics data
 │   │   └── (payload)/            # Payload admin panel (auto-generated)
 │   ├── collections/              # Payload collection configs

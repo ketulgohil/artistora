@@ -1,3 +1,12 @@
+/**
+ * Artists Payload CMS Collection Configuration.
+ *
+ * Importers/Callers: `src/payload.config.ts`, Payload Local API & REST endpoints.
+ * Affected APIs: `/api/artists`, `/artists/[slug]`.
+ * Schemas: `artists` collection schema (PostgreSQL table `artists`).
+ * User instruction: "the changes we made is for that artist specific?"
+ */
+
 import type { CollectionConfig } from 'payload'
 import { sendArtistApprovedNotification } from '../lib/email'
 import { revalidatePath } from 'next/cache'
@@ -76,9 +85,9 @@ export const Artists: CollectionConfig = {
       },
     ],
     afterChange: [
-      async ({ doc, operation, previousDoc, req }) => {
-        // Revalidate cache on any artist profile change
-        if (operation === 'update') {
+      async ({ doc, operation, previousDoc, req, context }: any) => {
+        // Revalidate cache on any artist profile change (unless explicitly skipped for background view counters)
+        if (operation === 'update' && !context?.skipRevalidate && !req.context?.skipRevalidate) {
           try {
             revalidatePath('/artists')
             if (doc.slug) revalidatePath(`/artists/${doc.slug}`)
@@ -96,9 +105,7 @@ export const Artists: CollectionConfig = {
         ) {
           // user field is a relationship — may be ID or object
           const userId =
-            typeof doc.user === 'object' && doc.user !== null
-              ? (doc.user as any).id
-              : doc.user
+            typeof doc.user === 'object' && doc.user !== null ? (doc.user as any).id : doc.user
 
           if (userId) {
             try {
@@ -365,7 +372,8 @@ export const Artists: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
-        description: 'Auto-calculated score based on rating, reviews, completed bookings, and profile completeness',
+        description:
+          'Auto-calculated score based on rating, reviews, completed bookings, and profile completeness',
       },
     },
     // ── Featured & Subscription ──
@@ -540,7 +548,8 @@ export const Artists: CollectionConfig = {
           type: 'text',
           label: 'Meta Title',
           admin: {
-            description: 'Override the page title for this artist profile. Falls back to "{Name} — Verified Artist in {City} | Artistora".',
+            description:
+              'Override the page title for this artist profile. Falls back to "{Name} — Verified Artist in {City} | Artistora".',
           },
         },
         {
@@ -548,7 +557,8 @@ export const Artists: CollectionConfig = {
           type: 'textarea',
           label: 'Meta Description',
           admin: {
-            description: 'Override the meta description. Falls back to a snippet from the artist bio.',
+            description:
+              'Override the meta description. Falls back to a snippet from the artist bio.',
           },
         },
         {
@@ -557,7 +567,8 @@ export const Artists: CollectionConfig = {
           relationTo: 'media',
           label: 'OG Image',
           admin: {
-            description: 'Override the Open Graph image for social sharing. Falls back to profile photo.',
+            description:
+              'Override the Open Graph image for social sharing. Falls back to profile photo.',
           },
         },
       ],

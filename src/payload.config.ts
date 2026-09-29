@@ -167,7 +167,12 @@ export default buildConfig({
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || 'artistora-secret-key-fallback-2026',
+  secret: process.env.PAYLOAD_SECRET || (() => {
+    if (isProd) {
+      throw new Error('CRITICAL: PAYLOAD_SECRET environment variable is required in production.')
+    }
+    return 'artistora-secret-key-fallback-2026'
+  })(),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

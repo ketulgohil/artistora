@@ -1,5 +1,14 @@
+/**
+ * Integration Test Suite for Payload CMS Collections, Auth, and Booking Flow.
+ *
+ * Importers/Callers: Executed by Vitest runner (`npm run test:int` / `vitest run tests/int/api.int.spec.ts`).
+ * Affected APIs: Payload CMS Local API (`payload.create`, `payload.find`, `payload.delete`).
+ * Schemas: `users`, `artists`, `leads`, `quotes`, `bookings`, `reviews` collections.
+ * User instruction: "i see some test artist in the artist grid i don't want that and please don't add this kind of dummy data and if in case you add it then please delete after testing."
+ */
+
 import { getPayload, Payload } from 'payload'
-import { describe, it, expect, beforeAll, vi } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { createTokenPair, hashToken } from '../../src/lib/token'
 
 vi.mock('../../src/lib/email', () => ({
@@ -31,6 +40,53 @@ describe('API', () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })
   }, 300_000)
+
+  afterAll(async () => {
+    if (!payload) return
+    try {
+      if (bookingId) {
+        const reviews = await payload.find({
+          collection: 'reviews',
+          where: { booking: { equals: bookingId } },
+        })
+        for (const r of reviews.docs) {
+          try {
+            await payload.delete({ collection: 'reviews', id: r.id })
+          } catch {}
+        }
+        try {
+          await payload.delete({ collection: 'bookings', id: bookingId })
+        } catch {}
+      }
+      if (quoteId) {
+        try {
+          await payload.delete({ collection: 'quotes', id: quoteId })
+        } catch {}
+      }
+      if (leadId) {
+        try {
+          await payload.delete({ collection: 'leads', id: leadId })
+        } catch {}
+      }
+      if (artistProfileId) {
+        try {
+          await payload.delete({ collection: 'artists', id: artistProfileId })
+        } catch {}
+      }
+      if (customerId) {
+        try {
+          await payload.delete({ collection: 'users', id: customerId })
+        } catch {}
+      }
+      if (artistUserId) {
+        try {
+          await payload.delete({ collection: 'users', id: artistUserId })
+        } catch {}
+      }
+    } catch (e) {
+      console.error('Integration test afterAll cleanup error:', e)
+    }
+  })
 
   describe('Collections & Globals', () => {
     it('fetches users', async () => {
@@ -93,7 +149,12 @@ describe('API', () => {
     it('registers customer', async () => {
       const user = await payload.create({
         collection: 'users',
-        data: { name: 'Test Customer', email: testCustomerEmail, password: 'TestPass123', role: 'customer' },
+        data: {
+          name: 'Test Customer',
+          email: testCustomerEmail,
+          password: 'TestPass123',
+          role: 'customer',
+        },
       })
       expect(user.id).toBeDefined()
       customerId = user.id
@@ -102,7 +163,12 @@ describe('API', () => {
     it('registers artist with profile', async () => {
       const user = await payload.create({
         collection: 'users',
-        data: { name: 'Test Artist', email: testArtistEmail, password: 'TestPass123', role: 'artist' },
+        data: {
+          name: 'Test Artist',
+          email: testArtistEmail,
+          password: 'TestPass123',
+          role: 'artist',
+        },
       })
       artistUserId = user.id
 
@@ -135,7 +201,10 @@ describe('API', () => {
 
     it('rejects wrong password', async () => {
       await expect(
-        payload.login({ collection: 'users', data: { email: testCustomerEmail, password: 'Wrong' } }),
+        payload.login({
+          collection: 'users',
+          data: { email: testCustomerEmail, password: 'Wrong' },
+        }),
       ).rejects.toThrow()
     })
   })
@@ -189,7 +258,9 @@ describe('API', () => {
     it('fetches quotes for lead', async () => {
       const result = await payload.find({
         collection: 'quotes',
-        where: { and: [{ lead: { equals: leadId } }, { status: { in: ['sent', 'viewed', 'accepted'] } }] },
+        where: {
+          and: [{ lead: { equals: leadId } }, { status: { in: ['sent', 'viewed', 'accepted'] } }],
+        },
         depth: 2,
       })
       expect(result.docs.length).toBeGreaterThan(0)
@@ -212,7 +283,11 @@ describe('API', () => {
       await payload.update({
         collection: 'leads',
         id: leadId,
-        data: { status: 'artist_selected', matchedArtists: [artistProfileId], acceptedQuote: Number(quoteId) },
+        data: {
+          status: 'artist_selected',
+          matchedArtists: [artistProfileId],
+          acceptedQuote: Number(quoteId),
+        },
       })
 
       const lead = await payload.findByID({ collection: 'leads', id: leadId })
@@ -230,7 +305,9 @@ describe('API', () => {
           lead: leadId,
           quote: Number(quoteId),
           artist: artistProfileId,
-          assignedArtists: [{ artist: artistProfileId, role: 'lead', status: 'pending', fee: 25000 }],
+          assignedArtists: [
+            { artist: artistProfileId, role: 'lead', status: 'pending', fee: 25000 },
+          ],
           status: 'artist_pending',
         },
       })
@@ -244,17 +321,29 @@ describe('API', () => {
 
   describe('Booking Status Flow', () => {
     it('artist_pending -> confirmed', async () => {
-      const updated = await payload.update({ collection: 'bookings', id: bookingId, data: { status: 'confirmed' } })
+      const updated = await payload.update({
+        collection: 'bookings',
+        id: bookingId,
+        data: { status: 'confirmed' },
+      })
       expect(updated.status).toBe('confirmed')
     })
 
     it('confirmed -> in_progress', async () => {
-      const updated = await payload.update({ collection: 'bookings', id: bookingId, data: { status: 'in_progress' } })
+      const updated = await payload.update({
+        collection: 'bookings',
+        id: bookingId,
+        data: { status: 'in_progress' },
+      })
       expect(updated.status).toBe('in_progress')
     })
 
     it('in_progress -> completed', async () => {
-      const updated = await payload.update({ collection: 'bookings', id: bookingId, data: { status: 'completed' } })
+      const updated = await payload.update({
+        collection: 'bookings',
+        id: bookingId,
+        data: { status: 'completed' },
+      })
       expect(updated.status).toBe('completed')
     })
   })
@@ -263,7 +352,15 @@ describe('API', () => {
     it('creates review for completed booking', async () => {
       const review = await payload.create({
         collection: 'reviews',
-        data: { booking: bookingId, user: customerId, customerName: 'Test Customer', artist: artistProfileId, rating: 5, text: 'Excellent!', verifiedBooking: true } as any,
+        data: {
+          booking: bookingId,
+          user: customerId,
+          customerName: 'Test Customer',
+          artist: artistProfileId,
+          rating: 5,
+          text: 'Excellent!',
+          verifiedBooking: true,
+        } as any,
       })
       expect(review.id).toBeDefined()
       expect(review.rating).toBe(5)
@@ -298,7 +395,12 @@ describe('API', () => {
       const lead = leads.docs[0]
       if (!lead) return
 
-      const result = verifyToken({ rawToken: 'invalid', storedHash: lead.viewTokenHash, expiresAt: lead.viewTokenExpiresAt, revokedAt: lead.viewTokenRevokedAt })
+      const result = verifyToken({
+        rawToken: 'invalid',
+        storedHash: lead.viewTokenHash,
+        expiresAt: lead.viewTokenExpiresAt,
+        revokedAt: lead.viewTokenRevokedAt,
+      })
       expect(result.valid).toBe(false)
       if (!result.valid) expect(result.status).toBe(403)
     })
@@ -307,7 +409,12 @@ describe('API', () => {
       const { hashToken } = await import('../../src/lib/token')
       const expiredHash = hashToken('expired-token')
       const { verifyToken } = await import('../../src/lib/token')
-      const result = verifyToken({ rawToken: 'expired-token', storedHash: expiredHash, expiresAt: new Date(Date.now() - 60_000).toISOString(), revokedAt: undefined })
+      const result = verifyToken({
+        rawToken: 'expired-token',
+        storedHash: expiredHash,
+        expiresAt: new Date(Date.now() - 60_000).toISOString(),
+        revokedAt: undefined,
+      })
       expect(result.valid).toBe(false)
       if (!result.valid) expect(result.status).toBe(403)
     })
@@ -342,12 +449,22 @@ describe('API', () => {
         } as any,
       })
 
-      const result = verifyToken({ rawToken, storedHash: testLead.viewTokenHash, expiresAt: testLead.viewTokenExpiresAt, revokedAt: testLead.viewTokenRevokedAt })
+      const result = verifyToken({
+        rawToken,
+        storedHash: testLead.viewTokenHash,
+        expiresAt: testLead.viewTokenExpiresAt,
+        revokedAt: testLead.viewTokenRevokedAt,
+      })
       expect(result.valid).toBe(true)
 
       const quotes = await payload.find({
         collection: 'quotes',
-        where: { and: [{ lead: { equals: testLead.id } }, { status: { in: ['sent', 'viewed', 'accepted'] } }] },
+        where: {
+          and: [
+            { lead: { equals: testLead.id } },
+            { status: { in: ['sent', 'viewed', 'accepted'] } },
+          ],
+        },
       })
       expect(quotes.docs).toBeInstanceOf(Array)
 
@@ -377,7 +494,10 @@ describe('API', () => {
   describe('Cleanup', () => {
     it('deletes test data', async () => {
       if (bookingId) {
-        const reviews = await payload.find({ collection: 'reviews', where: { booking: { equals: bookingId } } })
+        const reviews = await payload.find({
+          collection: 'reviews',
+          where: { booking: { equals: bookingId } },
+        })
         for (const r of reviews.docs) await payload.delete({ collection: 'reviews', id: r.id })
         await payload.delete({ collection: 'bookings', id: bookingId })
       }

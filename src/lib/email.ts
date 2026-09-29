@@ -683,6 +683,7 @@ export async function sendReviewRequestEmail(to: string, data: {
   eventType: string
   bookingId: number
 }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.artistora.com'
   const EVENT_LABELS: Record<string, string> = {
     wedding: 'Wedding',
     engagement: 'Engagement',
@@ -710,7 +711,7 @@ export async function sendReviewRequestEmail(to: string, data: {
         Your review helps other customers find the best artists and helps artists improve their services.
       </p>
       <div style="margin: 24px 0; text-align: center;">
-        <a href="https://www.artistora.com/my-bookings" style="display: inline-block; padding: 12px 32px; background: #ec6783; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 14px;">Leave a Review</a>
+        <a href="${siteUrl}/contact" style="display: inline-block; padding: 12px 32px; background: #ec6783; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 14px;">Contact Support</a>
       </div>
       <div style="margin: 28px 0 0; padding-top: 20px; border-top: 1px solid #f1d9dc; text-align: center;">
         <p style="margin: 0; font-size: 12px; color: #7e8aa3;">Artistora</p>

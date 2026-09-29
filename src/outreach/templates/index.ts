@@ -75,7 +75,7 @@ Quick update: {{totalArtists}} artists from Ahmedabad have already joined Artist
 
 Artists like you in {{services}} are earning an average of ₹15K-50K extra per month through our platform.
 
-🔗 Join free: artistora.com/register
+🔗 Join free: https://www.artistora.com/register?role=artist
 
 No setup fees, totally free to use.
 
@@ -96,7 +96,7 @@ We're seeing a huge demand for {{services}} artists in {{city}}. Customers are a
 
 This is the perfect time to set up your profile and start getting leads.
 
-🔗 artistora.com/register (Free)
+🔗 https://www.artistora.com/register?role=artist (Free)
 
 Would love to have you on board!
 
@@ -118,7 +118,7 @@ We'd love to feature your portfolio on our platform:
 📩 Direct booking requests
 ✅ Verified badge
 
-It's free to join → artistora.com/register
+It's free to join → https://www.artistora.com/register?role=artist
 
 Let me know if you'd like to know more! 😊`,
     variables: ['artistName'],
@@ -144,7 +144,7 @@ Let me know if you'd like to know more! 😊`,
 📱 *Free Marketing* — અમારા પ્લેટફોર્મ પરથી ગ્રાહકો તમને શોધશે
 🔔 *Booking Alerts* — નવા Enquiry ની તરત Notification
 
-👉 *ફ્રીમાં જોડાઓ:* artistora.com/register
+👉 *ફ્રીમાં જોડાઓ:* https://www.artistora.com/register?role=artist
 
 કોઈ પ્રશ્ન હોય તો અહીં Reply કરો! 😊
 
@@ -172,7 +172,7 @@ Artistora (artistora.com) પર હાલમાં {{services}} માટે �
 ✅ *Verified Badge*
 💰 *Zero Commission — Totally Free!*
 
-👉 *હમણાં જ જોડાઓ:* artistora.com/register
+👉 *હમણાં જ જોડાઓ:* https://www.artistora.com/register?role=artist
 
 — Team Artistora`,
     variables: ['artistName', 'services', 'businessLine'],
@@ -201,7 +201,7 @@ Artistora શું છે અને તમારા માટે કેમ જ�
 🔹 *Reviews* — ગ્રાહકો Rating & Review આપે → Trust વધે
 🔹 *Dashboard* — બધું એક જગ્યાએ જુઓ
 
-👉 *ફ્રીમાં Register કરો:* artistora.com/register
+👉 *ફ્રીમાં Register કરો:* https://www.artistora.com/register?role=artist
 
 💰 એકદમ Free!
 📞 કોઈ Question હોય તો અહીં Reply કરો
@@ -229,7 +229,7 @@ Artistora શું છે અને તમારા માટે કેમ જ�
 🔹 Zero Commission — Always Free
 🔹 No Setup Fees — Ever
 
-👉 *હમણાં જ જોડાઓ:* artistora.com/register
+👉 *હમણાં જ જોડાઓ:* https://www.artistora.com/register?role=artist
 
 ⏳ Early Bird Artists ને Homepage પર Featured કરવામાં આવશે!
 
@@ -248,7 +248,7 @@ Just checking in! We reached out a while ago about Artistora — Ahmedabad's art
 
 Since then, {{newStats}} new artists have joined and are getting real bookings!
 
-Thought you might want to give it a try → artistora.com/register
+Thought you might want to give it a try → https://www.artistora.com/register?role=artist
 
 Free forever, no catches! 😊
 
@@ -263,8 +263,10 @@ export function getTemplate(id: string): MessageTemplate | undefined {
 }
 
 // Get all templates for a channel
-export function getTemplatesForChannel(channel: 'whatsapp' | 'instagram_dm' | 'email'): MessageTemplate[] {
-  return Object.values(templates).filter(t => t.channel === channel)
+export function getTemplatesForChannel(
+  channel: 'whatsapp' | 'instagram_dm' | 'email',
+): MessageTemplate[] {
+  return Object.values(templates).filter((t) => t.channel === channel)
 }
 
 // Common variable defaults
@@ -275,7 +277,7 @@ export const defaultVariables: TemplateVariables = {
   city: 'Ahmedabad',
   area: '',
   artistoraUrl: 'https://www.artistora.com',
-  portfolioUrl: 'https://www.artistora.com/register',
+  portfolioUrl: 'https://www.artistora.com/register?role=artist',
   rating: undefined,
   reviewCount: undefined,
   totalArtists: '180+',

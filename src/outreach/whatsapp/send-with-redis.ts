@@ -1,150 +1,149 @@
 /**
- * Send WhatsApp message with Redis session persistence.
+ * Send WhatsApp message using Baileys with Redis session persistence.
  *
  * Usage:
- *   npx tsx src/outreach/whatsapp/send-with-redis.ts <phone> <message>
+ *   NODE_OPTIONS="--no-deprecation" node --import tsx src/outreach/whatsapp/send-with-redis.ts <phone> "<message>"
  *
- * Restores session from Redis before starting. After sending, saves back to Redis.
+ * Restores Baileys session from Redis before starting. After sending, saves back to Redis.
  * Survives process restarts — no QR scan needed (until session expires).
  */
 
-import { saveSessionToRedis, loadSessionFromRedis } from './redis-session'
-import { validateAndNormalizePhone } from './queue-send'
-import { logOutreachMessage } from './log-message'
-import { createRequire } from 'module'
+import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys'
+import pino from 'pino'
+import qrcode from 'qrcode-terminal'
 import * as path from 'path'
 import * as fs from 'fs'
+import dotenv from 'dotenv'
+import { loadBaileysAuthFromRedis, saveBaileysAuthToRedis } from './baileys-session'
+import { validateAndNormalizePhone } from './queue-send'
+import { logOutreachMessage } from './log-message'
 
-const require = createRequire(import.meta.url)
-const { Client, LocalAuth } = require('whatsapp-web.js')
-const qrcode = require('qrcode-terminal')
+dotenv.config()
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 
-const BASE_DIR = process.env.WHATSAPP_SESSION_DIR || '/tmp/whatsapp-session'
-const SESSION_DIR_SESSION = path.join(BASE_DIR, 'session')
+const AUTH_DIR = process.env.WHATSAPP_SESSION_DIR || '/tmp/baileys-auth-session'
 
 async function main() {
   const phoneArg = process.argv[2]
   const message = process.argv[3]
 
   if (!phoneArg || !message) {
-    console.error('Usage: npx tsx src/outreach/whatsapp/send-with-redis.ts <phone> <message>')
+    console.error(
+      'Usage: node --import tsx src/outreach/whatsapp/send-with-redis.ts <phone> "<message>"',
+    )
     process.exit(1)
   }
 
   const cleanPhone = validateAndNormalizePhone(phoneArg)
   if (!cleanPhone) {
-    console.error(`[WhatsApp] ❌ Invalid phone number "${phoneArg}". Must be a valid 10-digit Indian mobile number.`)
+    console.error(
+      `[WhatsApp] ❌ Invalid phone number "${phoneArg}". Must be a valid 10-digit Indian mobile number.`,
+    )
     process.exit(1)
   }
 
-  const chatId = `${cleanPhone}@c.us`
-  console.log(`[WhatsApp] Target: ${cleanPhone}`)
+  const jid = `${cleanPhone}@s.whatsapp.net`
+  console.log(`[WhatsApp] Target: ${cleanPhone} (${jid})`)
 
-  // Step 1: Restore session from Redis BEFORE creating client
-  console.log('[WhatsApp] Restoring session from Redis...')
-  fs.mkdirSync(SESSION_DIR_SESSION, { recursive: true })
-
-  // Clean stale lock files
-  for (const f of ['SingletonLock', 'SingletonCookie', 'SingletonSocket']) {
-    try { fs.unlinkSync(path.join(SESSION_DIR_SESSION, f)) } catch {}
-  }
-
-  const restored = await loadSessionFromRedis(SESSION_DIR_SESSION)
+  // Step 1: Restore auth state from Redis
+  console.log('[WhatsApp] Restoring Baileys session from Redis...')
+  fs.mkdirSync(AUTH_DIR, { recursive: true })
+  const restored = await loadBaileysAuthFromRedis(AUTH_DIR)
   if (restored) {
     console.log('[WhatsApp] ✅ Session restored from Redis')
   } else {
-    console.log('[WhatsApp] ⚠️ No session in Redis — will need QR scan')
+    console.log('[WhatsApp] ⚠️ No session in Redis — QR scan may be required')
   }
 
-  // Step 2: Create client (LocalAuth will use the restored session files)
-  const client = new Client({
-    authStrategy: new LocalAuth({ dataPath: BASE_DIR }),
-    puppeteer: {
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--no-zygote',
-      ],
-    },
+  // Step 2: Initialize Baileys auth state & socket
+  const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
+
+  const sock = makeWASocket({
+    auth: state,
+    logger: pino({ level: 'silent' }),
+    printQRInTerminal: false,
+    defaultQueryTimeoutMs: 30000,
   })
 
-  client.on('qr', (qr: string) => {
-    console.log('\n[WhatsApp] Scan this QR code:\n')
-    qrcode.generate(qr, { small: true })
-    console.log('\n[WhatsApp] Waiting for scan...')
-  })
+  sock.ev.on('creds.update', saveCreds)
 
-  client.on('authenticated', () => {
-    console.log('[WhatsApp] ✅ Authenticated!')
-  })
+  let sent = false
+  let sendError: string | undefined
+  let messageId: string | undefined
 
-  client.on('auth_failure', (msg: string) => {
-    console.error('[WhatsApp] ❌ Auth failure:', msg)
-    process.exit(1)
-  })
-
-  client.on('ready', async () => {
-    console.log('[WhatsApp] Connected! Sending message...')
-
-    let sendSuccess = false
-    let sendError: string | undefined
-    let messageSid: string | undefined
-
+  const timeoutHandle = setTimeout(async () => {
+    console.error('[WhatsApp] ❌ Timeout — no open connection within 60s')
     try {
-      const response = await client.sendMessage(chatId, message)
-      messageSid = response?.id?.id || undefined
-      sendSuccess = true
-      console.log(`[WhatsApp] ✅ Message sent to ${cleanPhone}`)
-    } catch (err: any) {
-      sendError = err.message
-      console.error(`[WhatsApp] ❌ Send failed: ${err.message}`)
+      sock.end(undefined)
+    } catch {}
+    process.exit(1)
+  }, 60_000)
+
+  sock.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect, qr } = update
+
+    if (qr) {
+      console.log('\n[WhatsApp] Scan this QR code to connect:\n')
+      qrcode.generate(qr, { small: true })
+      console.log('\n[WhatsApp] Waiting for QR scan...')
     }
 
-    // Log to Payload CMS (outreach-messages & discovered-artists)
-    try {
-      await logOutreachMessage(cleanPhone, message, {
-        channel: 'whatsapp',
-        status: sendSuccess ? 'sent' : 'failed',
-        campaignName: 'direct_send',
-        templateUsed: 'custom',
-        messageSid,
-        error: sendError,
-      })
-    } catch (err: any) {
-      console.error('[WhatsApp] Payload log warning:', err.message)
+    if (connection === 'open') {
+      clearTimeout(timeoutHandle)
+      console.log(`[WhatsApp] ✅ Connected as: ${sock.user?.id}`)
+      console.log(`[WhatsApp] Sending message to ${cleanPhone}...`)
+
+      try {
+        const result = await sock.sendMessage(jid, { text: message })
+        messageId = result?.key?.id || undefined
+        sent = true
+        console.log(`[WhatsApp] 🚀 Message dispatched successfully (ID: ${messageId || 'unknown'})`)
+      } catch (err: any) {
+        sendError = err.message
+        console.error(`[WhatsApp] ❌ Send failed: ${err.message}`)
+      }
+
+      // Log to Payload CMS
+      try {
+        await logOutreachMessage(cleanPhone, message, {
+          channel: 'whatsapp',
+          status: sent ? 'sent' : 'failed',
+          campaignName: 'direct_send',
+          templateUsed: 'custom',
+          messageSid: messageId,
+          error: sendError,
+        })
+      } catch (err: any) {
+        console.warn(`[WhatsApp] Payload logging notice: ${err.message}`)
+      }
+
+      // Save updated credentials back to Redis
+      try {
+        await saveBaileysAuthToRedis(AUTH_DIR)
+      } catch (err: any) {
+        console.warn(`[WhatsApp] Session save notice: ${err.message}`)
+      }
+
+      // Allow 2s for background socket ack flushing
+      setTimeout(() => {
+        try {
+          sock.end(undefined)
+        } catch {}
+        process.exit(sent ? 0 : 1)
+      }, 2000)
+    } else if (connection === 'close') {
+      const statusCode = (lastDisconnect?.error as any)?.output?.statusCode
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut
+      if (!sent && !shouldReconnect) {
+        console.error('[WhatsApp] ❌ Logged out or disconnected permanently')
+        clearTimeout(timeoutHandle)
+        process.exit(1)
+      }
     }
-
-    // Save session back to Redis
-    try {
-      await saveSessionToRedis(SESSION_DIR_SESSION)
-      console.log('[WhatsApp] ✅ Session saved to Redis for next time')
-    } catch (err: any) {
-      console.error('[WhatsApp] Session save warning:', err.message)
-    }
-
-    await client.destroy()
-    process.exit(sendSuccess ? 0 : 1)
   })
-
-  client.on('disconnected', (reason: string) => {
-    console.log('[WhatsApp] Disconnected:', reason)
-    process.exit(1)
-  })
-
-  console.log('[WhatsApp] Initializing client...')
-  client.initialize().catch((err: Error) => {
-    console.error('[WhatsApp] Init failed:', err.message)
-    process.exit(1)
-  })
-
-  // Timeout after 2 minutes
-  setTimeout(() => {
-    console.error('[WhatsApp] ❌ Timeout — no response in 2 minutes')
-    client.destroy().catch(() => {})
-    process.exit(1)
-  }, 120_000)
 }
 
-main()
+main().catch((err) => {
+  console.error('[WhatsApp] Fatal error:', err)
+  process.exit(1)
+})

@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 
 /**
  * Private media collection for customer reference images and other non-public files.
@@ -15,23 +15,27 @@ export const PrivateMedia: CollectionConfig = {
     group: 'Artistora',
   },
   access: {
-    read: ({ req, data }) => {
+    read: ({ req }) => {
       // Admins can read all
       if (req.user?.role === 'admin') return true
 
-      // Owner can read their own uploads
-      if (req.user && data?.uploadedBy) {
-        const uploaderId = typeof data.uploadedBy === 'object'
-          ? (data.uploadedBy as any).id
-          : data.uploadedBy
-        return uploaderId === req.user.id
+      // Artists can read their own uploads or files linked to their matched leads
+      if (req.user?.role === 'artist') {
+        const whereCondition: Where = {
+          or: [
+            { uploadedBy: { equals: req.user.id } },
+            { 'leadId.matchedArtists.user': { equals: req.user.id } },
+          ],
+        }
+        return whereCondition
       }
 
-      // Artists can read files linked to their assigned leads
-      if (req.user?.role === 'artist' && data?.leadId) {
-        return {
-          'leadId.matchedArtists.user': { equals: req.user.id },
+      // Logged-in users can read their own uploads
+      if (req.user) {
+        const whereCondition: Where = {
+          uploadedBy: { equals: req.user.id },
         }
+        return whereCondition
       }
 
       return false

@@ -31,12 +31,17 @@ const LIMIT = parseInt(process.argv.find((_, i, a) => a[i - 1] === '--limit') ||
 const TEMPLATE_ID = process.argv.find((_, i, a) => a[i - 1] === '--template') || 'gujarati_welcome'
 const AREA_FILTER = process.argv.find((_, i, a) => a[i - 1] === '--area')
 const SERVICE_FILTER = process.argv.find((_, i, a) => a[i - 1] === '--service')
-const CAMPAIGN_NAME = process.argv.find((_, i, a) => a[i - 1] === '--campaign') || `manual_${TEMPLATE_ID}_${new Date().toISOString().split('T')[0]}`
+const CAMPAIGN_NAME =
+  process.argv.find((_, i, a) => a[i - 1] === '--campaign') ||
+  `manual_${TEMPLATE_ID}_${new Date().toISOString().split('T')[0]}`
 const SHOW_STATS = process.argv.includes('--stats')
 
 // ── Message Templates ──
 
-const TEMPLATES: Record<string, (vars: { name: string; services: string; area: string; businessLine: string }) => string> = {
+const TEMPLATES: Record<
+  string,
+  (vars: { name: string; services: string; area: string; businessLine: string }) => string
+> = {
   gujarati_welcome: (v) => `🙏 નમસ્તે ${v.name},
 
 ${v.businessLine}
@@ -205,7 +210,12 @@ function generateBusinessLine(artist: any, templateId: string): string {
 
 // ── Database Query ──
 
-async function queryArtists(filters: { area?: string; service?: string; limit: number; offset: number }) {
+async function queryArtists(filters: {
+  area?: string
+  service?: string
+  limit: number
+  offset: number
+}) {
   const { Client: PgClient } = require('pg')
   const pg = new PgClient({ connectionString: DB_URL })
   await pg.connect()
@@ -277,7 +287,10 @@ async function countArtists(filters: { area?: string; service?: string }) {
       where += ` AND id::text != ALL($${params.length}::text[])`
     }
 
-    const result = await pg.query(`SELECT COUNT(*) as total FROM discovered_artists ${where}`, params)
+    const result = await pg.query(
+      `SELECT COUNT(*) as total FROM discovered_artists ${where}`,
+      params,
+    )
     return parseInt(result.rows[0].total)
   } finally {
     await pg.end()
@@ -292,7 +305,9 @@ async function showStats() {
   await pg.connect()
 
   try {
-    const total = await pg.query('SELECT COUNT(*) as total, COUNT(phone) as with_phone FROM discovered_artists')
+    const total = await pg.query(
+      'SELECT COUNT(*) as total, COUNT(phone) as with_phone FROM discovered_artists',
+    )
     const byService = await pg.query(`
       SELECT specializations, COUNT(*) as count
       FROM discovered_artists
@@ -406,7 +421,12 @@ async function main() {
 
     // Use generic greeting if no valid name
     const greeting = name ? `🙏 નમસ્તે ${name},` : '🙏 નમસ્તે,'
-    let message = templateFn({ name: name || '', services, area: a.area || '', businessLine }).replace(/^🙏 નમસ્તે [^,]*,/, greeting)
+    let message = templateFn({
+      name: name || '',
+      services,
+      area: a.area || '',
+      businessLine,
+    }).replace(/^🙏 નમસ્તે [^,]*,/, greeting)
     // Remove extra blank lines from empty businessLine
     message = message.replace(/\n{3,}/g, '\n\n')
     message = randomizeMessage(message) // Add slight variation
@@ -454,19 +474,29 @@ async function main() {
 
       if (!phone) {
         failed++
-        console.log(`  [${i + 1}/${artists.length}] ⏭️  Skipped ${displayName}: invalid phone "${rawPhone}"`)
+        console.log(
+          `  [${i + 1}/${artists.length}] ⏭️  Skipped ${displayName}: invalid phone "${rawPhone}"`,
+        )
         continue
       }
 
       const services = a.specializations || 'Art'
       const businessLine = generateBusinessLine(a, TEMPLATE_ID)
       const greeting = name ? `🙏 નમસ્તે ${name},` : '🙏 નમસ્તે,'
-      let message = templateFn({ name: name || '', services, area: a.area || '', businessLine }).replace(/^🙏 નમસ્તે [^,]*,/, greeting)
+      let message = templateFn({
+        name: name || '',
+        services,
+        area: a.area || '',
+        businessLine,
+      }).replace(/^🙏 નમસ્તે [^,]*,/, greeting)
       message = message.replace(/\n{3,}/g, '\n\n')
       message = randomizeMessage(message)
 
       try {
-        const queued = await queueMessage(phone, message, { campaign: CAMPAIGN_NAME, template: TEMPLATE_ID })
+        const queued = await queueMessage(phone, message, {
+          campaign: CAMPAIGN_NAME,
+          template: TEMPLATE_ID,
+        })
         if (!queued) {
           failed++
           continue
@@ -478,36 +508,31 @@ async function main() {
         // Update database tracking on the shared connection
         if (pgConnected) {
           try {
-            await pg.query(`
+            await pg.query(
+              `
               UPDATE discovered_artists
               SET outreach_status = 'contacted',
                   outreach_attempts = COALESCE(outreach_attempts, 0) + 1,
                   last_contacted_at = NOW(),
                   last_campaign = $1,
                   last_template_used = $2,
-                  message_status = 'sent',
-                  campaign_history = COALESCE(campaign_history, '[]'::jsonb) || $3::jsonb
-              WHERE id = $4
-            `, [
-              CAMPAIGN_NAME,
-              TEMPLATE_ID,
-              JSON.stringify([{
-                campaign: CAMPAIGN_NAME,
-                template: TEMPLATE_ID,
-                sentAt: new Date().toISOString(),
-                status: 'sent'
-              }]),
-              a.id
-            ])
+                  message_status = 'sent'
+              WHERE id = $3
+            `,
+              [CAMPAIGN_NAME, TEMPLATE_ID, a.id],
+            )
 
-            await pg.query(`
-              INSERT INTO outreach_messages (artist, channel, template_used, body, status, sent_at, queued_at, campaign_name)
+            await pg.query(
+              `
+              INSERT INTO outreach_messages (artist_id, channel, template_used, body, status, sent_at, queued_at, campaign_name)
               SELECT $1, 'whatsapp', $2, $3, 'sent', NOW(), NOW(), $4
               WHERE NOT EXISTS (
                 SELECT 1 FROM outreach_messages
-                WHERE artist = $1 AND sent_at > NOW() - INTERVAL '24 hours'
+                WHERE artist_id = $1 AND sent_at > NOW() - INTERVAL '24 hours'
               )
-            `, [a.id, TEMPLATE_ID, message.substring(0, 1000), CAMPAIGN_NAME])
+            `,
+              [a.id, TEMPLATE_ID, message.substring(0, 1000), CAMPAIGN_NAME],
+            )
           } catch (dbErr: any) {
             console.log(`    ⚠️  DB update failed for ${a.id}: ${dbErr.message}`)
           }

@@ -1,13 +1,44 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function RegisterPage() {
+function normalizeArtistType(type: string | null | undefined): string {
+  if (!type) return ''
+  const t = type.toLowerCase().trim()
+  if (['mehndi-artists', 'mehndi-artist', 'mehndi', 'mehendi'].includes(t)) return 'mehndi-artists'
+  if (['photographers', 'photographer', 'photography', 'photo'].includes(t)) return 'photographers'
+  if (['makeup-artists', 'makeup-artist', 'makeup', 'makeover'].includes(t)) return 'makeup-artists'
+  if (
+    [
+      'decor-event-planners',
+      'decor-event-planner',
+      'decor',
+      'event-planners',
+      'event-planner',
+      'decor-planners',
+    ].includes(t)
+  )
+    return 'decor-event-planners'
+  return ''
+}
+
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
+
+  const roleParam = searchParams.get('role')?.toLowerCase()
+  const typeParam =
+    searchParams.get('type') || searchParams.get('artistType') || searchParams.get('category')
+  const initialArtistType = normalizeArtistType(typeParam)
+  const initialRole: 'customer' | 'artist' =
+    roleParam === 'artist' || (Boolean(initialArtistType) && roleParam !== 'customer')
+      ? 'artist'
+      : 'customer'
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -17,17 +48,33 @@ export default function RegisterPage() {
     bio: '',
     startingPrice: '',
     yearsOfExperience: '',
-    artistType: '',
-    role: 'customer' as 'customer' | 'artist',
+    artistType: initialArtistType,
+    role: initialRole,
   })
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Keep form role and artistType synced when query parameters update
+  useEffect(() => {
+    if (roleParam === 'artist' || (Boolean(initialArtistType) && roleParam !== 'customer')) {
+      setForm((previous) => ({
+        ...previous,
+        role: 'artist',
+        artistType: previous.artistType || initialArtistType,
+      }))
+    } else if (roleParam === 'customer') {
+      setForm((previous) => ({ ...previous, role: 'customer' }))
+    }
+  }, [roleParam, initialArtistType])
+
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
-      .then((r) => { if (!r.ok) return null; return r.json() })
+      .then((r) => {
+        if (!r.ok) return null
+        return r.json()
+      })
       .then((data) => {
         if (data?.user) {
           router.replace(data.user.role === 'artist' ? '/dashboard' : '/')
@@ -115,16 +162,20 @@ export default function RegisterPage() {
           {/* Header */}
           <div className="mb-8! text-center">
             <p className="mb-3! flex items-center justify-center gap-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
-              <span aria-hidden="true" className="h-px w-9 bg-gradient-to-r from-transparent to-brand/60" />
+              <span
+                aria-hidden="true"
+                className="h-px w-9 bg-gradient-to-r from-transparent to-brand/60"
+              />
               Join Us
-              <span aria-hidden="true" className="h-px w-9 bg-gradient-to-l from-transparent to-brand/60" />
+              <span
+                aria-hidden="true"
+                className="h-px w-9 bg-gradient-to-l from-transparent to-brand/60"
+              />
             </p>
             <h1 className="font-display text-2xl! font-semibold text-ink md:text-3xl!">
               Create Your Account
             </h1>
-            <p className="mt-2! text-sm text-ink-soft">
-              Join Artistora as a customer or artist
-            </p>
+            <p className="mt-2! text-sm text-ink-soft">Join Artistora as a customer or artist</p>
           </div>
 
           {/* Error */}
@@ -137,7 +188,9 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5!">
             {/* Role toggle — two side-by-side cards */}
             <div>
-              <label className="mb-2! block text-sm font-medium text-ink-soft">I am registering as a...</label>
+              <label className="mb-2! block text-sm font-medium text-ink-soft">
+                I am registering as a...
+              </label>
               <div role="radiogroup" aria-label="Account Type" className="grid grid-cols-2 gap-3!">
                 {/* Customer Option */}
                 <label
@@ -164,7 +217,17 @@ export default function RegisterPage() {
                           : 'bg-cream-deep text-ink-muted group-hover:text-brand'
                       }`}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
@@ -179,7 +242,16 @@ export default function RegisterPage() {
                       }`}
                     >
                       {isCustomer && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -225,7 +297,17 @@ export default function RegisterPage() {
                           : 'bg-cream-deep text-ink-muted group-hover:text-brand'
                       }`}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M12 19l7-7 3 3-7 7-3-3z" />
                         <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
                         <path d="M2 2l7.586 7.586" />
@@ -242,7 +324,16 @@ export default function RegisterPage() {
                       }`}
                     >
                       {!isCustomer && (
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -269,7 +360,17 @@ export default function RegisterPage() {
             {!isCustomer && (
               <div className="rounded-2xl border border-brand/20 bg-brand/5 p-4! text-xs leading-relaxed text-ink-soft">
                 <div className="flex items-center gap-2! font-semibold text-brand-deep">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="16" x2="12" y2="12" />
                     <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -277,7 +378,8 @@ export default function RegisterPage() {
                   Artist Membership
                 </div>
                 <p className="mt-1.5! text-ink-muted">
-                  You&apos;ll get an artist dashboard to showcase your portfolio, set starting rates, list your styles, and receive direct WhatsApp/phone client inquiries.
+                  You&apos;ll get an artist dashboard to showcase your portfolio, set starting
+                  rates, list your styles, and receive direct WhatsApp/phone client inquiries.
                 </p>
               </div>
             )}
@@ -285,7 +387,9 @@ export default function RegisterPage() {
             {/* Artist Type — primary service category */}
             {!isCustomer && (
               <div>
-                <label className="mb-1.5! block text-sm font-medium text-ink-soft">Artist Type / Service Category *</label>
+                <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                  Artist Type / Service Category *
+                </label>
                 <select
                   value={form.artistType}
                   onChange={(e) => setForm((p) => ({ ...p, artistType: e.target.value }))}
@@ -298,7 +402,10 @@ export default function RegisterPage() {
                   <option value="makeup-artists">Makeup Artists</option>
                   <option value="decor-event-planners">Decor &amp; Event Planners</option>
                 </select>
-                <p className="mt-1! text-xs text-ink-muted">Choose the category that best describes your work. You can add more services later from your dashboard.</p>
+                <p className="mt-1! text-xs text-ink-muted">
+                  Choose the category that best describes your work. You can add more services later
+                  from your dashboard.
+                </p>
               </div>
             )}
 
@@ -319,7 +426,9 @@ export default function RegisterPage() {
 
             {/* Email */}
             <div>
-              <label className="mb-1.5! block text-sm font-medium text-ink-soft">Email Address *</label>
+              <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                Email Address *
+              </label>
               <input
                 type="email"
                 value={form.email}
@@ -349,7 +458,9 @@ export default function RegisterPage() {
               <>
                 <div className="grid grid-cols-1 gap-4! sm:grid-cols-2">
                   <div>
-                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">Phone / WhatsApp *</label>
+                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                      Phone / WhatsApp *
+                    </label>
                     <input
                       type="tel"
                       value={form.phone}
@@ -360,7 +471,9 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">City *</label>
+                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                      City *
+                    </label>
                     <input
                       type="text"
                       value={form.city}
@@ -374,16 +487,31 @@ export default function RegisterPage() {
 
                 {/* Profile Photo */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Profile Photo</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                    Profile Photo
+                  </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="flex cursor-pointer items-center gap-4! rounded-xl border-2 border-dashed border-line bg-cream/30 p-4! transition-colors hover:border-brand/50 hover:bg-brand/5"
                   >
                     {photoPreview ? (
-                      <img src={photoPreview} alt="Preview" className="h-16! w-16! rounded-full object-cover ring-2 ring-brand/20" />
+                      <img
+                        src={photoPreview}
+                        alt="Preview"
+                        className="h-16! w-16! rounded-full object-cover ring-2 ring-brand/20"
+                      />
                     ) : (
                       <div className="flex h-16! w-16! items-center justify-center rounded-full bg-cream-deep text-ink-muted">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                           <circle cx="12" cy="7" r="4" />
                         </svg>
@@ -407,7 +535,9 @@ export default function RegisterPage() {
 
                 {/* Bio */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Bio / About You *</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                    Bio / About You *
+                  </label>
                   <textarea
                     value={form.bio}
                     onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
@@ -416,12 +546,16 @@ export default function RegisterPage() {
                     rows={3}
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 resize-none"
                   />
-                  <p className="mt-1! text-xs text-ink-muted">Min 20 characters. A good bio gets 3x more booking requests.</p>
+                  <p className="mt-1! text-xs text-ink-muted">
+                    Min 20 characters. A good bio gets 3x more booking requests.
+                  </p>
                 </div>
 
                 {/* Starting Price */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Starting Price (₹) *</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                    Starting Price (₹) *
+                  </label>
                   <input
                     type="number"
                     value={form.startingPrice}
@@ -431,12 +565,16 @@ export default function RegisterPage() {
                     min={0}
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
-                  <p className="mt-1! text-xs text-ink-muted">Your starting price shown to customers. You can change this later.</p>
+                  <p className="mt-1! text-xs text-ink-muted">
+                    Your starting price shown to customers. You can change this later.
+                  </p>
                 </div>
 
                 {/* Years of Experience */}
                 <div>
-                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">Years of Experience *</label>
+                  <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                    Years of Experience *
+                  </label>
                   <input
                     type="number"
                     value={form.yearsOfExperience}
@@ -447,7 +585,9 @@ export default function RegisterPage() {
                     max={50}
                     className="w-full rounded-xl border border-line bg-cream/50 px-4! py-3! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
-                  <p className="mt-1! text-xs text-ink-muted">Total years of professional experience.</p>
+                  <p className="mt-1! text-xs text-ink-muted">
+                    Total years of professional experience.
+                  </p>
                 </div>
               </>
             )}
@@ -460,7 +600,15 @@ export default function RegisterPage() {
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="animate-spin"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                   </svg>
                   Creating Account...
@@ -476,12 +624,48 @@ export default function RegisterPage() {
           {/* Footer link */}
           <p className="mt-6! text-center text-sm text-ink-soft">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-brand underline decoration-gold/60 underline-offset-4 hover:text-brand-deep">
+            <Link
+              href="/login"
+              className="font-semibold text-brand underline decoration-gold/60 underline-offset-4 hover:text-brand-deep"
+            >
               Log in
             </Link>
           </p>
         </div>
       </div>
     </section>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="py-16! md:py-24!">
+          <div className="mx-auto max-w-lg! px-4! md:px-6! text-center text-ink-soft">
+            <div className="inline-flex items-center gap-2! text-ink-muted">
+              <svg className="animate-spin h-5! w-5!" viewBox="0 0 24 24" fill="none">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              <span>Loading...</span>
+            </div>
+          </div>
+        </section>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   )
 }

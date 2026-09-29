@@ -22,7 +22,18 @@ const mainNavLinks: NavLink[] = [
     label: 'Home',
     desktopLabel: 'Home',
     icon: ({ className }) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
@@ -34,7 +45,18 @@ const mainNavLinks: NavLink[] = [
     desktopLabel: 'Artists',
     badge: 'Popular',
     icon: ({ className }) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>
     ),
@@ -44,7 +66,18 @@ const mainNavLinks: NavLink[] = [
     label: 'Services Offered',
     desktopLabel: 'Services',
     icon: ({ className }) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <rect x="3" y="3" width="7" height="7" />
         <rect x="14" y="3" width="7" height="7" />
         <rect x="14" y="14" width="7" height="7" />
@@ -57,7 +90,18 @@ const mainNavLinks: NavLink[] = [
     label: 'Portfolio Gallery',
     desktopLabel: 'Portfolio',
     icon: ({ className }) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
         <circle cx="8.5" cy="8.5" r="1.5" />
         <polyline points="21 15 16 10 5 21" />
@@ -69,7 +113,18 @@ const mainNavLinks: NavLink[] = [
     label: 'How It Works',
     desktopLabel: 'How It Works',
     icon: ({ className }) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
@@ -80,7 +135,18 @@ const mainNavLinks: NavLink[] = [
     label: 'Contact Us',
     desktopLabel: 'Contact',
     icon: ({ className }) => (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
@@ -91,7 +157,12 @@ export default function Header() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [isHiddenOnScroll, setIsHiddenOnScroll] = useState(false)
-  const [user, setUser] = useState<{ id: number; name: string; email?: string; role: string } | null>(null)
+  const [user, setUser] = useState<{
+    id: number
+    name: string
+    email?: string
+    role: string
+  } | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
 
   // Fetch authenticated session status
@@ -198,7 +269,10 @@ export default function Header() {
             isScrolled ? 'shadow-[0_10px_30px_rgba(4,34,75,0.08)] bg-[rgba(253,238,238,0.96)]' : ''
           } ${isHiddenOnScroll ? '-translate-y-full' : 'translate-y-0'}`}
         >
-          <nav className="mx-auto flex max-w-7xl items-center justify-between px-3.5! py-2! sm:px-4! md:px-6! lg:px-8!" aria-label="Main Navigation">
+          <nav
+            className="mx-auto flex max-w-7xl items-center justify-between px-3.5! py-2! sm:px-4! md:px-6! lg:px-8!"
+            aria-label="Main Navigation"
+          >
             {/* ── Brand Logo & Title ── */}
             <Link
               href="/"
@@ -261,7 +335,18 @@ export default function Header() {
                       className="inline-flex min-h-[38px] cursor-pointer items-center justify-center gap-1.5! rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5 whitespace-nowrap xl:min-h-[40px] xl:px-4! xl:py-2! xl:text-[0.82rem]!"
                       href="/dashboard"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-brand">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                        className="text-brand"
+                      >
                         <rect x="3" y="3" width="7" height="7" />
                         <rect x="14" y="3" width="7" height="7" />
                         <rect x="14" y="14" width="7" height="7" />
@@ -270,18 +355,13 @@ export default function Header() {
                       <span>Dashboard</span>
                     </Link>
                   ) : (
-                    <Link
-                      className="inline-flex min-h-[38px] cursor-pointer items-center justify-center gap-1.5! rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5 whitespace-nowrap xl:min-h-[40px] xl:px-4! xl:py-2! xl:text-[0.82rem]!"
-                      href="/my-bookings"
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="inline-flex min-h-[38px] cursor-pointer items-center justify-center rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep transition-all duration-200 hover:border-brand hover:bg-brand/5 whitespace-nowrap xl:min-h-[40px] xl:px-4! xl:py-2! xl:text-[0.82rem]!"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-brand">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                      <span>My Bookings</span>
-                    </Link>
+                      Logout
+                    </button>
                   )
                 ) : (
                   <Link
@@ -296,17 +376,57 @@ export default function Header() {
 
             {/* ── Mobile & Tablet Quick Actions (< lg) ── */}
             <div className="flex items-center gap-2! lg:hidden">
-              {/* Quick Direct "Get Quote" Pill Button for high-converting mobile taps */}
-              <Link
-                href={BOOKING_URL}
-                className="inline-flex min-h-[38px] cursor-pointer items-center gap-1.5! rounded-full bg-gradient-to-r from-brand to-brand-dark px-3.5! py-1.5! text-xs font-bold text-white shadow-[0_3px_10px_rgba(236,103,131,0.3)] transition-all duration-200 active:scale-95"
-                aria-label="Get Free Quote"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <span>Get Quote</span>
-              </Link>
+              {/* Quick Direct "Login" or "Dashboard" Quick Access Button for mobile */}
+              {user ? (
+                <Link
+                  href={user.role === 'admin' ? '/admin' : '/dashboard'}
+                  className="inline-flex min-h-[38px] cursor-pointer items-center gap-1.5! rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep shadow-xs transition-all duration-200 hover:border-brand hover:bg-brand/5 active:scale-95"
+                  aria-label={user.role === 'admin' ? 'Admin Panel' : 'Go to Dashboard'}
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-brand"
+                  >
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  <span>{user.role === 'admin' ? 'Admin' : 'Dashboard'}</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="inline-flex min-h-[38px] cursor-pointer items-center gap-1.5! rounded-full border border-brand/30 bg-white/90 px-3.5! py-1.5! text-xs font-bold text-brand-deep shadow-xs transition-all duration-200 hover:border-brand hover:bg-brand/5 active:scale-95"
+                  aria-label="Login to Account"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-brand"
+                  >
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                    <polyline points="10 17 15 12 10 7" />
+                    <line x1="15" y1="12" x2="3" y2="12" />
+                  </svg>
+                  <span>Login</span>
+                </Link>
+              )}
 
               {/* Accessible Touch-Optimized Hamburger Button (>=44x44px hit area) */}
               <button
@@ -342,7 +462,13 @@ export default function Header() {
 
       {/* ── Mobile Navigation Sheet / Drawer (< lg) ── */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" id="mobile-navigation-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation Drawer">
+        <div
+          className="fixed inset-0 z-50 lg:hidden"
+          id="mobile-navigation-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation Drawer"
+        >
           {/* Backdrop Blur Overlay with Dismiss On Click */}
           <div
             className="fixed inset-0 bg-coal/60 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn"
@@ -363,10 +489,14 @@ export default function Header() {
                   className="h-8! w-auto object-contain"
                 />
                 <div>
-                  <strong className="font-display text-lg! font-bold text-brand-deep">Artistora</strong>
+                  <strong className="font-display text-lg! font-bold text-brand-deep">
+                    Artistora
+                  </strong>
                   <div className="flex items-center gap-1.5!">
                     <span className="h-1.5 w-1.5 rounded-full bg-green animate-pulse" />
-                    <span className="text-[0.65rem] font-semibold text-ink-soft">Ahmedabad, Gujarat</span>
+                    <span className="text-[0.65rem] font-semibold text-ink-soft">
+                      Ahmedabad, Gujarat
+                    </span>
                   </div>
                 </div>
               </Link>
@@ -377,7 +507,17 @@ export default function Header() {
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-brand/20 bg-white/80 text-brand-deep transition-colors hover:bg-white active:scale-95"
                 aria-label="Close menu"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -395,7 +535,9 @@ export default function Header() {
                         {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-brand-deep">{user.name || 'User'}</p>
+                        <p className="truncate text-xs font-bold text-brand-deep">
+                          {user.name || 'User'}
+                        </p>
                         <span className="inline-block rounded-full bg-brand/10 px-2! py-0.5! text-[0.62rem] font-bold text-brand uppercase">
                           {user.role === 'artist' ? 'Artist Partner' : 'Customer'}
                         </span>
@@ -448,30 +590,14 @@ export default function Header() {
                 </ul>
               </nav>
 
-              {/* Customer Quick Links: Track Booking */}
-              <div className="mt-4! border-t border-brand/15 pt-3.5!">
-                <Link
-                  href="/my-bookings"
-                  onClick={() => setIsOpen(false)}
-                  className="flex min-h-[44px] items-center justify-between rounded-xl border border-brand/20 bg-white/70 px-3.5! py-2.5! text-xs font-bold text-brand-deep shadow-xs transition-colors hover:bg-white"
-                >
-                  <div className="flex items-center gap-2.5!">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-brand">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    <span>Track My Bookings / Quotes</span>
-                  </div>
-                  <span className="text-[0.65rem] text-brand font-bold">&rarr;</span>
-                </Link>
-              </div>
-
               {/* Artist Portal Card */}
               <div className="mt-3.5! rounded-2xl border border-brand/20 bg-gradient-to-r from-brand-deep to-coal p-3.5! text-white shadow-lift">
-                <p className="text-[0.68rem] font-bold text-gold uppercase tracking-wider">For Artists</p>
-                <p className="mt-0.5! text-xs text-cream/80">List your services &amp; grow bookings in Gujarat.</p>
+                <p className="text-[0.68rem] font-bold text-gold uppercase tracking-wider">
+                  For Artists
+                </p>
+                <p className="mt-0.5! text-xs text-cream/80">
+                  List your services &amp; grow bookings in Gujarat.
+                </p>
                 <div className="mt-3! flex gap-2!">
                   {user?.role === 'artist' ? (
                     <Link
@@ -512,7 +638,17 @@ export default function Header() {
                   className="flex min-h-[46px] w-full cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand via-brand-dark to-brand-deep px-5! py-3! text-sm font-bold text-white shadow-[0_6px_18px_rgba(236,103,131,0.35)] transition-transform duration-200 active:scale-98"
                 >
                   <span>Get Free Quote</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
                 </a>
@@ -523,7 +659,13 @@ export default function Header() {
                   rel="noreferrer"
                   className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2! rounded-full border border-green/30 bg-green/10 px-5! py-2.5! text-xs font-bold text-green transition-colors hover:bg-green/15 active:scale-98"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
                   <span>Chat on WhatsApp</span>
@@ -532,15 +674,47 @@ export default function Header() {
 
               {/* Direct Touch Calling / Email / Social Row */}
               <div className="mt-3.5! flex items-center justify-center gap-4! text-xs text-ink-muted">
-                <a href="tel:+917405387720" className="flex items-center gap-1.5! hover:text-brand" aria-label="Call +91 7405387720">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-gold">
+                <a
+                  href="tel:+917405387720"
+                  className="flex items-center gap-1.5! hover:text-brand"
+                  aria-label="Call +91 7405387720"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-gold"
+                  >
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
                   <span>+91 7405387720</span>
                 </a>
-                <span className="text-line" aria-hidden="true">•</span>
-                <a href="mailto:hello@artistora.com" className="flex items-center gap-1.5! hover:text-brand" aria-label="Email hello@artistora.com">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-gold">
+                <span className="text-line" aria-hidden="true">
+                  •
+                </span>
+                <a
+                  href="mailto:hello@artistora.com"
+                  className="flex items-center gap-1.5! hover:text-brand"
+                  aria-label="Email hello@artistora.com"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="text-gold"
+                  >
                     <rect x="2" y="4" width="20" height="16" rx="2" />
                     <path d="m22 7-10 6L2 7" />
                   </svg>

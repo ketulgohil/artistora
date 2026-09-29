@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const protectedRoutes = ['/dashboard', '/my-bookings', '/quotes']
+const protectedRoutes = ['/dashboard', '/quotes']
 const ADMIN_PATHS = ['/admin', '/api/users', '/api/payload']
 const ALLOWED_IPS = (process.env.ADMIN_ALLOWED_IPS || '').split(',').map((s) => s.trim()).filter(Boolean)
 
@@ -24,6 +24,7 @@ export function proxy(request: NextRequest) {
   // IP-based admin access restriction
   if (isAdminPath(pathname) && ALLOWED_IPS.length > 0) {
     const ip =
+      request.headers.get('cf-connecting-ip')?.trim() ||
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       request.headers.get('x-real-ip') ||
       ''
@@ -38,7 +39,6 @@ export function proxy(request: NextRequest) {
 export const proxyConfig = {
   matcher: [
     '/dashboard/:path*',
-    '/my-bookings/:path*',
     '/quotes/:path*',
     '/admin/:path*',
     '/api/users/:path*',

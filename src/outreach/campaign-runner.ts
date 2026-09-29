@@ -1,7 +1,7 @@
 /**
  * Campaign runner — orchestrates outreach message sending with rate limiting.
  * Uses Upstash Redis (or in-memory fallback) for rate limits.
- * Sends messages via WhatsApp (whatsapp-web.js) or Instagram DM (Playwright).
+ * Sends messages via WhatsApp (Baileys) or Instagram DM (Playwright).
  */
 
 import type { CampaignConfig, OutreachChannel, TemplateVariables } from './types'
@@ -9,16 +9,19 @@ import { templates, renderTemplate, defaultVariables } from './templates'
 import { canSend, recordSent, getUsageStats } from './rate-limit'
 
 // In-memory campaign state
-const activeCampaigns = new Map<string, {
-  config: CampaignConfig
-  currentIndex: number
-  totalProcessed: number
-  status: 'running' | 'paused' | 'completed' | 'error'
-  startTime: Date
-  errors: string[]
-  sentCount: number
-  failedCount: number
-}>()
+const activeCampaigns = new Map<
+  string,
+  {
+    config: CampaignConfig
+    currentIndex: number
+    totalProcessed: number
+    status: 'running' | 'paused' | 'completed' | 'error'
+    startTime: Date
+    errors: string[]
+    sentCount: number
+    failedCount: number
+  }
+>()
 
 // Lazy-load senders to avoid Edge runtime issues
 async function getWhatsAppSender() {
@@ -36,7 +39,7 @@ async function sendViaChannel(
   channel: OutreachChannel,
   to: string,
   body: string,
-  username?: string
+  username?: string,
 ): Promise<{ success: boolean; error?: string; messageId?: string }> {
   switch (channel) {
     case 'whatsapp': {
@@ -55,7 +58,7 @@ async function sendViaChannel(
 
 // Start a campaign
 export async function startCampaign(
-  config: CampaignConfig
+  config: CampaignConfig,
 ): Promise<{ campaignId: string; status: string; message: string }> {
   if (activeCampaigns.has(config.campaignId)) {
     return { campaignId: config.campaignId, status: 'error', message: 'Campaign already active' }
@@ -75,7 +78,7 @@ export async function startCampaign(
   activeCampaigns.set(config.campaignId, state)
 
   // Process in background
-  processCampaign(config.campaignId).catch(err => {
+  processCampaign(config.campaignId).catch((err) => {
     const s = activeCampaigns.get(config.campaignId)
     if (s) {
       s.status = 'error'
@@ -98,7 +101,9 @@ async function processCampaign(campaignId: string): Promise<void> {
   const { config } = state
   const template = templates[config.template] || templates.warm_intro_en
 
-  console.log(`[CampaignRunner] Starting campaign ${campaignId}: ${config.artistIds.length} recipients`)
+  console.log(
+    `[CampaignRunner] Starting campaign ${campaignId}: ${config.artistIds.length} recipients`,
+  )
 
   for (let i = 0; i < config.artistIds.length; i++) {
     // Check if campaign is still running
@@ -114,12 +119,14 @@ async function processCampaign(campaignId: string): Promise<void> {
     // Check rate limit before sending
     const rateCheck = await canSend(config.channel, config.campaignId)
     if (!rateCheck.allowed) {
-      console.log(`[CampaignRunner] Rate limited: ${rateCheck.reason}. Waiting ${rateCheck.retryAfterMs}ms`)
-      
+      console.log(
+        `[CampaignRunner] Rate limited: ${rateCheck.reason}. Waiting ${rateCheck.retryAfterMs}ms`,
+      )
+
       // If rate limited, pause the campaign
       currentState.status = 'paused'
       currentState.errors.push(`Rate limited: ${rateCheck.reason}. Campaign paused.`)
-      
+
       // Auto-resume after the wait period (if under 1 hour)
       if (rateCheck.retryAfterMs && rateCheck.retryAfterMs < 3600000) {
         setTimeout(() => {
@@ -127,7 +134,7 @@ async function processCampaign(campaignId: string): Promise<void> {
           if (s && s.status === 'paused') {
             s.status = 'running'
             console.log(`[CampaignRunner] Auto-resuming campaign ${campaignId} after rate limit`)
-            processCampaign(campaignId).catch(err => {
+            processCampaign(campaignId).catch((err) => {
               s.status = 'error'
               s.errors.push(`Resume error: ${err.message}`)
             })
@@ -149,12 +156,12 @@ async function processCampaign(campaignId: string): Promise<void> {
 
     // Send the message
     console.log(`[CampaignRunner] Sending to ${artistIdStr} via ${config.channel}`)
-    
+
     const result = await sendViaChannel(
       config.channel,
       artistIdStr,
       renderedBody,
-      undefined // username would come from artist data
+      undefined, // username would come from artist data
     )
 
     if (result.success) {
@@ -173,7 +180,7 @@ async function processCampaign(campaignId: string): Promise<void> {
     // Wait before next message (skip for last)
     if (i < config.artistIds.length - 1 && currentState.status === 'running') {
       const delayMs = config.delayBetweenMessages * 1000
-      await new Promise(resolve => setTimeout(resolve, delayMs))
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
     }
   }
 
@@ -182,7 +189,7 @@ async function processCampaign(campaignId: string): Promise<void> {
   if (finalState && finalState.status === 'running') {
     finalState.status = 'completed'
     console.log(
-      `[CampaignRunner] Campaign ${campaignId} completed: ${finalState.sentCount} sent, ${finalState.failedCount} failed`
+      `[CampaignRunner] Campaign ${campaignId} completed: ${finalState.sentCount} sent, ${finalState.failedCount} failed`,
     )
   }
 }
@@ -191,7 +198,8 @@ async function processCampaign(campaignId: string): Promise<void> {
 export function pauseCampaign(campaignId: string): { success: boolean; message: string } {
   const state = activeCampaigns.get(campaignId)
   if (!state) return { success: false, message: 'Campaign not found' }
-  if (state.status !== 'running') return { success: false, message: `Cannot pause campaign in "${state.status}" state` }
+  if (state.status !== 'running')
+    return { success: false, message: `Cannot pause campaign in "${state.status}" state` }
 
   state.status = 'paused'
   return { success: true, message: 'Campaign paused' }
@@ -201,12 +209,13 @@ export function pauseCampaign(campaignId: string): { success: boolean; message: 
 export function resumeCampaign(campaignId: string): { success: boolean; message: string } {
   const state = activeCampaigns.get(campaignId)
   if (!state) return { success: false, message: 'Campaign not found' }
-  if (state.status !== 'paused') return { success: false, message: `Cannot resume campaign in "${state.status}" state` }
+  if (state.status !== 'paused')
+    return { success: false, message: `Cannot resume campaign in "${state.status}" state` }
 
   state.status = 'running'
 
   // Restart processing in background
-  processCampaign(campaignId).catch(err => {
+  processCampaign(campaignId).catch((err) => {
     state.status = 'error'
     state.errors.push(`Resume error: ${err.message}`)
   })

@@ -33,7 +33,6 @@ export default function QuotesPage() {
   const [accepting, setAccepting] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [bookingAccessToken, setBookingAccessToken] = useState<string | null>(null)
 
   const invalidToken = !leadId || !token
 
@@ -68,17 +67,7 @@ export default function QuotesPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to accept')
 
-      // Save booking access token for post-acceptance viewing
-      if (data.bookingAccessToken && leadId) {
-        // Store in sessionStorage so my-bookings can pick it up
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('bookingAccessToken', data.bookingAccessToken)
-          sessionStorage.setItem('bookingLeadId', leadId)
-        }
-      }
-
       setSuccess(true)
-      setBookingAccessToken(data.bookingAccessToken || null)
       setQuotes((prev) =>
         prev.map((q) =>
           q.id === quoteId
@@ -144,12 +133,6 @@ export default function QuotesPage() {
         {success && (
           <div className="mb-6! rounded-xl border border-green-200 bg-green-50 px-4! py-3! text-sm text-green-700">
             Quote accepted! A booking request has been sent to the artist for confirmation.
-            {bookingAccessToken && leadId && (
-              <> View your booking in <Link href={`/my-bookings?bookingToken=${bookingAccessToken}&leadId=${leadId}`} className="font-semibold underline">My Bookings</Link>.</>
-            )}
-            {!bookingAccessToken && (
-              <> View it in <Link href="/my-bookings" className="font-semibold underline">My Bookings</Link>.</>
-            )}
           </div>
         )}
 

@@ -48,10 +48,8 @@ const nextConfig: NextConfig = {
       './scripts/**',
       './tests/**',
       './artistora-logo-package/**',
-      './whatsapp-session/**',
       './instagram-session/**',
       'node_modules/@whiskeysockets/baileys/**',
-      'node_modules/whatsapp-web.js/**',
       'node_modules/@playwright/**',
       'node_modules/playwright/**',
       'node_modules/puppeteer/**',
@@ -102,9 +100,7 @@ const nextConfig: NextConfig = {
       {
         // Cache static assets
         source: '/artistora/(.*)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {
         // Disable caching for API routes

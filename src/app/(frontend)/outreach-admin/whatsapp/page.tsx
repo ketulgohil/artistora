@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 
 export default function WhatsAppAuthPage() {
-  const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected' | 'error'>(
+    'loading',
+  )
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [message, setMessage] = useState('')
 
@@ -128,19 +130,14 @@ export default function WhatsAppAuthPage() {
           </div>
 
           {/* Message */}
-          {message && (
-            <p className="text-[var(--color-ink-soft)]! font-body mb-6!">{message}</p>
-          )}
+          {message && <p className="text-[var(--color-ink-soft)]! font-body mb-6!">{message}</p>}
 
           {/* QR Code Display */}
           {qrCode && status === 'disconnected' && (
             <div className="mb-6!">
               <div className="bg-white p-4! rounded-xl! border-2! border-[var(--color-line)]! inline-block!">
-                {/* QR code as SVG — whatsapp-web.js returns a data URL or SVG string */}
-                <div
-                  dangerouslySetInnerHTML={{ __html: qrCode }}
-                  className="w-64! h-64!"
-                />
+                {/* QR code SVG or image string */}
+                <div dangerouslySetInnerHTML={{ __html: qrCode }} className="w-64! h-64!" />
               </div>
               <p className="text-sm! text-[var(--color-ink-muted)]! font-body mt-4!">
                 Open WhatsApp on your phone → Settings → Linked Devices → Link a Device
@@ -183,9 +180,15 @@ export default function WhatsAppAuthPage() {
               How to Connect
             </h3>
             <ol className="space-y-3! text-sm! text-[var(--color-ink-soft)]! font-body! list-decimal! list-inside!">
-              <li>Open <strong>WhatsApp</strong> on your phone</li>
-              <li>Go to <strong>Settings</strong> → <strong>Linked Devices</strong></li>
-              <li>Tap <strong>Link a Device</strong></li>
+              <li>
+                Open <strong>WhatsApp</strong> on your phone
+              </li>
+              <li>
+                Go to <strong>Settings</strong> → <strong>Linked Devices</strong>
+              </li>
+              <li>
+                Tap <strong>Link a Device</strong>
+              </li>
               <li>Scan the QR code shown above</li>
               <li>Wait for the status to change to ✅ Connected</li>
             </ol>

@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard
-Disallow: /my-bookings
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
