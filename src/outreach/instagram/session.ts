@@ -64,23 +64,23 @@ export async function verifyInstagramSession(
       .map(([k, v]) => `${k}=${v}`)
       .join('; ')
     const sessionId = uniqueCookieMap.get('sessionid')
+    const csrfToken = uniqueCookieMap.get('csrftoken') || ''
 
     if (!sessionId) {
       return { valid: false, error: 'No sessionid found in cookies' }
     }
 
-    const res = await fetch(
-      'https://www.instagram.com/api/v1/users/web_profile_info/?username=instagram',
-      {
-        headers: {
-          Cookie: cookieString,
-          'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          'X-IG-App-ID': '936619743392459',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
+    const res = await fetch('https://www.instagram.com/api/v1/direct_v2/inbox/?limit=1', {
+      headers: {
+        Cookie: cookieString,
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'X-IG-App-ID': '936619743392459',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken,
+        Referer: 'https://www.instagram.com/direct/inbox/',
       },
-    )
+    })
 
     if (res.status === 401 || res.status === 403 || res.redirected) {
       return {
@@ -89,7 +89,33 @@ export async function verifyInstagramSession(
       }
     }
 
-    return { valid: res.ok, error: res.ok ? undefined : `HTTP ${res.status}` }
+    if (!res.ok) {
+      // Fallback check to topsearch if direct inbox returns temporary server glitch
+      const searchRes = await fetch(
+        'https://www.instagram.com/web/search/topsearch/?context=blended&query=wedding&include_reel=false',
+        {
+          headers: {
+            Cookie: cookieString,
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'X-IG-App-ID': '936619743392459',
+            'X-Requested-With': 'XMLHttpRequest',
+            Referer: 'https://www.instagram.com/',
+          },
+        },
+      )
+      if (searchRes.ok) {
+        return { valid: true }
+      }
+      return { valid: false, error: `HTTP ${res.status}` }
+    }
+
+    const data = await res.json().catch(() => null)
+    if (data?.message === 'login_required' || data?.status === 'fail') {
+      return { valid: false, error: 'login_required' }
+    }
+
+    return { valid: true }
   } catch (err: any) {
     return { valid: false, error: err.message }
   }
