@@ -49,21 +49,92 @@ interface TargetArtist {
   handle: string
   name?: string
   sourceId?: string
-  category?: 'mehndi' | 'makeup' | 'photography' | 'decor' | string
+  category?: 'mehndi' | 'makeup' | 'photography' | 'decor' | 'general' | string
+}
+
+/**
+ * Precision Category Classifier.
+ * Analyzes bio, business badge, full name, and handle with strict priority ordering.
+ */
+export function detectArtistCategory(
+  bio = '',
+  fullName = '',
+  handle = '',
+  badge = '',
+): { category: 'mehndi' | 'photography' | 'decor' | 'makeup' | 'general'; label: string } {
+  const combined = `${badge} ${bio} ${fullName} ${handle}`.toLowerCase()
+
+  // 1. Mehndi / Henna (highest specificity)
+  if (
+    combined.includes('mehndi') ||
+    combined.includes('mehendi') ||
+    combined.includes('henna') ||
+    combined.includes('heena')
+  ) {
+    return { category: 'mehndi', label: 'Mehndi Artists' }
+  }
+
+  // 2. Photography & Cinematography (must be checked BEFORE makeup to avoid "bridal photography" mismatch)
+  if (
+    combined.includes('photograph') ||
+    combined.includes('photo') ||
+    combined.includes('cinematograph') ||
+    combined.includes('films') ||
+    combined.includes('filmmaker') ||
+    combined.includes('prewedding') ||
+    combined.includes('shoot') ||
+    combined.includes('camera') ||
+    combined.includes('studio') ||
+    combined.includes('clicks') ||
+    combined.includes('lens') ||
+    combined.includes('candid')
+  ) {
+    return { category: 'photography', label: 'Photographers' }
+  }
+
+  // 3. Decor & Event Planners (must be checked BEFORE makeup to avoid "bridal decor" mismatch)
+  if (
+    combined.includes('decor') ||
+    combined.includes('planner') ||
+    combined.includes('planning') ||
+    combined.includes('event') ||
+    combined.includes('mandap') ||
+    combined.includes('stage') ||
+    combined.includes('florist') ||
+    combined.includes('balloon') ||
+    combined.includes('management')
+  ) {
+    return { category: 'decor', label: 'Decor & Event Planners' }
+  }
+
+  // 4. Makeup & Hair Artists
+  if (
+    combined.includes('makeup') ||
+    combined.includes('make up') ||
+    combined.includes('mua') ||
+    combined.includes('makeover') ||
+    combined.includes('beauty') ||
+    combined.includes('hairstyl') ||
+    combined.includes('hair artist') ||
+    combined.includes('salon') ||
+    combined.includes('cosmetic')
+  ) {
+    return { category: 'makeup', label: 'Makeup Artists' }
+  }
+
+  return { category: 'general', label: 'Wedding Artists & Vendors' }
 }
 
 /**
  * Dynamic Spintax Message Generator.
- * Generates unique message variations for every artist to prevent hash-based spam detection.
+ * Generates category-accurate, personalized message variations for every artist to prevent spam detection.
  */
 function generateDynamicInstagramMessage(artist: TargetArtist): string {
   const rawName = artist.name || artist.handle.replace(/[_.]/g, ' ')
   const cleanName = rawName.split(/[|•-]/)[0].trim()
 
-  const cat = (artist.category || '').toLowerCase()
-  const isMehndi = cat.includes('mehndi') || cat.includes('henna')
-  const isMakeup = cat.includes('makeup') || cat.includes('mua') || cat.includes('makeover')
-  const isPhoto = cat.includes('photo') || cat.includes('film') || cat.includes('cinematography')
+  const detected = detectArtistCategory('', artist.name || '', artist.handle, artist.category || '')
+  const cat = detected.category
 
   const greetings = [
     `Hey ${cleanName}! 👋`,
@@ -72,28 +143,38 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
     `Hi ${cleanName}! 👋`,
   ]
 
-  const compliments = isMehndi
-    ? [
-        `Loved your intricate bridal mehndi work on your feed.`,
-        `Your mehndi designs and bridal patterns are really stunning.`,
-        `Was checking out your recent bridal mehndi designs in Ahmedabad — beautiful work!`,
-      ]
-    : isMakeup
-      ? [
-          `Loved your recent bridal makeover and styling looks.`,
-          `Your bridal makeup portfolio and finishes look amazing!`,
-          `Was admiring your bridal makeup work across Ahmedabad weddings — stunning look!`,
-        ]
-      : isPhoto
-        ? [
-            `Loved your wedding photography captures and candid frames.`,
-            `Your photography and event cinematography in Ahmedabad are really aesthetic!`,
-            `Checked out your photography portfolio — fantastic compositions!`,
-          ]
-        : [
-            `Loved your recent wedding work and event portfolio in Ahmedabad.`,
-            `Your wedding work and creativity in Ahmedabad look really wonderful!`,
-          ]
+  let compliments: string[] = []
+
+  if (cat === 'mehndi') {
+    compliments = [
+      `Loved your intricate bridal mehndi work and patterns on your feed.`,
+      `Your mehndi designs and bridal patterns in Ahmedabad are really stunning!`,
+      `Was checking out your recent bridal mehndi work in Ahmedabad — beautiful craftsmanship!`,
+    ]
+  } else if (cat === 'photography') {
+    compliments = [
+      `Loved your wedding photography captures, candid frames, and cinematography!`,
+      `Your photography and wedding film work in Ahmedabad are really aesthetic!`,
+      `Checked out your photography portfolio and wedding shoots — fantastic compositions!`,
+    ]
+  } else if (cat === 'decor') {
+    compliments = [
+      `Loved your wedding decor setups, mandap concepts, and event management work in Ahmedabad!`,
+      `Your wedding themes, stage decor, and event planning work look truly magnificent!`,
+      `Was admiring your event planning and wedding decor projects across Ahmedabad venues!`,
+    ]
+  } else if (cat === 'makeup') {
+    compliments = [
+      `Loved your recent bridal makeover and styling looks in Ahmedabad!`,
+      `Your bridal makeup portfolio and finishes look absolutely amazing!`,
+      `Was admiring your bridal makeup work across Ahmedabad weddings — stunning styling!`,
+    ]
+  } else {
+    compliments = [
+      `Loved your recent wedding work and event portfolio in Ahmedabad!`,
+      `Your wedding work and creativity in Ahmedabad look really wonderful!`,
+    ]
+  }
 
   const intros = [
     `We run Artistora (artistora.com), a verified marketplace for wedding & celebration artists in Ahmedabad.`,
@@ -194,76 +275,140 @@ async function findMessageBox(page: Page, timeoutMs = 15000) {
   return null
 }
 
+interface ProfileInspection {
+  fullName: string
+  bio: string
+  category: 'mehndi' | 'photography' | 'decor' | 'makeup' | 'general'
+  categoryLabel: string
+  isFollowing: boolean
+}
+
 /**
- * Navigates to the user's profile and follows them if not already following.
+ * Navigates to the user's profile, extracts live metadata to verify their real category & name,
+ * and follows them if not already following.
  */
-async function followUser(page: Page, handle: string): Promise<boolean> {
+async function followAndInspectArtist(page: Page, handle: string): Promise<ProfileInspection> {
   const cleanHandle = handle.replace(/^@/, '').trim().toLowerCase()
   const profileUrl = `https://www.instagram.com/${cleanHandle}/`
 
+  let fullName = cleanHandle
+  let bio = ''
+  let badge = ''
+  let isFollowing = false
+
   try {
-    console.log(`   🌐 Navigating to @${cleanHandle}'s profile...`)
+    console.log(`   🌐 Inspecting profile: https://www.instagram.com/${cleanHandle}/ ...`)
     await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
     await page.waitForTimeout(2000)
     await dismissPopups(page)
 
-    // Check if account is private
-    const isPrivate = await page.$('text="This Account is Private"')
-    if (isPrivate) {
-      console.log(`   🔒 @${cleanHandle} is a private account`)
-    }
+    // 1. Extract Profile Header Name
+    try {
+      const headerNames = await page
+        .locator('header section h1, header section h2, header section span[dir="auto"], header h2')
+        .allInnerTexts()
+      for (const t of headerNames) {
+        const cleaned = (t || '').trim()
+        if (cleaned && cleaned !== cleanHandle && !cleaned.includes('\n') && cleaned.length < 50) {
+          fullName = cleaned
+          break
+        }
+      }
+    } catch {}
 
-    // Check if already following or requested
-    const isFollowing = await page
-      .locator('header button, header div[role="button"]')
-      .filter({ hasText: /Following|Requested/i })
-      .first()
-      .isVisible({ timeout: 1500 })
-      .catch(() => false)
+    // 2. Extract Bio Text
+    try {
+      const bioEl = page
+        .locator('header section div[dir="auto"], header section div.-vDIg, header section')
+        .first()
+      if (await bioEl.isVisible({ timeout: 1500 }).catch(() => false)) {
+        bio = (await bioEl.innerText().catch(() => '')) || ''
+      }
+    } catch {}
 
-    if (isFollowing) {
-      console.log(`   👤 Already following @${cleanHandle}`)
-      return true
-    }
+    // 3. Extract Category Badge if rendered
+    try {
+      const badgeEl = page
+        .locator(
+          'header div[class*="x1fhsubz"], header section div:has-text("Photographer"), header section div:has-text("Planner"), header section div:has-text("Artist")',
+        )
+        .first()
+      if (await badgeEl.isVisible({ timeout: 1000 }).catch(() => false)) {
+        badge = (await badgeEl.innerText().catch(() => '')) || ''
+      }
+    } catch {}
 
-    // Locate "Follow" / "Follow Back" button in header
-    const followBtn = page
-      .locator('header button, header div[role="button"]')
-      .filter({ hasText: /^Follow$|^Follow Back$/i })
-      .first()
+    // 4. Follow user if not already following
+    try {
+      const isFollowingBadge = await page
+        .locator('header button, header div[role="button"]')
+        .filter({ hasText: /Following|Requested/i })
+        .first()
+        .isVisible({ timeout: 1500 })
+        .catch(() => false)
 
-    if (await followBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
-      await followBtn.click()
-      console.log(`   ➕ Followed @${cleanHandle}!`)
-      await page.waitForTimeout(1500)
-      return true
-    }
+      if (isFollowingBadge) {
+        console.log(`   👤 Already following @${cleanHandle}`)
+        isFollowing = true
+      } else {
+        const followBtn = page
+          .locator('header button, header div[role="button"]')
+          .filter({ hasText: /^Follow$|^Follow Back$/i })
+          .first()
+
+        if (await followBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
+          await followBtn.click()
+          console.log(`   ➕ Followed @${cleanHandle}!`)
+          isFollowing = true
+          await page.waitForTimeout(1200)
+        }
+      }
+    } catch {}
   } catch (err: any) {
-    console.warn(`   ⚠️ Notice while following @${cleanHandle}: ${err.message}`)
+    console.warn(`   ⚠️ Profile inspection notice: ${err.message}`)
   }
-  return false
+
+  const detected = detectArtistCategory(bio, fullName, cleanHandle, badge)
+  console.log(
+    `   🏷️ Live Verification: @${cleanHandle} → "${detected.label}" (Name: ${fullName})`,
+  )
+
+  return {
+    fullName,
+    bio,
+    category: detected.category,
+    categoryLabel: detected.label,
+    isFollowing,
+  }
 }
 
 /**
  * Sends a Direct Message to a specific Instagram handle using the browser session.
- * 1. Follows the artist on their profile cleanly without clicking the profile Message button.
- * 2. Directly opens Instagram's full-screen Direct composer (`/direct/new/`).
- * 3. Selects recipient and enters the clean full-screen thread (`/direct/t/...`).
- * 4. Types and dispatches message with zero floating dock jitters.
+ * 1. Follows and inspects the artist profile to dynamically verify their exact profession and name.
+ * 2. Generates a category-accurate personalized message.
+ * 3. Opens the full-screen Direct composer (`/direct/new/`) and selects recipient.
+ * 4. Types and dispatches message with delivery confirmation.
  */
 async function sendBrowserDM(
   page: Page,
-  handle: string,
-  message: string,
-): Promise<{ success: boolean; error?: string }> {
-  const cleanHandle = handle.replace(/^@/, '').trim().toLowerCase()
+  artist: TargetArtist,
+): Promise<{ success: boolean; error?: string; messageSent?: string; verifiedCategory?: string }> {
+  const cleanHandle = artist.handle.replace(/^@/, '').trim().toLowerCase()
 
   try {
-    // 1. Follow artist on profile first
-    await followUser(page, cleanHandle)
+    // 1. Follow & Inspect Live Profile for accurate name & category verification
+    const profileInfo = await followAndInspectArtist(page, cleanHandle)
     await page.waitForTimeout(1000)
 
-    // 2. Open clean, full-screen Direct composer directly (bypasses all floating dock widgets)
+    // 2. Build verified target and message
+    const verifiedArtist: TargetArtist = {
+      ...artist,
+      name: profileInfo.fullName || artist.name || cleanHandle,
+      category: profileInfo.category,
+    }
+    const message = generateDynamicInstagramMessage(verifiedArtist)
+
+    // 3. Open clean, full-screen Direct composer directly (bypasses all floating dock widgets)
     console.log(`   🌐 Opening Direct Message composer for @${cleanHandle}...`)
     await page.goto('https://www.instagram.com/direct/new/', {
       waitUntil: 'domcontentloaded',
@@ -272,7 +417,7 @@ async function sendBrowserDM(
     await page.waitForTimeout(2000)
     await dismissPopups(page)
 
-    // 3. Search recipient in composer modal
+    // 4. Search recipient in composer modal
     console.log(`   🔍 Searching recipient: @${cleanHandle}...`)
     const searchInput = page
       .locator('input[placeholder*="Search"], input[name="queryBox"], input[type="text"]')
@@ -285,7 +430,7 @@ async function sendBrowserDM(
     console.log('   ⏳ Waiting for recipient search results...')
     await page.waitForTimeout(2500)
 
-    // 4. Select the matching user from search results
+    // 5. Select the matching user from search results
     const userRowLocator = page
       .locator(
         `div[role="dialog"] div[role="button"]:has-text("${cleanHandle}"), div[role="dialog"] span:has-text("${cleanHandle}"), div[role="button"]:has-text("${cleanHandle}"), span:has-text("${cleanHandle}"), div[role="dialog"] input[type="checkbox"], div[role="dialog"] label`,
@@ -314,7 +459,7 @@ async function sendBrowserDM(
 
     await dismissPopups(page)
 
-    // 5. Locate the message textbox in the clean chat thread
+    // 6. Locate the message textbox in the clean chat thread
     console.log('   🔍 Detecting message input box in full-screen thread...')
     const textBoxLocator = await findMessageBox(page, 15000)
 
@@ -347,7 +492,7 @@ async function sendBrowserDM(
 
     await page.waitForTimeout(800)
 
-    // 6. Dispatch message and verify real delivery
+    // 7. Dispatch message and verify real delivery
     console.log('   📤 Dispatching direct message...')
     let isDelivered = false
 
@@ -407,7 +552,11 @@ async function sendBrowserDM(
     }
 
     await page.waitForTimeout(2000)
-    return { success: true }
+    return {
+      success: true,
+      messageSent: message,
+      verifiedCategory: profileInfo.categoryLabel,
+    }
   } catch (err: any) {
     return { success: false, error: err.message }
   }
@@ -505,9 +654,10 @@ async function main() {
     console.log(messageBody)
     console.log('-----------------------\n')
 
-    const result = await sendBrowserDM(page, cleanTestHandle, messageBody)
+    const result = await sendBrowserDM(page, testArtist)
     if (result.success) {
       console.log(`\n🎉 Test message successfully sent to @${cleanTestHandle}!`)
+      console.log(`   🏷️ Category confirmed: ${result.verifiedCategory || 'Wedding Artist'}`)
 
       if (dbArtistDoc?.id) {
         try {
@@ -517,7 +667,7 @@ async function main() {
               artist: dbArtistDoc.id,
               channel: 'instagram_dm',
               campaignName: 'ahmedabad-wedding-artists-v1',
-              body: messageBody,
+              body: result.messageSent || messageBody,
               status: 'sent',
               sentAt: new Date().toISOString(),
             } as any,
@@ -627,12 +777,12 @@ async function main() {
       }
     } catch {}
 
-    const messageBody = generateDynamicInstagramMessage(artist)
-    const dmResult = await sendBrowserDM(page, cleanHandle, messageBody)
+    const dmResult = await sendBrowserDM(page, artist)
 
     if (dmResult.success) {
       sentCount++
       console.log(`   ✅ [${sentCount}] Successfully delivered DM to @${cleanHandle}`)
+      console.log(`   🏷️ Category confirmed: ${dmResult.verifiedCategory || 'Wedding Artist'}`)
 
       // Log in PostgreSQL outreach_messages
       if (artist.id) {
@@ -643,7 +793,7 @@ async function main() {
               artist: artist.id,
               channel: 'instagram_dm',
               campaignName: 'ahmedabad-wedding-artists-v1',
-              body: messageBody,
+              body: dmResult.messageSent || generateDynamicInstagramMessage(artist),
               status: 'sent',
               sentAt: new Date().toISOString(),
             } as any,

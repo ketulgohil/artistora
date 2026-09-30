@@ -59,7 +59,7 @@ function extractIndianPhoneNumbers(text: string): string[] {
 }
 
 /**
- * Categorizes an artist based on their bio, full name, handle, or search query.
+ * Categorizes an artist based on their bio, full name, handle, or search query with strict priority ordering.
  */
 function inferCategory(
   bio: string,
@@ -69,33 +69,55 @@ function inferCategory(
 ): { service: string; type: string } {
   const combined = `${bio} ${fullName} ${username} ${query}`.toLowerCase()
 
-  if (combined.includes('mehndi') || combined.includes('mehendi') || combined.includes('henna')) {
+  // 1. Mehndi / Henna (highest specificity)
+  if (
+    combined.includes('mehndi') ||
+    combined.includes('mehendi') ||
+    combined.includes('henna') ||
+    combined.includes('heena')
+  ) {
     return { service: 'Mehndi Artists', type: 'mehndi' }
   }
+
+  // 2. Photographers & Cinematographers (must precede makeup to avoid "bridal photography" mismatch)
   if (
+    combined.includes('photograph') ||
     combined.includes('photo') ||
-    combined.includes('cinematography') ||
+    combined.includes('cinematograph') ||
     combined.includes('film') ||
     combined.includes('click') ||
     combined.includes('studio') ||
-    combined.includes('camera')
+    combined.includes('camera') ||
+    combined.includes('prewedding') ||
+    combined.includes('shoot') ||
+    combined.includes('lens')
   ) {
     return { service: 'Photographers', type: 'photography' }
   }
+
+  // 3. Decor & Event Planners (must precede makeup to avoid "bridal decor" mismatch)
   if (
     combined.includes('decor') ||
     combined.includes('planner') ||
+    combined.includes('planning') ||
     combined.includes('event') ||
-    combined.includes('stage')
+    combined.includes('mandap') ||
+    combined.includes('stage') ||
+    combined.includes('florist')
   ) {
     return { service: 'Decor & Event Planners', type: 'decor' }
   }
+
+  // 4. Makeup & Hair Artists
   if (
     combined.includes('makeup') ||
+    combined.includes('make up') ||
     combined.includes('mua') ||
     combined.includes('makeover') ||
     combined.includes('beauty') ||
-    combined.includes('bridal')
+    combined.includes('hairstyl') ||
+    combined.includes('hair artist') ||
+    combined.includes('salon')
   ) {
     return { service: 'Makeup Artists', type: 'makeup' }
   }
