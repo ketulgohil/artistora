@@ -46,8 +46,28 @@ const areas = [
 ]
 
 export default async function AreasPage() {
+  const areasItemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Areas We Serve in Ahmedabad — Artistora',
+    description:
+      'Verified wedding and event artists available across 20+ localities in Ahmedabad with home-visit service.',
+    numberOfItems: areas.length,
+    itemListElement: areas.map((area, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: `${area.name}, Ahmedabad`,
+      url: `https://www.artistora.com/areas/${area.slug}`,
+      description: area.description,
+    })),
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(areasItemListSchema) }}
+      />
       <Breadcrumbs items={[{ label: 'Areas' }]} />
 
       {/* Hero */}

@@ -4,16 +4,16 @@ import { withDefaultSeo } from '@/lib/seo'
 import { getSiteSettings } from '@/lib/payload'
 
 export const metadata = withDefaultSeo({
-  title: 'Contact Us — Get in Touch with Artistora',
+  title: 'Contact Us — Book Verified Artists in Ahmedabad | Artistora',
   description:
-    'Have questions about Artistora? Reach out to our team for support with bookings, artist inquiries, or partnership opportunities in Ahmedabad.',
+    'Get in touch with Artistora to book verified mehndi artists, photographers, makeup artists, and event decor in Ahmedabad. Call or WhatsApp +91 7405387720.',
   alternates: {
     canonical: 'https://www.artistora.com/contact',
   },
   openGraph: {
     title: 'Contact Us — Artistora',
     description:
-      'Get in touch with Artistora for bookings, artist inquiries, or partnership opportunities.',
+      'Get in touch with Artistora for bookings, artist inquiries, or partnership opportunities in Ahmedabad.',
     url: 'https://www.artistora.com/contact',
     type: 'website',
   },
@@ -120,9 +120,9 @@ export default async function ContactPage() {
           <div className="grid gap-8! lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
               <Eyebrow>Book Artist In Ahmedabad</Eyebrow>
-              <p className="mt-1! text-xl! font-semibold text-ink md:text-[1.35rem]!">
+              <h1 className="mt-1! text-xl! font-semibold text-ink md:text-[1.35rem]!">
                 Reach out for weddings, events, and special occasions.
-              </p>
+              </h1>
               <p className="mt-4! max-w-xl! text-sm leading-relaxed text-ink-soft md:text-[0.95rem]">
                 Whether you are planning a wedding, engagement, baby shower, family event, or any special occasion, Artistora makes it easy to book a verified artist in Ahmedabad through direct call, WhatsApp, or the booking form. Artists on the platform regularly serve areas like Gota, Ghatlodiya, Sola, and Science City along with home service across Ahmedabad.
               </p>

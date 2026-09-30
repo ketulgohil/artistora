@@ -4,8 +4,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
 import { withDefaultSeo } from '@/lib/seo'
-import { getSiteSettings } from '@/lib/payload'
-import { mediaFileUrl } from '@/lib/media-url'
 
 export const metadata = withDefaultSeo({
   title: 'About Artistora — Ahmedabad\'s Trusted Artist Marketplace',
@@ -67,7 +65,6 @@ const CARD =
   'relative overflow-hidden rounded-3xl border border-line bg-white p-7! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift md:p-8!'
 
 export default async function ArtistPage() {
-  const settings = (await getSiteSettings()) as any
   const bookingUrl = '/get-quote'
 
   const aboutPageSchema = {
@@ -152,9 +149,9 @@ export default async function ArtistPage() {
 
             {/* Platform copy */}
             <div>
-              <h3 className="font-display text-[1.75rem]! leading-snug font-semibold text-ink md:text-3xl!">
+              <h1 className="font-display text-[1.75rem]! leading-snug font-semibold text-ink md:text-3xl!">
                 Artistora &mdash; Verified Artists in Ahmedabad
-              </h3>
+              </h1>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
                 Artistora is a curated marketplace that connects you with
                 verified artists in Ahmedabad &mdash; mehndi specialists,

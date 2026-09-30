@@ -16,10 +16,9 @@ import SectionHeading from '@/components/SectionHeading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const metadata = withDefaultSeo({
-  title:
-    'Wedding & Event Artist Services in Ahmedabad — Mehndi, Photography, Makeup & Decor | Artistora',
+  title: 'Wedding & Event Artist Services in Ahmedabad | Artistora',
   description:
-    'Browse verified artist services on Artistora — bridal mehndi, wedding photography, makeup artists, event decor, and entertainment in Ahmedabad. Compare free quotes and book online.',
+    'Browse verified artist services in Ahmedabad — bridal mehndi, wedding photography, makeup artists, and event decor. Compare free quotes and book online.',
   keywords: [
     'wedding artist services ahmedabad',
     'bridal mehndi artist ahmedabad',

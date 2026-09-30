@@ -1,9 +1,11 @@
 export default function SectionHeading({
   title,
   subtitle,
+  as: Component = 'h2',
 }: {
   title: string
   subtitle?: string
+  as?: 'h1' | 'h2'
 }) {
   return (
     <div className="mx-auto mb-10! max-w-3xl! text-center md:mb-14!">
@@ -14,9 +16,9 @@ export default function SectionHeading({
           <span aria-hidden="true" className="h-px w-9 bg-gradient-to-l from-transparent to-brand/60" />
         </p>
       )}
-      <h2 className="font-display text-3xl! leading-tight font-semibold text-ink md:text-[2.6rem]!">
+      <Component className="font-display text-3xl! leading-tight font-semibold text-ink md:text-[2.6rem]!">
         {title}
-      </h2>
+      </Component>
       <div
         aria-hidden="true"
         className="mx-auto mt-5! flex items-center justify-center gap-2! text-brand"

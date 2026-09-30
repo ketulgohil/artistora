@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { withDefaultSeo } from '@/lib/seo'
 
 export const metadata: Metadata = withDefaultSeo({
-  title: 'Artist Portfolio — Browse Wedding & Event Work in Ahmedabad',
+  title: 'Artist Portfolio — Wedding & Event Work in Ahmedabad | Artistora',
   description:
     'Explore stunning portfolios from verified artists in Ahmedabad — bridal mehndi, wedding photography, makeup looks, and event decor from real bookings.',
   alternates: {

@@ -103,7 +103,7 @@ export default function PortfolioPage() {
   return (
     <section className="py-16! md:py-24!">
       <div className={CONTAINER}>
-        <SectionHeading title="Portfolio Gallery" subtitle="Work In Focus" />
+        <SectionHeading as="h1" title="Portfolio Gallery" subtitle="Work In Focus" />
 
         {loading ? (
           <div className="flex justify-center py-24!">

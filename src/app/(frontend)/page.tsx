@@ -14,7 +14,7 @@ import {
 import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
 
 export const metadata = withDefaultSeo({
-  title: 'Book Verified Artists in Ahmedabad — Mehndi, Photography, Makeup & Decor',
+  title: 'Book Verified Artists in Ahmedabad — Mehndi, Makeup, Photo | Artistora',
   description:
     'Artistora connects you with verified artists in Ahmedabad for weddings, events, and celebrations. Compare quotes from mehndi, photography, makeup, and decor professionals.',
   alternates: {
@@ -242,6 +242,27 @@ export default async function HomePage() {
   return (
     <>
       {/* ── JSON-LD Structured Data ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Artistora',
+            url: 'https://www.artistora.com',
+            description:
+              'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: 'https://www.artistora.com/artists?search={search_term_string}',
+              },
+              'query-input': 'required name=search_term_string',
+            },
+          }),
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
