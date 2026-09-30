@@ -192,80 +192,88 @@ async function main() {
           await page.waitForTimeout(2000)
           await dismissPopups(page)
 
-          // 3. Extract post author username using 4-tier cascading detection
+          // 3. Extract post author username using in-page DOM evaluation
           let authorHandle = ''
-
-          // Tier 1: Page HTML Title (e.g. "Full Name (@handle) on Instagram..." or "@handle on Instagram...")
           try {
-            const pageTitle = await page.title()
-            const matchParentheses = pageTitle.match(/\(@([a-zA-Z0-9._]+)\)/)
-            if (matchParentheses && matchParentheses[1]) {
-              authorHandle = matchParentheses[1].toLowerCase().trim()
-            } else {
-              const matchAt = pageTitle.match(/@([a-zA-Z0-9._]+)\s+on\s+Instagram/i)
-              if (matchAt && matchAt[1]) {
-                authorHandle = matchAt[1].toLowerCase().trim()
-              } else {
-                const matchPrefix = pageTitle.match(/^([a-zA-Z0-9._]+)\s+on\s+Instagram/i)
-                if (matchPrefix && matchPrefix[1] && !matchPrefix[1].includes(' ')) {
-                  authorHandle = matchPrefix[1].toLowerCase().trim()
-                }
-              }
-            }
-          } catch {}
+            await page
+              .waitForSelector('article, header, main, div[role="main"], h2, a[role="link"]', {
+                timeout: 6000,
+              })
+              .catch(() => {})
 
-          // Tier 2: OpenGraph & Meta Author tags
-          if (!authorHandle) {
-            try {
-              const ogTitle = await page
-                .$eval('meta[property="og:title"]', (el) => el.getAttribute('content') || '')
-                .catch(() => '')
-              const ogMatch =
-                ogTitle.match(/\(@([a-zA-Z0-9._]+)\)/) || ogTitle.match(/@([a-zA-Z0-9._]+)/)
-              if (ogMatch && ogMatch[1]) {
-                authorHandle = ogMatch[1].toLowerCase().trim()
-              }
-            } catch {}
-          }
+            authorHandle = await page.evaluate(() => {
+              const RESERVED = new Set([
+                'explore',
+                'direct',
+                'reels',
+                'stories',
+                'accounts',
+                'legal',
+                'about',
+                'help',
+                'api',
+                'graphql',
+                'p',
+                'reel',
+                'tv',
+                'terms',
+                'privacy',
+                'locations',
+                'threads',
+              ])
 
-          // Tier 3: Post Header Links
-          if (!authorHandle) {
-            try {
-              const headerLinks = await page.$$eval(
-                'header a[href^="/"], article header a[href^="/"]',
-                (links) => links.map((l) => l.getAttribute('href')),
+              // Strategy 1: Header links inside article / post header
+              const headerAnchors = document.querySelectorAll(
+                'header a, article header a, div[role="dialog"] header a',
               )
-
-              for (const href of headerLinks) {
-                if (
-                  href &&
-                  href !== '/' &&
-                  !href.includes('/explore/') &&
-                  !href.includes('/p/') &&
-                  !href.includes('/reel/') &&
-                  !href.includes('/direct/')
-                ) {
-                  const matched = href.replace(/^\/|\/$/g, '').split('/')[0].toLowerCase().trim()
-                  if (matched && matched !== 'artistoraofficial' && !matched.includes('?')) {
-                    authorHandle = matched
-                    break
-                  }
+              for (const a of headerAnchors) {
+                const href = a.getAttribute('href') || ''
+                const clean = href
+                  .replace(/^\/|\/$/g, '')
+                  .split('/')[0]
+                  .split('?')[0]
+                  .toLowerCase()
+                if (clean && !RESERVED.has(clean) && /^[a-z0-9._]{2,35}$/.test(clean)) {
+                  return clean
                 }
               }
-            } catch {}
-          }
 
-          // Tier 4: Header Text Locator
-          if (!authorHandle) {
-            try {
-              const authorEl = page
-                .locator('header h2, header h1, article header a, header span a, header a')
-                .first()
-              const raw = (await authorEl.innerText({ timeout: 2000 }).catch(() => ''))
-                .trim()
-                .toLowerCase()
-              authorHandle = raw.split('\n')[0].replace(/^@/, '').trim()
-            } catch {}
+              // Strategy 2: Title tag parsing (e.g., "Name (@handle) on Instagram")
+              const title = document.title || ''
+              const titleMatch =
+                title.match(/\(@([a-zA-Z0-9._]+)\)/) || title.match(/@([a-zA-Z0-9._]+)/)
+              if (titleMatch && titleMatch[1]) {
+                const t = titleMatch[1].toLowerCase().trim()
+                if (!RESERVED.has(t)) return t
+              }
+
+              // Strategy 3: OpenGraph title/meta tags
+              const og =
+                document.querySelector('meta[property="og:title"]')?.getAttribute('content') || ''
+              const ogMatch = og.match(/\(@([a-zA-Z0-9._]+)\)/) || og.match(/@([a-zA-Z0-9._]+)/)
+              if (ogMatch && ogMatch[1]) {
+                const o = ogMatch[1].toLowerCase().trim()
+                if (!RESERVED.has(o)) return o
+              }
+
+              // Strategy 4: All links on page
+              const allAnchors = document.querySelectorAll('a[role="link"], a[href^="/"]')
+              for (const a of allAnchors) {
+                const href = a.getAttribute('href') || ''
+                const clean = href
+                  .replace(/^\/|\/$/g, '')
+                  .split('/')[0]
+                  .split('?')[0]
+                  .toLowerCase()
+                if (clean && !RESERVED.has(clean) && /^[a-z0-9._]{2,35}$/.test(clean)) {
+                  return clean
+                }
+              }
+
+              return ''
+            })
+          } catch (evalErr: any) {
+            console.warn(`   ⚠️ Extraction notice: ${evalErr.message}`)
           }
 
           if (!authorHandle || authorHandle === 'artistoraofficial' || authorHandle.length > 35) {
