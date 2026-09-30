@@ -165,9 +165,8 @@ async function main() {
       const postPaths = await page.$$eval('a[href*="/p/"], a[href*="/reel/"]', (anchors) =>
         anchors
           .map((a) => a.getAttribute('href'))
-          .filter(
-            (href): href is string =>
-              Boolean(href && (href.startsWith('/p/') || href.startsWith('/reel/'))),
+          .filter((href): href is string =>
+            Boolean(href && (href.startsWith('/p/') || href.startsWith('/reel/'))),
           ),
       )
 
@@ -193,31 +192,80 @@ async function main() {
           await page.waitForTimeout(2000)
           await dismissPopups(page)
 
-          // 3. Extract post author username from post header
+          // 3. Extract post author username using 4-tier cascading detection
           let authorHandle = ''
-          const headerLinks = await page.$$eval(
-            'header a[href^="/"], article header a[href^="/"]',
-            (links) => links.map((l) => l.getAttribute('href')),
-          )
 
-          for (const href of headerLinks) {
-            if (href && href !== '/' && !href.includes('/explore/') && !href.includes('/p/')) {
-              const matched = href.replace(/^\/|\/$/g, '').split('/')[0].toLowerCase().trim()
-              if (matched && matched !== 'artistoraofficial' && !matched.includes('?')) {
-                authorHandle = matched
-                break
+          // Tier 1: Page HTML Title (e.g. "Full Name (@handle) on Instagram..." or "@handle on Instagram...")
+          try {
+            const pageTitle = await page.title()
+            const matchParentheses = pageTitle.match(/\(@([a-zA-Z0-9._]+)\)/)
+            if (matchParentheses && matchParentheses[1]) {
+              authorHandle = matchParentheses[1].toLowerCase().trim()
+            } else {
+              const matchAt = pageTitle.match(/@([a-zA-Z0-9._]+)\s+on\s+Instagram/i)
+              if (matchAt && matchAt[1]) {
+                authorHandle = matchAt[1].toLowerCase().trim()
+              } else {
+                const matchPrefix = pageTitle.match(/^([a-zA-Z0-9._]+)\s+on\s+Instagram/i)
+                if (matchPrefix && matchPrefix[1] && !matchPrefix[1].includes(' ')) {
+                  authorHandle = matchPrefix[1].toLowerCase().trim()
+                }
               }
             }
+          } catch {}
+
+          // Tier 2: OpenGraph & Meta Author tags
+          if (!authorHandle) {
+            try {
+              const ogTitle = await page
+                .$eval('meta[property="og:title"]', (el) => el.getAttribute('content') || '')
+                .catch(() => '')
+              const ogMatch =
+                ogTitle.match(/\(@([a-zA-Z0-9._]+)\)/) || ogTitle.match(/@([a-zA-Z0-9._]+)/)
+              if (ogMatch && ogMatch[1]) {
+                authorHandle = ogMatch[1].toLowerCase().trim()
+              }
+            } catch {}
           }
 
+          // Tier 3: Post Header Links
           if (!authorHandle) {
-            const authorEl = page
-              .locator('header h2, header h1, article header a, header span a')
-              .first()
-            const raw = (await authorEl.innerText({ timeout: 2000 }).catch(() => ''))
-              .trim()
-              .toLowerCase()
-            authorHandle = raw.split('\n')[0].replace(/^@/, '').trim()
+            try {
+              const headerLinks = await page.$$eval(
+                'header a[href^="/"], article header a[href^="/"]',
+                (links) => links.map((l) => l.getAttribute('href')),
+              )
+
+              for (const href of headerLinks) {
+                if (
+                  href &&
+                  href !== '/' &&
+                  !href.includes('/explore/') &&
+                  !href.includes('/p/') &&
+                  !href.includes('/reel/') &&
+                  !href.includes('/direct/')
+                ) {
+                  const matched = href.replace(/^\/|\/$/g, '').split('/')[0].toLowerCase().trim()
+                  if (matched && matched !== 'artistoraofficial' && !matched.includes('?')) {
+                    authorHandle = matched
+                    break
+                  }
+                }
+              }
+            } catch {}
+          }
+
+          // Tier 4: Header Text Locator
+          if (!authorHandle) {
+            try {
+              const authorEl = page
+                .locator('header h2, header h1, article header a, header span a, header a')
+                .first()
+              const raw = (await authorEl.innerText({ timeout: 2000 }).catch(() => ''))
+                .trim()
+                .toLowerCase()
+              authorHandle = raw.split('\n')[0].replace(/^@/, '').trim()
+            } catch {}
           }
 
           if (!authorHandle || authorHandle === 'artistoraofficial' || authorHandle.length > 35) {
@@ -246,7 +294,9 @@ async function main() {
             followed = true
           } else {
             // If follow button wasn't in post header, navigate directly to profile
-            console.log(`   🌐 Navigating to profile: https://www.instagram.com/${authorHandle}/ ...`)
+            console.log(
+              `   🌐 Navigating to profile: https://www.instagram.com/${authorHandle}/ ...`,
+            )
             await page.goto(`https://www.instagram.com/${authorHandle}/`, {
               waitUntil: 'domcontentloaded',
               timeout: 25000,
