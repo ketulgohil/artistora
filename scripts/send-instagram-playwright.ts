@@ -196,7 +196,8 @@ async function findMessageBox(page: Page, timeoutMs = 12000) {
 
 /**
  * Sends a Direct Message to a specific Instagram handle using the browser session.
- * Handles both full-screen Direct threads and Instagram's bottom-right floating dock cleanly.
+ * Uses Instagram's dedicated Direct Composer (`/direct/new/`) as the primary path to open
+ * clean, full-screen chat threads without floating dock or profile layout interference.
  */
 async function sendBrowserDM(
   page: Page,
@@ -204,93 +205,94 @@ async function sendBrowserDM(
   message: string,
 ): Promise<{ success: boolean; error?: string }> {
   const cleanHandle = handle.replace(/^@/, '').trim().toLowerCase()
-  const profileUrl = `https://www.instagram.com/${cleanHandle}/`
 
   try {
-    console.log(`   🌐 Navigating to @${cleanHandle}'s profile...`)
-    await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
+    console.log(`   🌐 Opening Direct Message composer for @${cleanHandle}...`)
+    await page.goto('https://www.instagram.com/direct/new/', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    })
     await page.waitForTimeout(2500)
     await dismissPopups(page)
 
-    // Check if account is private
-    const isPrivate = await page.$('text="This Account is Private"')
-    if (isPrivate) {
-      return {
-        success: false,
-        error: 'Account is private; cannot DM without following first.',
-      }
-    }
-
-    // 1. Look for the "Message" button on profile
-    console.log('   🔍 Locating "Message" button on profile...')
-    const messageBtn = await page.$(
-      'div[role="button"]:has-text("Message"), button:has-text("Message"), a:has-text("Message"), header div:has-text("Message")',
+    // 1. Locate search input in the Direct Composer modal
+    console.log(`   🔍 Searching recipient: @${cleanHandle}...`)
+    const searchInput = await page.waitForSelector(
+      'input[placeholder*="Search"], input[name="queryBox"], input[type="text"]',
+      { timeout: 10000 },
     )
 
-    let chatOpened = false
-
-    if (messageBtn) {
-      await messageBtn.click()
-      console.log('   ⏳ Waiting for direct chat thread to open...')
-      await page.waitForTimeout(3000)
-      await dismissPopups(page)
-
-      // If Instagram opened a bottom-right floating chat dock, try to expand it to full screen
-      const expandBtn = await page.$(
-        'svg[aria-label="Open chat in full screen"], a[href*="/direct/t/"], button[aria-label*="full screen"], button[aria-label*="Expand"], svg[aria-label*="Expand"]',
-      )
-      if (expandBtn && (await expandBtn.isVisible().catch(() => false))) {
-        console.log('   🔍 Expanding bottom-right floating dock to full-screen view...')
-        await expandBtn.click().catch(() => {})
-        await page.waitForTimeout(2500)
-      }
-      chatOpened = true
+    if (!searchInput) {
+      return { success: false, error: 'Could not locate Direct composer search box' }
     }
 
-    // Fallback if Message button was missing or failed to open thread
-    if (!chatOpened || page.url().includes(`/${cleanHandle}/`)) {
-      const isStillOnProfile = await page.$('header button:has-text("Follow"), header button:has-text("Following")')
-      const hasChatBox = await page.$('div[aria-label="Message"][contenteditable="true"], div[role="textbox"][contenteditable="true"]')
+    await searchInput.click()
+    await page.waitForTimeout(300)
+    await searchInput.fill(cleanHandle)
+    console.log('   ⏳ Waiting for user search results...')
+    await page.waitForTimeout(2500)
 
-      if (isStillOnProfile && !hasChatBox) {
-        console.log('   ℹ️ Opening Direct composer directly via https://www.instagram.com/direct/new/ ...')
-        await page.goto('https://www.instagram.com/direct/new/', { waitUntil: 'domcontentloaded' })
-        await page.waitForTimeout(2500)
-        await dismissPopups(page)
+    // 2. Select the matching user from search results
+    const userRowSelectors = [
+      `div[role="dialog"] div[role="button"]:has-text("${cleanHandle}")`,
+      `div[role="dialog"] span:has-text("${cleanHandle}")`,
+      `div[role="button"]:has-text("${cleanHandle}")`,
+      `span:has-text("${cleanHandle}")`,
+      `div[role="dialog"] input[type="checkbox"]`,
+      `div[role="dialog"] label`,
+    ]
 
-        const searchInput = await page.$(
-          'input[placeholder*="Search"], input[name="queryBox"], input[type="text"]',
-        )
-        if (!searchInput) {
-          return { success: false, error: 'Could not open direct message composer' }
-        }
-
-        await searchInput.fill(cleanHandle)
-        await page.waitForTimeout(2000)
-
-        // Select the matching user row
-        const userRow = await page.$(
-          `div[role="button"]:has-text("${cleanHandle}"), span:has-text("${cleanHandle}"), input[type="checkbox"]`,
-        )
-        if (userRow) {
-          await userRow.click()
+    let selectedUser = false
+    for (const selector of userRowSelectors) {
+      try {
+        const el = await page.$(selector)
+        if (el && (await el.isVisible().catch(() => false))) {
+          await el.click({ force: true })
+          selectedUser = true
+          console.log(`   ✅ Selected @${cleanHandle} from search list`)
           await page.waitForTimeout(1000)
-
-          const chatBtn = await page.$(
-            'div[role="button"]:has-text("Chat"), button:has-text("Chat"), div[role="button"]:has-text("Next")',
-          )
-          if (chatBtn) {
-            await chatBtn.click()
-            await page.waitForTimeout(3000)
-          }
+          break
         }
+      } catch {}
+    }
+
+    if (!selectedUser) {
+      // Fallback: If Direct search didn't return user, try direct profile page
+      console.log(`   ℹ️ Recipient not in Direct search list, trying profile page fallback...`)
+      await page.goto(`https://www.instagram.com/${cleanHandle}/`, { waitUntil: 'domcontentloaded' })
+      await page.waitForTimeout(2500)
+      await dismissPopups(page)
+
+      const isPrivate = await page.$('text="This Account is Private"')
+      if (isPrivate) {
+        return { success: false, error: 'Account is private; cannot DM without following first.' }
+      }
+
+      const profileMsgBtn = await page.$(
+        'div[role="button"]:has-text("Message"), button:has-text("Message"), a:has-text("Message"), header div:has-text("Message")',
+      )
+      if (profileMsgBtn) {
+        await profileMsgBtn.click()
+        await page.waitForTimeout(3000)
+      } else {
+        return { success: false, error: `Could not find recipient @${cleanHandle}` }
+      }
+    } else {
+      // Click "Chat" / "Next" button in the modal header
+      console.log('   💬 Opening chat thread...')
+      const chatBtn = await page.$(
+        'div[role="dialog"] div[role="button"]:has-text("Chat"), div[role="dialog"] button:has-text("Chat"), div[role="button"]:has-text("Chat"), button:has-text("Chat"), div[role="button"]:has-text("Next"), button:has-text("Next")',
+      )
+      if (chatBtn) {
+        await chatBtn.click({ force: true })
+        await page.waitForTimeout(3000)
       }
     }
 
     await dismissPopups(page)
 
-    // 2. Locate the message textbox with robust polling
-    console.log('   🔍 Detecting message input box...')
+    // 3. Locate the message textbox in the chat thread
+    console.log('   🔍 Detecting message input box in chat thread...')
     const textBox = await findMessageBox(page, 15000)
 
     if (!textBox) {
@@ -301,11 +303,8 @@ async function sendBrowserDM(
     }
 
     console.log('   ✍️ Typing personalized message with human speed...')
-    await textBox.click()
-    await page.waitForTimeout(400)
-
-    // Clear any residual focus text
-    await page.keyboard.press('Meta+A').catch(() => {})
+    await textBox.click({ force: true })
+    await page.waitForTimeout(500)
 
     // Human typing simulation with multi-line support
     const lines = message.split('\n')
@@ -325,12 +324,12 @@ async function sendBrowserDM(
 
     await page.waitForTimeout(800)
 
-    // 3. Dispatch message and verify real delivery
+    // 4. Dispatch message and verify real delivery
     console.log('   📤 Dispatching direct message...')
     let isDelivered = false
 
     for (let attempt = 1; attempt <= 4; attempt++) {
-      // Step A: Click visible Send button (in floating dock or full-page chat)
+      // Step A: Click visible Send button (text "Send" or send SVG arrow)
       const sendButtons = await page.$$(
         'div[role="button"]:has-text("Send"), button:has-text("Send"), span:has-text("Send"), svg[aria-label="Send"], div.x1i10hfl[role="button"]:has-text("Send")',
       )
@@ -353,12 +352,10 @@ async function sendBrowserDM(
       }
 
       // Step C: Delivery verification
-      // 1. Check if the message bubble now exists in the chat history
       const sentBubble = await page.$(
         'div[role="row"]:has-text("Artistora"), div[dir="auto"]:has-text("Artistora"), div:has-text("artistora.com")',
       )
 
-      // 2. Check if the textbox is cleared of our typed body
       const remainingText = (await textBox.innerText().catch(() => '')).trim()
       const isCleared =
         !remainingText ||
