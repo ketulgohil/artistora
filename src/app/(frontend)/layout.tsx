@@ -100,7 +100,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         </a>
         <div className="flex min-h-screen flex-col">
           <Header />
-          <main id="main-content" className="flex-1 pt-[84px]">
+          <main id="main-content" className="flex-1 pt-[60px]">
             {children}
           </main>
           <Footer />
