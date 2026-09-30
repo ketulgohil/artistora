@@ -179,14 +179,14 @@ async function main() {
           await page.waitForTimeout(2000)
           await dismissPopups(page)
 
-          // 1. Extract post author handle
-          const authorHeader = page.locator('header a, div[role="dialog"] header a').first()
-          const authorHandle = (await authorHeader.innerText().catch(() => ''))
-            .trim()
-            .toLowerCase()
-            .replace(/^@/, '')
+          // 1. Extract post author handle with multiple selector fallbacks
+          const authorHeader = page
+            .locator('header a[role="link"], header h2 a, header span a, div[role="dialog"] header a')
+            .first()
+          const rawHandle = (await authorHeader.innerText().catch(() => '')).trim().toLowerCase()
+          const authorHandle = rawHandle.split('\n')[0].replace(/^@/, '').trim()
 
-          if (!authorHandle || authorHandle === 'artistoraofficial') {
+          if (!authorHandle || authorHandle === 'artistoraofficial' || authorHandle.length > 35) {
             continue
           }
 
@@ -195,13 +195,28 @@ async function main() {
             continue
           }
 
-          // 2. Locate Follow button in post header
-          const followBtn = page
+          // 2. Check if already following / requested
+          const isAlreadyFollowing = await page
             .locator('header button, div[role="dialog"] header button')
+            .filter({ hasText: /Following|Requested/i })
+            .first()
+            .isVisible({ timeout: 1000 })
+            .catch(() => false)
+
+          if (isAlreadyFollowing) {
+            console.log(`   👤 Already following @${authorHandle}`)
+            followHistory.add(authorHandle)
+            saveFollowHistory(authorHandle)
+            continue
+          }
+
+          // 3. Locate Follow button in post header
+          const followBtn = page
+            .locator('header button, header div[role="button"], div[role="dialog"] header button')
             .filter({ hasText: /^Follow$|^Follow Back$/i })
             .first()
 
-          const isFollowVisible = await followBtn.isVisible({ timeout: 2000 }).catch(() => false)
+          const isFollowVisible = await followBtn.isVisible({ timeout: 2500 }).catch(() => false)
 
           if (isFollowVisible) {
             await followBtn.click()
@@ -213,20 +228,18 @@ async function main() {
               `   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle} (from #${tag})`,
             )
 
-            // Human jitter delay between follows
-            const delayMs = getJitterDelay(15, 30)
-            console.log(`   ⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s...`)
+            // Human jitter delay between follows (15s-25s)
+            const delayMs = getJitterDelay(15, 25)
+            console.log(`   ⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next account...`)
             await sleep(delayMs)
 
             // Cooldown break every 5 follows
             if (totalFollowedThisRun % 5 === 0 && totalFollowedThisRun < runLimit) {
-              console.log('\n☕ Taking a 60-second cooldown break to protect account health...')
+              console.log('\n☕ Taking a 60-second cooldown break to protect account standing...')
               await sleep(60000)
             }
           } else {
-            console.log(
-              `   ℹ️ @${authorHandle} is already followed or Follow button not available.`,
-            )
+            console.log(`   ℹ️ Follow button not visible for @${authorHandle}.`)
           }
         } catch (postErr: any) {
           console.warn(`   ⚠️ Notice inspecting post: ${postErr.message}`)
