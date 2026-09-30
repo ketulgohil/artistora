@@ -155,13 +155,20 @@ async function main() {
       await page.waitForTimeout(3000)
       await dismissPopups(page)
 
-      // Collect post links from the hashtag explore grid
+      // 1. Scroll page slightly to load more post items in grid
+      for (let scroll = 0; scroll < 3; scroll++) {
+        await page.mouse.wheel(0, 1000)
+        await page.waitForTimeout(1200)
+      }
+
+      // 2. Collect post links from the explore grid
       const postLinks: string[] = []
       const postElements = await page.$$('a[href*="/p/"], a[href*="/reel/"]')
       for (const el of postElements) {
         const href = await el.getAttribute('href')
         if (href && (href.startsWith('/p/') || href.startsWith('/reel/'))) {
-          const fullUrl = `https://www.instagram.com${href}`
+          const cleanPostPath = href.split('?')[0]
+          const fullUrl = `https://www.instagram.com${cleanPostPath}`
           if (!postLinks.includes(fullUrl)) {
             postLinks.push(fullUrl)
           }
@@ -179,14 +186,28 @@ async function main() {
           await page.waitForTimeout(2000)
           await dismissPopups(page)
 
-          // 1. Extract post author handle with multiple selector fallbacks
-          const authorHeader = page
-            .locator('header a[role="link"], header h2 a, header span a, div[role="dialog"] header a')
-            .first()
-          const rawHandle = (await authorHeader.innerText().catch(() => '')).trim().toLowerCase()
-          const authorHandle = rawHandle.split('\n')[0].replace(/^@/, '').trim()
+          // 3. Extract post author handle from post header link
+          let authorHandle = ''
+          const headerLinks = await page.$$('header a[href^="/"]')
+          for (const link of headerLinks) {
+            const href = await link.getAttribute('href')
+            if (href && href !== '/' && !href.includes('/explore/') && !href.includes('/p/')) {
+              const matched = href.replace(/^\/|\/$/g, '').split('/')[0]
+              if (matched && matched !== 'artistoraofficial' && !matched.includes('?')) {
+                authorHandle = matched.toLowerCase().trim()
+                break
+              }
+            }
+          }
+
+          if (!authorHandle) {
+            const authorHeader = page.locator('header a, div[role="dialog"] header a').first()
+            const rawText = (await authorHeader.innerText().catch(() => '')).trim().toLowerCase()
+            authorHandle = rawText.split('\n')[0].replace(/^@/, '').trim()
+          }
 
           if (!authorHandle || authorHandle === 'artistoraofficial' || authorHandle.length > 35) {
+            console.log('   ℹ️ Could not extract author handle, moving to next post.')
             continue
           }
 
@@ -195,12 +216,21 @@ async function main() {
             continue
           }
 
-          // 2. Check if already following / requested
+          // 4. Navigate directly to author's profile for 100% reliable follow button detection
+          console.log(`   🌐 Navigating to profile: https://www.instagram.com/${authorHandle}/ ...`)
+          await page.goto(`https://www.instagram.com/${authorHandle}/`, {
+            waitUntil: 'domcontentloaded',
+            timeout: 25000,
+          })
+          await page.waitForTimeout(2000)
+          await dismissPopups(page)
+
+          // 5. Check if already following / requested
           const isAlreadyFollowing = await page
-            .locator('header button, div[role="dialog"] header button')
+            .locator('header button, header div[role="button"]')
             .filter({ hasText: /Following|Requested/i })
             .first()
-            .isVisible({ timeout: 1000 })
+            .isVisible({ timeout: 1500 })
             .catch(() => false)
 
           if (isAlreadyFollowing) {
@@ -210,27 +240,31 @@ async function main() {
             continue
           }
 
-          // 3. Locate Follow button in post header
+          // 6. Locate and click Follow button on their profile header
           const followBtn = page
-            .locator('header button, header div[role="button"], div[role="dialog"] header button')
+            .locator('header button, header div[role="button"]')
             .filter({ hasText: /^Follow$|^Follow Back$/i })
             .first()
 
-          const isFollowVisible = await followBtn.isVisible({ timeout: 2500 }).catch(() => false)
+          const isFollowVisible = await followBtn.isVisible({ timeout: 3000 }).catch(() => false)
 
           if (isFollowVisible) {
             await followBtn.click()
+            await page.waitForTimeout(1500)
+
             totalFollowedThisRun++
             saveFollowHistory(authorHandle)
             followHistory.add(authorHandle)
 
             console.log(
-              `   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle} (from #${tag})`,
+              `   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle}! (from #${tag})`,
             )
 
             // Human jitter delay between follows (15s-25s)
             const delayMs = getJitterDelay(15, 25)
-            console.log(`   ⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next account...`)
+            console.log(
+              `   ⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next account...`,
+            )
             await sleep(delayMs)
 
             // Cooldown break every 5 follows
@@ -239,7 +273,7 @@ async function main() {
               await sleep(60000)
             }
           } else {
-            console.log(`   ℹ️ Follow button not visible for @${authorHandle}.`)
+            console.log(`   ℹ️ Follow button not visible on @${authorHandle}'s profile.`)
           }
         } catch (postErr: any) {
           console.warn(`   ⚠️ Notice inspecting post: ${postErr.message}`)
