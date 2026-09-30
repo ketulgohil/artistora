@@ -278,10 +278,6 @@ async function main() {
       console.warn(`   ❌ Failed to explore hashtag #${tag}: ${tagErr.message}`)
     }
   }
-    } catch (tagErr: any) {
-      console.warn(`   ❌ Failed to load hashtag #${tag}: ${tagErr.message}`)
-    }
-  }
 
   console.log('\n================================================================')
   console.log(`🎉 Hashtag Follow Run Completed!`)
