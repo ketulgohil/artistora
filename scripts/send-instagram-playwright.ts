@@ -369,9 +369,7 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
   }
 
   const detected = detectArtistCategory(bio, fullName, cleanHandle, badge)
-  console.log(
-    `   🏷️ Live Verification: @${cleanHandle} → "${detected.label}" (Name: ${fullName})`,
-  )
+  console.log(`   🏷️ Live Verification: @${cleanHandle} → "${detected.label}" (Name: ${fullName})`)
 
   return {
     fullName,

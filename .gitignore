@@ -63,6 +63,7 @@ promote-admin.ts
 instagram-session/
 .instagram-browser-profile/
 instagram-profile/
+followed-accounts.json
 
 # Database backups
 backups/

@@ -15,6 +15,7 @@
     "migrate:media:s3": "cross-env NODE_OPTIONS=--no-deprecation tsx src/migrate-media-to-s3.ts",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "instagram:login": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/login-instagram-browser.ts",
+    "instagram:follow:tags": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/follow-hashtags-playwright.ts",
     "outreach:instagram": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/send-instagram-outreach.ts",
     "outreach:instagram:browser": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/send-instagram-playwright.ts",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
