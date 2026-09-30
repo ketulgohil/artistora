@@ -246,9 +246,10 @@ async function followUser(page: Page, handle: string): Promise<boolean> {
 
 /**
  * Sends a Direct Message to a specific Instagram handle using the browser session.
- * 1. Follows the artist on their profile.
- * 2. Opens the chat thread and types personalized outreach message.
- * 3. Dispatches and verifies real delivery.
+ * 1. Follows the artist on their profile cleanly without clicking the profile Message button.
+ * 2. Directly opens Instagram's full-screen Direct composer (`/direct/new/`).
+ * 3. Selects recipient and enters the clean full-screen thread (`/direct/t/...`).
+ * 4. Types and dispatches message with zero floating dock jitters.
  */
 async function sendBrowserDM(
   page: Page,
@@ -258,79 +259,63 @@ async function sendBrowserDM(
   const cleanHandle = handle.replace(/^@/, '').trim().toLowerCase()
 
   try {
-    // 1. Follow artist first
+    // 1. Follow artist on profile first
     await followUser(page, cleanHandle)
+    await page.waitForTimeout(1000)
 
-    // 2. Look for the "Message" button directly on profile
-    console.log('   🔍 Checking for "Message" button on profile...')
-    const profileMsgBtn = page
-      .locator('header button, header div[role="button"], header a')
-      .filter({ hasText: /^Message$/i })
+    // 2. Open clean, full-screen Direct composer directly (bypasses all floating dock widgets)
+    console.log(`   🌐 Opening Direct Message composer for @${cleanHandle}...`)
+    await page.goto('https://www.instagram.com/direct/new/', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    })
+    await page.waitForTimeout(2000)
+    await dismissPopups(page)
+
+    // 3. Search recipient in composer modal
+    console.log(`   🔍 Searching recipient: @${cleanHandle}...`)
+    const searchInput = page
+      .locator('input[placeholder*="Search"], input[name="queryBox"], input[type="text"]')
       .first()
 
-    let chatOpened = false
-    if (await profileMsgBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
-      console.log('   💬 Clicking "Message" button on profile...')
-      await profileMsgBtn.click()
-      await page.waitForTimeout(3000)
-      await dismissPopups(page)
+    await searchInput.waitFor({ state: 'visible', timeout: 12000 })
+    await searchInput.click()
+    await page.waitForTimeout(200)
+    await searchInput.fill(cleanHandle)
+    console.log('   ⏳ Waiting for recipient search results...')
+    await page.waitForTimeout(2500)
 
-      const hasChatBox = await findMessageBox(page, 4000)
-      if (hasChatBox || page.url().includes('/direct/t/')) {
-        chatOpened = true
-      }
-    }
+    // 4. Select the matching user from search results
+    const userRowLocator = page
+      .locator(
+        `div[role="dialog"] div[role="button"]:has-text("${cleanHandle}"), div[role="dialog"] span:has-text("${cleanHandle}"), div[role="button"]:has-text("${cleanHandle}"), span:has-text("${cleanHandle}"), div[role="dialog"] input[type="checkbox"], div[role="dialog"] label`,
+      )
+      .first()
 
-    // 3. If profile Message button didn't open chat directly, use Direct Composer
-    if (!chatOpened) {
-      console.log(`   🌐 Opening Direct Message composer for @${cleanHandle}...`)
-      await page.goto('https://www.instagram.com/direct/new/', {
-        waitUntil: 'domcontentloaded',
-        timeout: 30000,
-      })
-      await page.waitForTimeout(2000)
-      await dismissPopups(page)
+    if (await userRowLocator.isVisible({ timeout: 4000 }).catch(() => false)) {
+      await userRowLocator.click({ force: true })
+      console.log(`   ✅ Selected @${cleanHandle} from search list`)
+      await page.waitForTimeout(1000)
 
-      console.log(`   🔍 Searching recipient in Direct composer: @${cleanHandle}...`)
-      const searchInput = page
-        .locator('input[placeholder*="Search"], input[name="queryBox"], input[type="text"]')
-        .first()
-
-      await searchInput.waitFor({ state: 'visible', timeout: 12000 })
-      await searchInput.click()
-      await page.waitForTimeout(300)
-      await searchInput.fill(cleanHandle)
-      console.log('   ⏳ Waiting for user search results...')
-      await page.waitForTimeout(2500)
-
-      const userRowLocator = page
+      const chatBtn = page
         .locator(
-          `div[role="dialog"] div[role="button"]:has-text("${cleanHandle}"), div[role="dialog"] span:has-text("${cleanHandle}"), div[role="button"]:has-text("${cleanHandle}"), span:has-text("${cleanHandle}"), div[role="dialog"] input[type="checkbox"], div[role="dialog"] label`,
+          'div[role="dialog"] div[role="button"]:has-text("Chat"), div[role="dialog"] button:has-text("Chat"), div[role="button"]:has-text("Chat"), button:has-text("Chat"), div[role="button"]:has-text("Next"), button:has-text("Next")',
         )
         .first()
 
-      if (await userRowLocator.isVisible({ timeout: 3500 }).catch(() => false)) {
-        await userRowLocator.click({ force: true })
-        console.log(`   ✅ Selected @${cleanHandle} from search list`)
-        await page.waitForTimeout(1000)
-
-        const chatBtn = page
-          .locator(
-            'div[role="dialog"] div[role="button"]:has-text("Chat"), div[role="dialog"] button:has-text("Chat"), div[role="button"]:has-text("Chat"), button:has-text("Chat"), div[role="button"]:has-text("Next"), button:has-text("Next")',
-          )
-          .first()
-
-        if (await chatBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
-          await chatBtn.click({ force: true })
-          await page.waitForTimeout(3000)
-        }
+      if (await chatBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
+        await chatBtn.click({ force: true })
+        console.log('   💬 Navigating to full-screen chat thread...')
+        await page.waitForTimeout(3000)
       }
+    } else {
+      return { success: false, error: `Could not find recipient @${cleanHandle} in Direct search` }
     }
 
     await dismissPopups(page)
 
-    // 4. Locate the message textbox in the chat thread
-    console.log('   🔍 Detecting message input box in chat thread...')
+    // 5. Locate the message textbox in the clean chat thread
+    console.log('   🔍 Detecting message input box in full-screen thread...')
     const textBoxLocator = await findMessageBox(page, 15000)
 
     if (!textBoxLocator) {
@@ -342,7 +327,7 @@ async function sendBrowserDM(
 
     console.log('   ✍️ Typing personalized message with human speed...')
     await textBoxLocator.click({ force: true })
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(400)
 
     // Human typing simulation with multi-line support
     const lines = message.split('\n')
@@ -362,7 +347,7 @@ async function sendBrowserDM(
 
     await page.waitForTimeout(800)
 
-    // 5. Dispatch message and verify real delivery
+    // 6. Dispatch message and verify real delivery
     console.log('   📤 Dispatching direct message...')
     let isDelivered = false
 
