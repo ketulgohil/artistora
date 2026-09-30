@@ -485,17 +485,66 @@ async function main() {
 
   // 2. Handle single test message
   if (isTest && testHandle) {
-    console.log(`🧪 Running single test DM to ${testHandle}...`)
-    const testArtist: TargetArtist = { handle: testHandle, name: testHandle.replace(/^@/, '') }
+    const cleanTestHandle = testHandle.replace(/^@/, '').trim().toLowerCase()
+    console.log(`🧪 Running single test DM to @${cleanTestHandle}...`)
+
+    // Check if artist exists in database
+    let dbArtistDoc: any = null
+    try {
+      const match = await payload.find({
+        collection: 'discovered-artists',
+        where: {
+          or: [
+            { instagramHandle: { equals: cleanTestHandle } },
+            { name: { equals: cleanTestHandle } },
+            { slug: { equals: `ig-${cleanTestHandle}` } },
+          ],
+        },
+        limit: 1,
+      })
+      if (match.docs.length > 0) {
+        dbArtistDoc = match.docs[0]
+      }
+    } catch {}
+
+    const testArtist: TargetArtist = {
+      id: dbArtistDoc?.id,
+      handle: cleanTestHandle,
+      name: dbArtistDoc?.name || cleanTestHandle,
+      category: dbArtistDoc?.services?.[0]?.name || dbArtistDoc?.specializations || 'wedding',
+    }
+
     const messageBody = generateDynamicInstagramMessage(testArtist)
 
     console.log('\n--- Message Preview ---')
     console.log(messageBody)
     console.log('-----------------------\n')
 
-    const result = await sendBrowserDM(page, testHandle, messageBody)
+    const result = await sendBrowserDM(page, cleanTestHandle, messageBody)
     if (result.success) {
-      console.log(`\n🎉 Test message successfully sent to ${testHandle}!`)
+      console.log(`\n🎉 Test message successfully sent to @${cleanTestHandle}!`)
+
+      if (dbArtistDoc?.id) {
+        try {
+          await payload.create({
+            collection: 'outreach-messages',
+            data: {
+              artist: dbArtistDoc.id,
+              channel: 'instagram_dm',
+              campaignName: 'ahmedabad-wedding-artists-v1',
+              body: messageBody,
+              status: 'sent',
+              sentAt: new Date().toISOString(),
+            } as any,
+          })
+          await payload.update({
+            collection: 'discovered-artists',
+            id: dbArtistDoc.id,
+            data: { outreachStatus: 'contacted' } as any,
+          })
+          console.log(`💾 Updated database: marked @${cleanTestHandle} as 'contacted'`)
+        } catch {}
+      }
     } else {
       console.error(`\n❌ Failed to send test message: ${result.error}`)
     }
@@ -555,10 +604,18 @@ async function main() {
 
   let sentCount = 0
   let skippedCount = 0
+  const seenHandlesThisRun = new Set<string>()
 
   for (let i = 0; i < Math.min(targetList.length, remainingQuota); i++) {
     const artist = targetList[i]
-    const cleanHandle = artist.handle.replace(/^@/, '').trim()
+    const cleanHandle = artist.handle.replace(/^@/, '').trim().toLowerCase()
+
+    if (seenHandlesThisRun.has(cleanHandle)) {
+      console.log(`   ⏩ Skipping duplicate handle @${cleanHandle} in current batch.`)
+      skippedCount++
+      continue
+    }
+    seenHandlesThisRun.add(cleanHandle)
 
     console.log(
       `\n[${i + 1}/${remainingQuota}] 🎯 Target: @${cleanHandle} (${artist.name || 'Artist'})`,
