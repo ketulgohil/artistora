@@ -181,7 +181,10 @@ async function main() {
 
           // 1. Extract post author handle
           const authorHeader = page.locator('header a, div[role="dialog"] header a').first()
-          const authorHandle = (await authorHeader.innerText().catch(() => '')).trim().toLowerCase().replace(/^@/, '')
+          const authorHandle = (await authorHeader.innerText().catch(() => ''))
+            .trim()
+            .toLowerCase()
+            .replace(/^@/, '')
 
           if (!authorHandle || authorHandle === 'artistoraofficial') {
             continue
@@ -206,7 +209,9 @@ async function main() {
             saveFollowHistory(authorHandle)
             followHistory.add(authorHandle)
 
-            console.log(`   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle} (from #${tag})`)
+            console.log(
+              `   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle} (from #${tag})`,
+            )
 
             // Human jitter delay between follows
             const delayMs = getJitterDelay(15, 30)
@@ -219,7 +224,9 @@ async function main() {
               await sleep(60000)
             }
           } else {
-            console.log(`   ℹ️ @${authorHandle} is already followed or Follow button not available.`)
+            console.log(
+              `   ℹ️ @${authorHandle} is already followed or Follow button not available.`,
+            )
           }
         } catch (postErr: any) {
           console.warn(`   ⚠️ Notice inspecting post: ${postErr.message}`)
