@@ -272,7 +272,10 @@ async function sendBrowserDM(
     const textBox = await findMessageBox(page, 15000)
 
     if (!textBox) {
-      return { success: false, error: 'Could not locate message input box in thread (timed out after 15s)' }
+      return {
+        success: false,
+        error: 'Could not locate message input box in thread (timed out after 15s)',
+      }
     }
 
     console.log('   ✍️ Typing personalized message with human speed...')
@@ -297,22 +300,46 @@ async function sendBrowserDM(
 
     await page.waitForTimeout(1000)
 
-    // 3. Press Enter to send, and click Send button if visible
+    // 3. Dispatch message and verify real delivery
     console.log('   📤 Dispatching direct message...')
-    await page.keyboard.press('Enter')
-    await page.waitForTimeout(1500)
+    let isDelivered = false
 
-    try {
-      const sendBtn = await page.$(
-        'div[role="button"]:has-text("Send"), button:has-text("Send"), svg[aria-label="Send"]',
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      // Try 1: Click the explicit "Send" button that Instagram renders next to the input box
+      const sendButton = await page.$(
+        'div[role="button"]:has-text("Send"), button:has-text("Send"), span:has-text("Send"), div.x1i10hfl[role="button"]:has-text("Send")',
       )
-      if (sendBtn && (await sendBtn.isVisible().catch(() => false))) {
-        await sendBtn.click().catch(() => {})
+
+      if (sendButton && (await sendButton.isVisible().catch(() => false))) {
+        await sendButton.click({ force: true }).catch(() => {})
+        await page.waitForTimeout(1500)
+      } else {
+        // Try 2: Focus textbox and press Enter
+        await textBox.focus().catch(() => {})
+        await page.keyboard.press('Enter')
         await page.waitForTimeout(1500)
       }
-    } catch {}
 
-    await page.waitForTimeout(2500)
+      // Verify if textbox is now empty (which confirms Instagram accepted and sent the message)
+      const remainingText = (await textBox.innerText().catch(() => '')).trim()
+      if (!remainingText || remainingText === '\n') {
+        isDelivered = true
+        break
+      }
+
+      console.log(`   ⏳ Delivery check attempt ${attempt}/4 — waiting for Instagram to dispatch...`)
+      await page.waitForTimeout(1500)
+    }
+
+    if (!isDelivered) {
+      return {
+        success: false,
+        error:
+          'Message was entered in textbox, but Instagram Send button / Enter key did not submit it.',
+      }
+    }
+
+    await page.waitForTimeout(2000)
     return { success: true }
   } catch (err: any) {
     return { success: false, error: err.message }
@@ -461,8 +488,8 @@ async function main() {
         collection: 'outreach-messages',
         where: {
           and: [
-            { channel: { equals: 'instagram' } },
-            { recipientInstagram: { equals: cleanHandle } },
+            { channel: { equals: 'instagram_dm' } },
+            { artist: { equals: artist.id } },
             { status: { equals: 'sent' } },
           ],
         },
@@ -484,21 +511,23 @@ async function main() {
       console.log(`   ✅ [${sentCount}] Successfully delivered DM to @${cleanHandle}`)
 
       // Log in PostgreSQL outreach_messages
-      try {
-        await payload.create({
-          collection: 'outreach-messages',
-          data: {
-            channel: 'instagram',
-            recipientInstagram: cleanHandle,
-            artistName: artist.name || cleanHandle,
-            messageBody,
-            status: 'sent',
-            sentAt: new Date().toISOString(),
-            campaign: 'ahmedabad-wedding-artists-v1',
-          } as any,
-        })
-      } catch (logErr: any) {
-        console.warn(`   ⚠️ Could not log outreach record: ${logErr.message}`)
+      if (artist.id) {
+        try {
+          await payload.create({
+            collection: 'outreach-messages',
+            data: {
+              artist: artist.id,
+              channel: 'instagram_dm',
+              campaignName: 'ahmedabad-wedding-artists-v1',
+              body: messageBody,
+              status: 'sent',
+              sentAt: new Date().toISOString(),
+            } as any,
+          })
+          console.log(`   💾 Saved outreach record in database for @${cleanHandle}`)
+        } catch (logErr: any) {
+          console.warn(`   ⚠️ Could not log outreach record: ${logErr.message}`)
+        }
       }
 
       // Update discovered_artists status
