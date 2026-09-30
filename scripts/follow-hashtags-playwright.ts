@@ -155,130 +155,129 @@ async function main() {
       await page.waitForTimeout(3000)
       await dismissPopups(page)
 
-      // 1. Scroll page slightly to load more post items in grid
-      for (let scroll = 0; scroll < 3; scroll++) {
-        await page.mouse.wheel(0, 1000)
-        await page.waitForTimeout(1200)
+      // 1. Locate first post thumbnail on grid
+      const firstPostLocator = page.locator('article a[href*="/p/"], main a[href*="/p/"], a[href*="/p/"]').first()
+      const isGridVisible = await firstPostLocator.isVisible({ timeout: 10000 }).catch(() => false)
+
+      if (!isGridVisible) {
+        console.warn(`   ⚠️ No post grid found on #${tag}, moving to next hashtag.`)
+        continue
       }
 
-      // 2. Collect post links from the explore grid
-      const postLinks: string[] = []
-      const postElements = await page.$$('a[href*="/p/"], a[href*="/reel/"]')
-      for (const el of postElements) {
-        const href = await el.getAttribute('href')
-        if (href && (href.startsWith('/p/') || href.startsWith('/reel/'))) {
-          const cleanPostPath = href.split('?')[0]
-          const fullUrl = `https://www.instagram.com${cleanPostPath}`
-          if (!postLinks.includes(fullUrl)) {
-            postLinks.push(fullUrl)
-          }
-        }
-      }
+      console.log('   📸 Opening first post in modal viewer...')
+      await firstPostLocator.click({ force: true })
+      await page.waitForTimeout(3000)
+      await dismissPopups(page)
 
-      console.log(`   📸 Found ${postLinks.length} recent posts in #${tag}`)
+      let consecutiveSkips = 0
+      const maxPostChecks = 100
 
-      for (const postUrl of postLinks) {
+      for (let step = 0; step < maxPostChecks; step++) {
         if (totalFollowedThisRun >= runLimit) break
 
         try {
-          console.log(`\n   🖼️ Inspecting post: ${postUrl}`)
-          await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 25000 })
-          await page.waitForTimeout(2000)
           await dismissPopups(page)
 
-          // 3. Extract post author handle from post header link
+          // 2. Extract author handle from modal header
+          const authorHeader = page
+            .locator('div[role="dialog"] header a[role="link"], div[role="dialog"] header a, header a')
+            .first()
+
           let authorHandle = ''
-          const headerLinks = await page.$$('header a[href^="/"]')
-          for (const link of headerLinks) {
-            const href = await link.getAttribute('href')
-            if (href && href !== '/' && !href.includes('/explore/') && !href.includes('/p/')) {
-              const matched = href.replace(/^\/|\/$/g, '').split('/')[0]
-              if (matched && matched !== 'artistoraofficial' && !matched.includes('?')) {
-                authorHandle = matched.toLowerCase().trim()
-                break
+          try {
+            const raw = (await authorHeader.innerText({ timeout: 3000 }).catch(() => '')).trim().toLowerCase()
+            authorHandle = raw.split('\n')[0].replace(/^@/, '').trim()
+          } catch {}
+
+          if (!authorHandle || authorHandle === 'artistoraofficial') {
+            // Try extracting from header href
+            const href = await authorHeader.getAttribute('href').catch(() => '')
+            if (href) {
+              authorHandle = href.replace(/^\/|\/$/g, '').split('/')[0].toLowerCase().trim()
+            }
+          }
+
+          if (authorHandle && authorHandle !== 'artistoraofficial') {
+            console.log(`\n[Post ${step + 1}] 👤 Author: @${authorHandle}`)
+
+            if (followHistory.has(authorHandle)) {
+              console.log(`   ⏩ Skipping @${authorHandle} — already in follow history.`)
+              consecutiveSkips++
+            } else {
+              // 3. Locate Follow button in post modal
+              const followBtn = page
+                .locator(
+                  'div[role="dialog"] header button:has-text("Follow"), div[role="dialog"] header div[role="button"]:has-text("Follow"), div[role="dialog"] button:has-text("Follow"), button:has-text("Follow"):not(:has-text("Following"))',
+                )
+                .first()
+
+              const isFollowVisible = await followBtn.isVisible({ timeout: 2500 }).catch(() => false)
+
+              if (isFollowVisible) {
+                console.log(`   👉 Clicking "Follow" button for @${authorHandle}...`)
+                await followBtn.click({ force: true })
+                await page.waitForTimeout(1500)
+
+                totalFollowedThisRun++
+                saveFollowHistory(authorHandle)
+                followHistory.add(authorHandle)
+                consecutiveSkips = 0
+
+                console.log(
+                  `   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle}! (from #${tag})`,
+                )
+
+                // Human delay jitter between follows (12s-22s)
+                const delayMs = getJitterDelay(12, 22)
+                console.log(`   ⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s...`)
+                await sleep(delayMs)
+
+                // Cooldown break every 5 follows
+                if (totalFollowedThisRun % 5 === 0 && totalFollowedThisRun < runLimit) {
+                  console.log('\n☕ Taking a 45-second cooldown break to protect account standing...')
+                  await sleep(45000)
+                }
+              } else {
+                // Check if already following
+                const isFollowing = await page
+                  .locator('div[role="dialog"] header button:has-text("Following"), div[role="dialog"] header button:has-text("Requested")')
+                  .first()
+                  .isVisible({ timeout: 1000 })
+                  .catch(() => false)
+
+                if (isFollowing) {
+                  console.log(`   👤 Already following @${authorHandle}`)
+                  followHistory.add(authorHandle)
+                  saveFollowHistory(authorHandle)
+                } else {
+                  console.log(`   ℹ️ Follow button not visible on post header for @${authorHandle}`)
+                }
               }
             }
           }
 
-          if (!authorHandle) {
-            const authorHeader = page.locator('header a, div[role="dialog"] header a').first()
-            const rawText = (await authorHeader.innerText().catch(() => '')).trim().toLowerCase()
-            authorHandle = rawText.split('\n')[0].replace(/^@/, '').trim()
-          }
-
-          if (!authorHandle || authorHandle === 'artistoraofficial' || authorHandle.length > 35) {
-            console.log('   ℹ️ Could not extract author handle, moving to next post.')
-            continue
-          }
-
-          if (followHistory.has(authorHandle)) {
-            console.log(`   ⏩ Skipping @${authorHandle} — already in follow history.`)
-            continue
-          }
-
-          // 4. Navigate directly to author's profile for 100% reliable follow button detection
-          console.log(`   🌐 Navigating to profile: https://www.instagram.com/${authorHandle}/ ...`)
-          await page.goto(`https://www.instagram.com/${authorHandle}/`, {
-            waitUntil: 'domcontentloaded',
-            timeout: 25000,
-          })
-          await page.waitForTimeout(2000)
-          await dismissPopups(page)
-
-          // 5. Check if already following / requested
-          const isAlreadyFollowing = await page
-            .locator('header button, header div[role="button"]')
-            .filter({ hasText: /Following|Requested/i })
-            .first()
-            .isVisible({ timeout: 1500 })
-            .catch(() => false)
-
-          if (isAlreadyFollowing) {
-            console.log(`   👤 Already following @${authorHandle}`)
-            followHistory.add(authorHandle)
-            saveFollowHistory(authorHandle)
-            continue
-          }
-
-          // 6. Locate and click Follow button on their profile header
-          const followBtn = page
-            .locator('header button, header div[role="button"]')
-            .filter({ hasText: /^Follow$|^Follow Back$/i })
-            .first()
-
-          const isFollowVisible = await followBtn.isVisible({ timeout: 3000 }).catch(() => false)
-
-          if (isFollowVisible) {
-            await followBtn.click()
-            await page.waitForTimeout(1500)
-
-            totalFollowedThisRun++
-            saveFollowHistory(authorHandle)
-            followHistory.add(authorHandle)
-
-            console.log(
-              `   ➕ [${totalFollowedThisRun}/${runLimit}] Successfully followed @${authorHandle}! (from #${tag})`,
-            )
-
-            // Human jitter delay between follows (15s-25s)
-            const delayMs = getJitterDelay(15, 25)
-            console.log(
-              `   ⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next account...`,
-            )
-            await sleep(delayMs)
-
-            // Cooldown break every 5 follows
-            if (totalFollowedThisRun % 5 === 0 && totalFollowedThisRun < runLimit) {
-              console.log('\n☕ Taking a 60-second cooldown break to protect account standing...')
-              await sleep(60000)
-            }
+          // 4. Advance to Next post using keyboard ArrowRight or next arrow button
+          const nextBtn = page.locator('svg[aria-label="Next"], div[role="dialog"] button:has-text("Next"), div._aaqg button').first()
+          if (await nextBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
+            await nextBtn.click({ force: true })
           } else {
-            console.log(`   ℹ️ Follow button not visible on @${authorHandle}'s profile.`)
+            await page.keyboard.press('ArrowRight')
           }
-        } catch (postErr: any) {
-          console.warn(`   ⚠️ Notice inspecting post: ${postErr.message}`)
+          await page.waitForTimeout(1500)
+        } catch (stepErr: any) {
+          console.warn(`   ⚠️ Notice moving to next post: ${stepErr.message}`)
+          await page.keyboard.press('ArrowRight').catch(() => {})
+          await page.waitForTimeout(1500)
         }
       }
+
+      // Close modal before navigating to next tag
+      await page.keyboard.press('Escape').catch(() => {})
+      await page.waitForTimeout(1500)
+    } catch (tagErr: any) {
+      console.warn(`   ❌ Failed to explore hashtag #${tag}: ${tagErr.message}`)
+    }
+  }
     } catch (tagErr: any) {
       console.warn(`   ❌ Failed to load hashtag #${tag}: ${tagErr.message}`)
     }
