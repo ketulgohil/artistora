@@ -118,8 +118,8 @@ export default function PortfolioPage() {
         ) : (
           <>
             <p className="mx-auto mb-10! max-w-2xl! text-center text-sm leading-relaxed text-ink-soft">
-              Explore work from Artistora professionals across the services you need —
-              from Photography to Makeup, Decor, and Entertainment.
+              Explore work from Artistora professionals across the services you need — from
+              Photography to Makeup, Decor, and Entertainment.
             </p>
 
             {/* Category filter */}
@@ -150,7 +150,9 @@ export default function PortfolioPage() {
             </div>
 
             {filteredItems.length === 0 ? (
-              <p className="py-16! text-center text-ink-muted">No work found in this category yet.</p>
+              <p className="py-16! text-center text-ink-muted">
+                No work found in this category yet.
+              </p>
             ) : (
               <div className="grid grid-cols-2 gap-3! md:grid-cols-3 md:gap-4! lg:grid-cols-4">
                 {filteredItems.map((item) => (
@@ -177,7 +179,11 @@ export default function PortfolioPage() {
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                     <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-coal/70 to-transparent px-3! pt-8! pb-2! text-left text-[0.72rem] font-medium text-white/0 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:text-white/90 group-hover:opacity-100">
-                      <span>{SERVICE_CATEGORIES.find((service) => service.value === item.serviceCategory)?.label || item.category?.title}</span>
+                      <span>
+                        {SERVICE_CATEGORIES.find(
+                          (service) => service.value === item.serviceCategory,
+                        )?.label || item.category?.title}
+                      </span>
                       {item.artist?.displayName && (
                         <a
                           href={`/artists/${item.artist.slug}`}

@@ -6,7 +6,7 @@ import SectionHeading from '@/components/SectionHeading'
 import { withDefaultSeo } from '@/lib/seo'
 
 export const metadata = withDefaultSeo({
-  title: 'About Artistora — Ahmedabad\'s Trusted Artist Marketplace',
+  title: "About Artistora — Ahmedabad's Trusted Artist Marketplace",
   description:
     'Artistora connects customers with verified artists in Ahmedabad for weddings, events, and celebrations. Learn about our mission, values, and how we ensure quality.',
   alternates: {
@@ -71,13 +71,15 @@ export default async function ArtistPage() {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
     name: 'About Artistora',
-    description: 'Artistora connects customers with verified artists in Ahmedabad for weddings, events, and celebrations.',
+    description:
+      'Artistora connects customers with verified artists in Ahmedabad for weddings, events, and celebrations.',
     url: 'https://www.artistora.com/artist',
     mainEntity: {
       '@type': 'Organization',
       name: 'Artistora',
       url: 'https://www.artistora.com',
-      description: 'Ahmedabad\'s trusted artist marketplace — verified mehndi, photography, makeup, and decor professionals.',
+      description:
+        "Ahmedabad's trusted artist marketplace — verified mehndi, photography, makeup, and decor professionals.",
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Ahmedabad',
@@ -153,18 +155,16 @@ export default async function ArtistPage() {
                 Artistora &mdash; Verified Artists in Ahmedabad
               </h1>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
-                Artistora is a curated marketplace that connects you with
-                verified artists in Ahmedabad &mdash; mehndi specialists,
-                photographers, makeup artists, decorators, and event planners.
-                Every artist is selected and reviewed for skill, reliability,
-                and professionalism.
+                Artistora is a curated marketplace that connects you with verified artists in
+                Ahmedabad &mdash; mehndi specialists, photographers, makeup artists, decorators, and
+                event planners. Every artist is selected and reviewed for skill, reliability, and
+                professionalism.
               </p>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
-                Browse artists by occasion &mdash; weddings, corporate events,
-                birthdays, festivals, or personal projects &mdash; compare
-                portfolios and reviews, and book with confidence. Whether you
-                need home service or venue-based support, Artistora makes the
-                process simple and transparent.
+                Browse artists by occasion &mdash; weddings, corporate events, birthdays, festivals,
+                or personal projects &mdash; compare portfolios and reviews, and book with
+                confidence. Whether you need home service or venue-based support, Artistora makes
+                the process simple and transparent.
               </p>
               <div className="mt-7! flex flex-wrap gap-2.5!">
                 {qualityTags.map((tag) => (
@@ -194,9 +194,7 @@ export default async function ArtistPage() {
                 <p className="text-[0.7rem] font-semibold tracking-[0.3em] text-brand uppercase">
                   {item.label}
                 </p>
-                <h3 className="font-display mt-3! text-xl! font-semibold text-ink">
-                  {item.value}
-                </h3>
+                <h3 className="font-display mt-3! text-xl! font-semibold text-ink">{item.value}</h3>
                 <p className="mt-3! text-sm leading-relaxed text-ink-soft">{item.text}</p>
               </article>
             ))}
@@ -223,9 +221,8 @@ export default async function ArtistPage() {
                   Ready to book a verified artist for your next celebration?
                 </h2>
                 <p className="mt-4! text-sm leading-relaxed text-cream/65 md:text-[0.95rem]">
-                  Whether you are planning a wedding, corporate event, birthday,
-                  festival, or any special occasion, reach out to check artist
-                  availability and discuss your vision.
+                  Whether you are planning a wedding, corporate event, birthday, festival, or any
+                  special occasion, reach out to check artist availability and discuss your vision.
                 </p>
                 <p className="mt-6! flex flex-wrap items-center gap-x-3! gap-y-2! text-sm text-cream/75">
                   <Link
