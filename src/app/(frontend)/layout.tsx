@@ -4,6 +4,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import BrandLoader from '@/components/BrandLoader'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import './styles.css'
 
 const manrope = Manrope({
@@ -34,7 +35,7 @@ export const metadata = {
   },
   other: {
     'theme-color': '#ec6783',
-    'manifest': '/site.webmanifest',
+    manifest: '/site.webmanifest',
   },
   openGraph: {
     title: 'Artistora — Book Verified Artists in Ahmedabad',
@@ -49,7 +50,8 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Artistora — Book Verified Artists in Ahmedabad',
-    description: 'Compare quotes from verified artists in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+    description:
+      'Compare quotes from verified artists in Ahmedabad — mehndi, photography, makeup, decor, and more.',
     images: ['/artistora/social-profile-1000x1000.png'],
   },
 }
@@ -60,7 +62,8 @@ const organizationSchema = {
   name: 'Artistora',
   url: 'https://www.artistora.com',
   logo: 'https://www.artistora.com/artistora/logo-full-white.png',
-  description: 'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+  description:
+    'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Ahmedabad',
@@ -73,9 +76,7 @@ const organizationSchema = {
     contactType: 'customer service',
     availableLanguage: 'English',
   },
-  sameAs: [
-    'https://www.instagram.com/artistoraofficial',
-  ],
+  sameAs: ['https://www.instagram.com/artistoraofficial'],
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -84,7 +85,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${manrope.variable} ${fraunces.variable}`}>
       <head>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
       </head>
       <body>
         <BrandLoader />
@@ -101,6 +105,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           </main>
           <Footer />
           <WhatsAppButton />
+          <SpeedInsights />
         </div>
       </body>
     </html>

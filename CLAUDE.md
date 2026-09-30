@@ -131,3 +131,12 @@ npx tsx src/outreach/run-scrapers.ts
   - `logOutreachMessage(rawPhone: string, messageBody: string, options?: LogMessageOptions)` from `src/outreach/whatsapp/log-message.ts`.
 - **Deduplication & Jitter:** Always verify recipients against `outreach_messages` (`status = 'sent'`) and enforce a 45–65s human delay between outgoing messages.
 - **Logging:** All messages are logged to `outreach_messages` with recipient phone, rendered message body, status, and campaign identifier.
+
+### 7. Instagram Automation (Private Mobile API Standard)
+- **Engine Standard:** Always use **Instagram Private Mobile API (`instagram-private-api`)** via direct mobile protocol for all Instagram DM outreach and bio extraction (avoid brittle DOM-clicking Playwright/Puppeteer bots).
+- **Session Persistence:** State and cookie jar are serialized and persisted in local Docker Redis (`redis://127.0.0.1:6379`) under `artistora:instagram:session:state` using `src/outreach/instagram/session.ts`.
+- **CLI Commands:**
+  - Link session: `npx tsx scripts/auth-instagram.ts`
+  - Run batch outreach: `npx tsx scripts/send-instagram-outreach.ts`
+  - Send single test DM: `npx tsx scripts/send-instagram-outreach.ts --test @target_handle`
+- **Deduplication & Jitter:** Always verify recipients against `outreach_messages` (`channel = 'instagram'`, `status = 'sent'`) and enforce 45–65s human jitter delays.

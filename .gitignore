@@ -54,6 +54,7 @@ supabase/.temp/
 # WhatsApp / Outreach
 whatsapp-session/
 .whatsapp-queue/
+.discovered-queue/
 .wwebjs_cache/
 outreach-sent.json
 scraper-progress.json
