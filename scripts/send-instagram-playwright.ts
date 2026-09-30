@@ -140,18 +140,58 @@ async function getSentCountLast24Hours(payload: any): Promise<number> {
 }
 
 /**
- * Dismisses common Instagram popups (Turn on Notifications, Save Login Info).
+ * Dismisses common Instagram popups (Turn on Notifications, Save Login Info, Messaging Request).
  */
 async function dismissPopups(page: Page) {
   try {
-    const notNowBtn = await page.$(
-      'button:has-text("Not Now"), button:has-text("Not now"), button:has-text("Cancel")',
+    const popupButtons = await page.$$(
+      'button:has-text("Not Now"), button:has-text("Not now"), button:has-text("Cancel"), svg[aria-label="Close"], button:has-text("Close")',
     )
-    if (notNowBtn) {
-      await notNowBtn.click().catch(() => {})
-      await page.waitForTimeout(1000)
+    for (const btn of popupButtons) {
+      if (await btn.isVisible().catch(() => false)) {
+        await btn.click().catch(() => {})
+        await page.waitForTimeout(600)
+      }
     }
   } catch {}
+}
+
+/**
+ * Finds the message input textbox with a retry/polling loop across all modern Instagram Web variants.
+ */
+async function findMessageBox(page: Page, timeoutMs = 12000) {
+  const possibleSelectors = [
+    'div[aria-label="Message"][contenteditable="true"]',
+    'div[role="textbox"][contenteditable="true"]',
+    'div[contenteditable="true"][role="textbox"]',
+    'div[data-lexical-editor="true"]',
+    'div[aria-label*="Message"]',
+    'div[contenteditable="true"] p',
+    'div[contenteditable="true"]',
+    'textarea[placeholder*="Message"]',
+    'textarea[aria-label*="Message"]',
+    'div.xzsf02u',
+    'p.xzsf02u',
+    'div[role="textbox"]',
+  ]
+
+  const startTime = Date.now()
+  while (Date.now() - startTime < timeoutMs) {
+    await dismissPopups(page)
+
+    for (const selector of possibleSelectors) {
+      try {
+        const el = await page.$(selector)
+        if (el && (await el.isVisible().catch(() => false))) {
+          return el
+        }
+      } catch {}
+    }
+
+    await page.waitForTimeout(500)
+  }
+
+  return null
 }
 
 /**
@@ -172,7 +212,7 @@ async function sendBrowserDM(
     await dismissPopups(page)
 
     // 1. Look for the "Message" button on profile
-    console.log('   🔍 Locating "Message" button...')
+    console.log('   🔍 Locating "Message" button on profile...')
     const messageBtn = await page.$(
       'div[role="button"]:has-text("Message"), button:has-text("Message"), a:has-text("Message"), div:has-text("Message")',
     )
@@ -187,8 +227,8 @@ async function sendBrowserDM(
         }
       }
 
-      // Alternative: Try direct inbox composer
-      console.log('   ℹ️ Message button not found on profile, opening direct composer...')
+      // Alternative: Open direct inbox composer directly
+      console.log('   ℹ️ "Message" button not visible on profile, opening direct composer...')
       await page.goto('https://www.instagram.com/direct/new/', { waitUntil: 'domcontentloaded' })
       await page.waitForTimeout(3000)
       await dismissPopups(page)
@@ -203,7 +243,7 @@ async function sendBrowserDM(
       await searchInput.fill(cleanHandle)
       await page.waitForTimeout(2000)
 
-      // Click on the first matching user checkbox / row
+      // Click on matching user row
       const userRow = await page.$(
         `div[role="button"]:has-text("${cleanHandle}"), input[type="checkbox"]`,
       )
@@ -221,45 +261,58 @@ async function sendBrowserDM(
       }
     } else {
       await messageBtn.click()
-      await page.waitForTimeout(3500)
+      console.log('   ⏳ Waiting for direct chat thread to open...')
+      await page.waitForTimeout(3000)
     }
 
     await dismissPopups(page)
 
-    // 2. Locate the message textbox
-    console.log('   ✍️ Typing message with human speed...')
-    const textBox = await page.$(
-      'div[role="textbox"][contenteditable="true"], div[aria-label="Message"][contenteditable="true"], textarea[placeholder*="Message"], p.xzsf02u, div[contenteditable="true"]',
-    )
+    // 2. Locate the message textbox with polling loop
+    console.log('   🔍 Detecting message input box...')
+    const textBox = await findMessageBox(page, 15000)
 
     if (!textBox) {
-      return { success: false, error: 'Could not locate message input box in thread' }
+      return { success: false, error: 'Could not locate message input box in thread (timed out after 15s)' }
     }
 
+    console.log('   ✍️ Typing personalized message with human speed...')
     await textBox.click()
-    await page.waitForTimeout(800)
+    await page.waitForTimeout(600)
 
     // Human typing simulation with multi-line support
     const lines = message.split('\n')
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
-      for (const char of line) {
-        await page.keyboard.type(char, { delay: Math.floor(Math.random() * 35) + 20 })
+      if (line) {
+        for (const char of line) {
+          await page.keyboard.type(char, { delay: Math.floor(Math.random() * 30) + 15 })
+        }
       }
       if (i < lines.length - 1) {
         // Shift+Enter for new line in Instagram direct message box
         await page.keyboard.press('Shift+Enter')
-        await page.waitForTimeout(150)
+        await page.waitForTimeout(120)
       }
     }
 
     await page.waitForTimeout(1000)
 
-    // 3. Press Enter to send
+    // 3. Press Enter to send, and click Send button if visible
     console.log('   📤 Dispatching direct message...')
     await page.keyboard.press('Enter')
-    await page.waitForTimeout(3500)
+    await page.waitForTimeout(1500)
 
+    try {
+      const sendBtn = await page.$(
+        'div[role="button"]:has-text("Send"), button:has-text("Send"), svg[aria-label="Send"]',
+      )
+      if (sendBtn && (await sendBtn.isVisible().catch(() => false))) {
+        await sendBtn.click().catch(() => {})
+        await page.waitForTimeout(1500)
+      }
+    } catch {}
+
+    await page.waitForTimeout(2500)
     return { success: true }
   } catch (err: any) {
     return { success: false, error: err.message }
@@ -308,7 +361,9 @@ async function main() {
   await dismissPopups(page)
 
   // Verify authentication state
-  const isAuth = await page.$('a[href*="/direct/inbox/"], svg[aria-label="Direct"], svg[aria-label="Home"]')
+  const isAuth = await page.$(
+    'a[href*="/direct/inbox/"], svg[aria-label="Direct"], svg[aria-label="Home"]',
+  )
   if (!isAuth) {
     console.error('❌ Browser is NOT authenticated on Instagram.')
     console.error('👉 Please run first: npm run instagram:login\n')
@@ -396,7 +451,9 @@ async function main() {
     const artist = targetList[i]
     const cleanHandle = artist.handle.replace(/^@/, '').trim()
 
-    console.log(`\n[${i + 1}/${remainingQuota}] 🎯 Target: @${cleanHandle} (${artist.name || 'Artist'})`)
+    console.log(
+      `\n[${i + 1}/${remainingQuota}] 🎯 Target: @${cleanHandle} (${artist.name || 'Artist'})`,
+    )
 
     // Deduplication check
     try {
@@ -461,7 +518,9 @@ async function main() {
         await sleep(180000)
       } else if (i < remainingQuota - 1) {
         const delayMs = getJitterDelay(45, 85)
-        console.log(`⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next artist...`)
+        console.log(
+          `⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next artist...`,
+        )
         await sleep(delayMs)
       }
     } else {
