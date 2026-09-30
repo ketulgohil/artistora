@@ -49,33 +49,45 @@ const AUTH_DIR = path.resolve(process.env.WHATSAPP_SESSION_DIR || '/tmp/baileys-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Silence noisy low-level libsignal ratchet/session dumps to keep terminal clean
+const isLibsignalNoise = (str: string) =>
+  str.includes('Closing session') ||
+  str.includes('Decrypted message with closed session') ||
+  str.includes('Closing open session') ||
+  str.includes('SessionEntry') ||
+  str.includes('Bad MAC') ||
+  str.includes('Session error:') ||
+  str.includes('_chains:') ||
+  str.includes('registrationId:') ||
+  str.includes('currentRatchet:') ||
+  str.includes('Failed to decrypt message with any known session')
+
 const originalConsoleLog = console.log
 const originalConsoleInfo = console.info
+const originalConsoleWarn = console.warn
+const originalConsoleError = console.error
+
 console.log = (...args: any[]) => {
   const firstArg = typeof args[0] === 'string' ? args[0] : ''
-  if (
-    firstArg.includes('Closing session: SessionEntry') ||
-    firstArg.includes('Decrypted message with closed session') ||
-    firstArg.includes('Closing open session in favor of incoming prekey bundle') ||
-    firstArg.includes('SessionEntry {') ||
-    firstArg.includes('_chains:') ||
-    firstArg.includes('registrationId:') ||
-    firstArg.includes('currentRatchet:')
-  ) {
-    return
-  }
+  if (isLibsignalNoise(firstArg)) return
   originalConsoleLog.apply(console, args)
 }
+
 console.info = (...args: any[]) => {
   const firstArg = typeof args[0] === 'string' ? args[0] : ''
-  if (
-    firstArg.includes('Closing session') ||
-    firstArg.includes('Decrypted message') ||
-    firstArg.includes('SessionEntry')
-  ) {
-    return
-  }
+  if (isLibsignalNoise(firstArg)) return
   originalConsoleInfo.apply(console, args)
+}
+
+console.warn = (...args: any[]) => {
+  const firstArg = typeof args[0] === 'string' ? args[0] : ''
+  if (isLibsignalNoise(firstArg)) return
+  originalConsoleWarn.apply(console, args)
+}
+
+console.error = (...args: any[]) => {
+  const firstArg = typeof args[0] === 'string' ? args[0] : ''
+  if (isLibsignalNoise(firstArg)) return
+  originalConsoleError.apply(console, args)
 }
 
 interface OutreachTarget {
@@ -95,52 +107,292 @@ interface ContactedHistory {
 // Curated verified lists of Ahmedabad artists per category
 const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup' | 'photography', OutreachTarget[]> = {
   mehndi: [
-    { id: 331, name: 'Dipuh mehndi artist', phone: '+918980306183', category: 'mehndi', cleanName: 'Dipuh Mehndi Artist' },
-    { id: 266, name: 'Mehndi By Monali', phone: '+918849402240', category: 'mehndi', cleanName: 'Mehndi By Monali' },
-    { id: 329, name: "Nidhi's Creative Mehndi & Nails", phone: '+918849528228', category: 'mehndi', cleanName: "Nidhi's Creative Mehndi" },
-    { id: 350, name: 'Honey Mehndi Art', phone: '+919898218996', category: 'mehndi', cleanName: 'Honey Mehndi Art' },
-    { id: 297, name: 'Mehndikka by Ushma', phone: '+919724207812', category: 'mehndi', cleanName: 'Mehndikka by Ushma' },
-    { id: 309, name: 'Ahmedabad Mehndi Designer', phone: '+917801818943', category: 'mehndi', cleanName: 'Ahmedabad Mehndi Designer' },
-    { id: 307, name: 'Dhvani Mehndi art', phone: '+919510556227', category: 'mehndi', cleanName: 'Dhvani Mehndi Art' },
-    { id: 289, name: 'Prachi Mehndi and Nail Art in Ahmedabad', phone: '+919033965485', category: 'mehndi', cleanName: 'Prachi Mehndi Art' },
-    { id: 306, name: 'VIRHANT MEHNDI ART & CLASSES', phone: '+919054461672', category: 'mehndi', cleanName: 'Virhant Mehndi Art' },
-    { id: 282, name: 'JALPA SHAH MEHANDI Art', phone: '+919574506318', category: 'mehndi', cleanName: 'Jalpa Shah Mehndi Art' },
+    {
+      id: 331,
+      name: 'Dipuh mehndi artist',
+      phone: '+918980306183',
+      category: 'mehndi',
+      cleanName: 'Dipuh Mehndi Artist',
+    },
+    {
+      id: 266,
+      name: 'Mehndi By Monali',
+      phone: '+918849402240',
+      category: 'mehndi',
+      cleanName: 'Mehndi By Monali',
+    },
+    {
+      id: 329,
+      name: "Nidhi's Creative Mehndi & Nails",
+      phone: '+918849528228',
+      category: 'mehndi',
+      cleanName: "Nidhi's Creative Mehndi",
+    },
+    {
+      id: 350,
+      name: 'Honey Mehndi Art',
+      phone: '+919898218996',
+      category: 'mehndi',
+      cleanName: 'Honey Mehndi Art',
+    },
+    {
+      id: 297,
+      name: 'Mehndikka by Ushma',
+      phone: '+919724207812',
+      category: 'mehndi',
+      cleanName: 'Mehndikka by Ushma',
+    },
+    {
+      id: 309,
+      name: 'Ahmedabad Mehndi Designer',
+      phone: '+917801818943',
+      category: 'mehndi',
+      cleanName: 'Ahmedabad Mehndi Designer',
+    },
+    {
+      id: 307,
+      name: 'Dhvani Mehndi art',
+      phone: '+919510556227',
+      category: 'mehndi',
+      cleanName: 'Dhvani Mehndi Art',
+    },
+    {
+      id: 289,
+      name: 'Prachi Mehndi and Nail Art in Ahmedabad',
+      phone: '+919033965485',
+      category: 'mehndi',
+      cleanName: 'Prachi Mehndi Art',
+    },
+    {
+      id: 306,
+      name: 'VIRHANT MEHNDI ART & CLASSES',
+      phone: '+919054461672',
+      category: 'mehndi',
+      cleanName: 'Virhant Mehndi Art',
+    },
+    {
+      id: 282,
+      name: 'JALPA SHAH MEHANDI Art',
+      phone: '+919574506318',
+      category: 'mehndi',
+      cleanName: 'Jalpa Shah Mehndi Art',
+    },
   ],
   decor: [
-    { id: 945, name: 'Shree Krishna Events Planner', phone: '+917874111551', category: 'decor', cleanName: 'Shree Krishna Events' },
-    { id: 521, name: 'Ganesh Decoration & Events', phone: '+919033517592', category: 'decor', cleanName: 'Ganesh Decoration & Events' },
-    { id: 505, name: 'Pacific Events - Event Planner in Ahmedabad', phone: '+918487989345', category: 'decor', cleanName: 'Pacific Events' },
-    { id: 466, name: 'Sanskruti Events - Sound/Lights/Decoration', phone: '+919824501931', category: 'decor', cleanName: 'Sanskruti Events' },
-    { id: 495, name: 'Dreamy Creation Events', phone: '+917575888678', category: 'decor', cleanName: 'Dreamy Creation Events' },
-    { id: 469, name: 'Ganesh Event, Decorater & Wedding Planner', phone: '+917990332880', category: 'decor', cleanName: 'Ganesh Event & Decorater' },
-    { id: 480, name: 'Rhythm Events & Decor', phone: '+919099059950', category: 'decor', cleanName: 'Rhythm Events & Decor' },
-    { id: 486, name: 'Dream Decoration & Event', phone: '+919624449366', category: 'decor', cleanName: 'Dream Decoration & Event' },
-    { id: 492, name: 'Leo Decor& Event planner', phone: '+919879019054', category: 'decor', cleanName: 'Leo Decor & Events' },
-    { id: 472, name: 'SK Corporation | Wedding Decorator in Ahmedabad', phone: '+919879000277', category: 'decor', cleanName: 'SK Corporation Decor' },
+    {
+      id: 945,
+      name: 'Shree Krishna Events Planner',
+      phone: '+917874111551',
+      category: 'decor',
+      cleanName: 'Shree Krishna Events',
+    },
+    {
+      id: 521,
+      name: 'Ganesh Decoration & Events',
+      phone: '+919033517592',
+      category: 'decor',
+      cleanName: 'Ganesh Decoration & Events',
+    },
+    {
+      id: 505,
+      name: 'Pacific Events - Event Planner in Ahmedabad',
+      phone: '+918487989345',
+      category: 'decor',
+      cleanName: 'Pacific Events',
+    },
+    {
+      id: 466,
+      name: 'Sanskruti Events - Sound/Lights/Decoration',
+      phone: '+919824501931',
+      category: 'decor',
+      cleanName: 'Sanskruti Events',
+    },
+    {
+      id: 495,
+      name: 'Dreamy Creation Events',
+      phone: '+917575888678',
+      category: 'decor',
+      cleanName: 'Dreamy Creation Events',
+    },
+    {
+      id: 469,
+      name: 'Ganesh Event, Decorater & Wedding Planner',
+      phone: '+917990332880',
+      category: 'decor',
+      cleanName: 'Ganesh Event & Decorater',
+    },
+    {
+      id: 480,
+      name: 'Rhythm Events & Decor',
+      phone: '+919099059950',
+      category: 'decor',
+      cleanName: 'Rhythm Events & Decor',
+    },
+    {
+      id: 486,
+      name: 'Dream Decoration & Event',
+      phone: '+919624449366',
+      category: 'decor',
+      cleanName: 'Dream Decoration & Event',
+    },
+    {
+      id: 492,
+      name: 'Leo Decor& Event planner',
+      phone: '+919879019054',
+      category: 'decor',
+      cleanName: 'Leo Decor & Events',
+    },
+    {
+      id: 472,
+      name: 'SK Corporation | Wedding Decorator in Ahmedabad',
+      phone: '+919879000277',
+      category: 'decor',
+      cleanName: 'SK Corporation Decor',
+    },
   ],
   makeup: [
-    { id: 429, name: 'mamta soni makeover', phone: '+917359888542', category: 'makeup', cleanName: 'Mamta Soni Makeover' },
-    { id: 911, name: 'Miracle Makeup Studio', phone: '+919924513366', category: 'makeup', cleanName: 'Miracle Makeup Studio' },
-    { id: 408, name: 'Mamta Joshi Makeover & Salon', phone: '+919624838382', category: 'makeup', cleanName: 'Mamta Joshi' },
-    { id: 442, name: 'Makeup Therapy by Madhu', phone: '+919726207198', category: 'makeup', cleanName: 'Madhu (Makeup Therapy)' },
-    { id: 450, name: 'Makeover by Hetal', phone: '+919909289299', category: 'makeup', cleanName: 'Hetal (Makeover by Hetal)' },
-    { id: 436, name: 'Deepika Solanki Makeover', phone: '+919974223292', category: 'makeup', cleanName: 'Deepika Solanki' },
-    { id: 435, name: 'Heena Rohra Makeup Artist', phone: '+919879554486', category: 'makeup', cleanName: 'Heena Rohra' },
-    { id: 402, name: 'Asmi Shah Makeovers', phone: '+919998188158', category: 'makeup', cleanName: 'Asmi Shah' },
-    { id: 857, name: 'Sweta Patel (The Magic Touch)', phone: '+919879667744', category: 'makeup', cleanName: 'Sweta Patel' },
-    { id: 600, name: "RR's Makeovers", phone: '+919904123456', category: 'makeup', cleanName: "RR's Makeovers" },
+    {
+      id: 429,
+      name: 'mamta soni makeover',
+      phone: '+917359888542',
+      category: 'makeup',
+      cleanName: 'Mamta Soni Makeover',
+    },
+    {
+      id: 911,
+      name: 'Miracle Makeup Studio',
+      phone: '+919924513366',
+      category: 'makeup',
+      cleanName: 'Miracle Makeup Studio',
+    },
+    {
+      id: 408,
+      name: 'Mamta Joshi Makeover & Salon',
+      phone: '+919624838382',
+      category: 'makeup',
+      cleanName: 'Mamta Joshi',
+    },
+    {
+      id: 442,
+      name: 'Makeup Therapy by Madhu',
+      phone: '+919726207198',
+      category: 'makeup',
+      cleanName: 'Madhu (Makeup Therapy)',
+    },
+    {
+      id: 450,
+      name: 'Makeover by Hetal',
+      phone: '+919909289299',
+      category: 'makeup',
+      cleanName: 'Hetal (Makeover by Hetal)',
+    },
+    {
+      id: 436,
+      name: 'Deepika Solanki Makeover',
+      phone: '+919974223292',
+      category: 'makeup',
+      cleanName: 'Deepika Solanki',
+    },
+    {
+      id: 435,
+      name: 'Heena Rohra Makeup Artist',
+      phone: '+919879554486',
+      category: 'makeup',
+      cleanName: 'Heena Rohra',
+    },
+    {
+      id: 402,
+      name: 'Asmi Shah Makeovers',
+      phone: '+919998188158',
+      category: 'makeup',
+      cleanName: 'Asmi Shah',
+    },
+    {
+      id: 857,
+      name: 'Sweta Patel (The Magic Touch)',
+      phone: '+919879667744',
+      category: 'makeup',
+      cleanName: 'Sweta Patel',
+    },
+    {
+      id: 600,
+      name: "RR's Makeovers",
+      phone: '+919904123456',
+      category: 'makeup',
+      cleanName: "RR's Makeovers",
+    },
   ],
   photography: [
-    { id: 373, name: 'STUDIO FILMICA by Basant Joshi', phone: '+919426372606', category: 'photography', cleanName: 'Studio Filmica' },
-    { id: 316, name: 'Nakshi Photography', phone: '+919879184501', category: 'photography', cleanName: 'Nakshi Photography' },
-    { id: 333, name: 'Milan Bhaskar Photography', phone: '+918460293805', category: 'photography', cleanName: 'Milan Bhaskar Photography' },
-    { id: 336, name: 'The Knot Films', phone: '+918160417353', category: 'photography', cleanName: 'The Knot Films' },
-    { id: 362, name: 'Ammar Shoots - Wedding and Event Photographer in Ahmedabad', phone: '+919727259010', category: 'photography', cleanName: 'Ammar Shoots' },
-    { id: 337, name: 'HC Photography(Himanshu Chauhan)Wedding Photographer in Ahmedabad', phone: '+918866122411', category: 'photography', cleanName: 'HC Photography' },
-    { id: 379, name: 'Emotion Clicks', phone: '+919904460014', category: 'photography', cleanName: 'Emotion Clicks' },
-    { id: 393, name: 'Little Wonders Studio', phone: '+919601109396', category: 'photography', cleanName: 'Little Wonders Studio' },
-    { id: 342, name: 'Kushal Vadera Photography', phone: '+919998483191', category: 'photography', cleanName: 'Kushal Vadera Photography' },
-    { id: 330, name: 'The Concept Studio by Amit Barot', phone: '+918401083811', category: 'photography', cleanName: 'The Concept Studio' },
+    {
+      id: 373,
+      name: 'STUDIO FILMICA by Basant Joshi',
+      phone: '+919426372606',
+      category: 'photography',
+      cleanName: 'Studio Filmica',
+    },
+    {
+      id: 316,
+      name: 'Nakshi Photography',
+      phone: '+919879184501',
+      category: 'photography',
+      cleanName: 'Nakshi Photography',
+    },
+    {
+      id: 333,
+      name: 'Milan Bhaskar Photography',
+      phone: '+918460293805',
+      category: 'photography',
+      cleanName: 'Milan Bhaskar Photography',
+    },
+    {
+      id: 336,
+      name: 'The Knot Films',
+      phone: '+918160417353',
+      category: 'photography',
+      cleanName: 'The Knot Films',
+    },
+    {
+      id: 362,
+      name: 'Ammar Shoots - Wedding and Event Photographer in Ahmedabad',
+      phone: '+919727259010',
+      category: 'photography',
+      cleanName: 'Ammar Shoots',
+    },
+    {
+      id: 337,
+      name: 'HC Photography(Himanshu Chauhan)Wedding Photographer in Ahmedabad',
+      phone: '+918866122411',
+      category: 'photography',
+      cleanName: 'HC Photography',
+    },
+    {
+      id: 379,
+      name: 'Emotion Clicks',
+      phone: '+919904460014',
+      category: 'photography',
+      cleanName: 'Emotion Clicks',
+    },
+    {
+      id: 393,
+      name: 'Little Wonders Studio',
+      phone: '+919601109396',
+      category: 'photography',
+      cleanName: 'Little Wonders Studio',
+    },
+    {
+      id: 342,
+      name: 'Kushal Vadera Photography',
+      phone: '+919998483191',
+      category: 'photography',
+      cleanName: 'Kushal Vadera Photography',
+    },
+    {
+      id: 330,
+      name: 'The Concept Studio by Amit Barot',
+      phone: '+918401083811',
+      category: 'photography',
+      cleanName: 'The Concept Studio',
+    },
   ],
 }
 
@@ -568,7 +820,10 @@ async function startBatch() {
             continue
           }
 
-          if (contactHistory.phones.has(cleanPhone) || contactHistory.artistIds.has(String(artist.id))) {
+          if (
+            contactHistory.phones.has(cleanPhone) ||
+            contactHistory.artistIds.has(String(artist.id))
+          ) {
             const lastDate = contactHistory.lastContactDates.get(cleanPhone)
             console.log(
               `⏩ [${i + 1}/${group.artists.length}] Skipping ${artist.name} (${cleanPhone}) — already contacted${lastDate ? ` on ${lastDate.slice(0, 10)}` : ''}.`,
@@ -588,7 +843,8 @@ async function startBatch() {
             const sendResult = await sock.sendMessage(jid, { text: messageText })
             const messageId = sendResult?.key?.id || undefined
             overallSent++
-            alreadyContacted.add(rawPhoneDigits)
+            contactHistory.phones.add(cleanPhone)
+            contactHistory.artistIds.add(String(artist.id))
 
             console.log(
               `   ✅ Message delivered successfully! (Message ID: ${messageId || 'sent'})`,

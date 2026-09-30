@@ -42,21 +42,45 @@ async function main() {
   if (messagesResult.docs.length === 0) {
     console.log('ℹ️ No outreach messages found in database.\n')
   } else {
-    console.log('------------------------------------------------------------------------------------------------------------------------')
-    console.log('| #   | Channel     | Sent Date (IST)     | Artist Name                         | Contact (Phone / Handle)     | Campaign')
-    console.log('------------------------------------------------------------------------------------------------------------------------')
+    console.log(
+      '------------------------------------------------------------------------------------------------------------------------',
+    )
+    console.log(
+      '| #   | Channel     | Sent Date (IST)     | Artist Name                         | Contact (Phone / Handle)     | Campaign',
+    )
+    console.log(
+      '------------------------------------------------------------------------------------------------------------------------',
+    )
 
     messagesResult.docs.forEach((doc: any, index: number) => {
       const artist = typeof doc.artist === 'object' ? doc.artist : null
-      const artistName = (artist?.name || artist?.businessName || doc.recipientInstagram || 'Unknown').slice(0, 35).padEnd(35, ' ')
+      const artistName = (
+        artist?.name ||
+        artist?.businessName ||
+        doc.recipientInstagram ||
+        'Unknown'
+      )
+        .slice(0, 35)
+        .padEnd(35, ' ')
       const channel = (doc.channel === 'whatsapp' ? '📱 WhatsApp' : '📸 IG DM   ').padEnd(11, ' ')
-      const contact = (artist?.phone || artist?.whatsappNumber || doc.recipientInstagram || 'N/A').padEnd(28, ' ')
-      const dateStr = doc.sentAt ? new Date(doc.sentAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }).padEnd(19, ' ') : 'N/A                '
+      const contact = (
+        artist?.phone ||
+        artist?.whatsappNumber ||
+        doc.recipientInstagram ||
+        'N/A'
+      ).padEnd(28, ' ')
+      const dateStr = doc.sentAt
+        ? new Date(doc.sentAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }).padEnd(19, ' ')
+        : 'N/A                '
       const campaign = (doc.campaignName || 'general').slice(0, 20)
 
-      console.log(`| ${(index + 1).toString().padEnd(3, ' ')} | ${channel} | ${dateStr} | ${artistName} | ${contact} | ${campaign}`)
+      console.log(
+        `| ${(index + 1).toString().padEnd(3, ' ')} | ${channel} | ${dateStr} | ${artistName} | ${contact} | ${campaign}`,
+      )
     })
-    console.log('------------------------------------------------------------------------------------------------------------------------\n')
+    console.log(
+      '------------------------------------------------------------------------------------------------------------------------\n',
+    )
   }
 
   // 2. Fetch all discovered artists marked as 'contacted'
@@ -69,7 +93,9 @@ async function main() {
     sort: '-lastContactedAt',
   })
 
-  console.log(`👥 Total Discovered Artists Marked as 'Contacted': ${contactedArtists.docs.length}\n`)
+  console.log(
+    `👥 Total Discovered Artists Marked as 'Contacted': ${contactedArtists.docs.length}\n`,
+  )
 
   process.exit(0)
 }
