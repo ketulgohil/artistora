@@ -159,7 +159,7 @@ async function dismissPopups(page: Page) {
 /**
  * Finds the message input textbox with a retry/polling loop across all modern Instagram Web variants.
  */
-async function findMessageBox(page: Page, timeoutMs = 12000) {
+async function findMessageBox(page: Page, timeoutMs = 15000) {
   const possibleSelectors = [
     'div[aria-label="Message"][contenteditable="true"]',
     'div[role="textbox"][contenteditable="true"]',
@@ -181,9 +181,9 @@ async function findMessageBox(page: Page, timeoutMs = 12000) {
 
     for (const selector of possibleSelectors) {
       try {
-        const el = await page.$(selector)
-        if (el && (await el.isVisible().catch(() => false))) {
-          return el
+        const locator = page.locator(selector).first()
+        if (await locator.isVisible({ timeout: 400 }).catch(() => false)) {
+          return locator
         }
       } catch {}
     }
@@ -212,20 +212,16 @@ async function sendBrowserDM(
       waitUntil: 'domcontentloaded',
       timeout: 30000,
     })
-    await page.waitForTimeout(2500)
+    await page.waitForTimeout(2000)
     await dismissPopups(page)
 
-    // 1. Locate search input in the Direct Composer modal
+    // 1. Locate search input in the Direct Composer modal using dynamic locator
     console.log(`   🔍 Searching recipient: @${cleanHandle}...`)
-    const searchInput = await page.waitForSelector(
-      'input[placeholder*="Search"], input[name="queryBox"], input[type="text"]',
-      { timeout: 10000 },
-    )
+    const searchInput = page
+      .locator('input[placeholder*="Search"], input[name="queryBox"], input[type="text"]')
+      .first()
 
-    if (!searchInput) {
-      return { success: false, error: 'Could not locate Direct composer search box' }
-    }
-
+    await searchInput.waitFor({ state: 'visible', timeout: 12000 })
     await searchInput.click()
     await page.waitForTimeout(300)
     await searchInput.fill(cleanHandle)
@@ -233,33 +229,28 @@ async function sendBrowserDM(
     await page.waitForTimeout(2500)
 
     // 2. Select the matching user from search results
-    const userRowSelectors = [
-      `div[role="dialog"] div[role="button"]:has-text("${cleanHandle}")`,
-      `div[role="dialog"] span:has-text("${cleanHandle}")`,
-      `div[role="button"]:has-text("${cleanHandle}")`,
-      `span:has-text("${cleanHandle}")`,
-      `div[role="dialog"] input[type="checkbox"]`,
-      `div[role="dialog"] label`,
-    ]
+    const userRowLocator = page
+      .locator(
+        `div[role="dialog"] div[role="button"]:has-text("${cleanHandle}"), div[role="dialog"] span:has-text("${cleanHandle}"), div[role="button"]:has-text("${cleanHandle}"), span:has-text("${cleanHandle}"), div[role="dialog"] input[type="checkbox"], div[role="dialog"] label`,
+      )
+      .first()
 
     let selectedUser = false
-    for (const selector of userRowSelectors) {
-      try {
-        const el = await page.$(selector)
-        if (el && (await el.isVisible().catch(() => false))) {
-          await el.click({ force: true })
-          selectedUser = true
-          console.log(`   ✅ Selected @${cleanHandle} from search list`)
-          await page.waitForTimeout(1000)
-          break
-        }
-      } catch {}
-    }
+    try {
+      if (await userRowLocator.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await userRowLocator.click({ force: true })
+        selectedUser = true
+        console.log(`   ✅ Selected @${cleanHandle} from search list`)
+        await page.waitForTimeout(1000)
+      }
+    } catch {}
 
     if (!selectedUser) {
       // Fallback: If Direct search didn't return user, try direct profile page
       console.log(`   ℹ️ Recipient not in Direct search list, trying profile page fallback...`)
-      await page.goto(`https://www.instagram.com/${cleanHandle}/`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`https://www.instagram.com/${cleanHandle}/`, {
+        waitUntil: 'domcontentloaded',
+      })
       await page.waitForTimeout(2500)
       await dismissPopups(page)
 
@@ -268,10 +259,13 @@ async function sendBrowserDM(
         return { success: false, error: 'Account is private; cannot DM without following first.' }
       }
 
-      const profileMsgBtn = await page.$(
-        'div[role="button"]:has-text("Message"), button:has-text("Message"), a:has-text("Message"), header div:has-text("Message")',
-      )
-      if (profileMsgBtn) {
+      const profileMsgBtn = page
+        .locator(
+          'div[role="button"]:has-text("Message"), button:has-text("Message"), a:has-text("Message"), header div:has-text("Message")',
+        )
+        .first()
+
+      if (await profileMsgBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
         await profileMsgBtn.click()
         await page.waitForTimeout(3000)
       } else {
@@ -280,10 +274,13 @@ async function sendBrowserDM(
     } else {
       // Click "Chat" / "Next" button in the modal header
       console.log('   💬 Opening chat thread...')
-      const chatBtn = await page.$(
-        'div[role="dialog"] div[role="button"]:has-text("Chat"), div[role="dialog"] button:has-text("Chat"), div[role="button"]:has-text("Chat"), button:has-text("Chat"), div[role="button"]:has-text("Next"), button:has-text("Next")',
-      )
-      if (chatBtn) {
+      const chatBtn = page
+        .locator(
+          'div[role="dialog"] div[role="button"]:has-text("Chat"), div[role="dialog"] button:has-text("Chat"), div[role="button"]:has-text("Chat"), button:has-text("Chat"), div[role="button"]:has-text("Next"), button:has-text("Next")',
+        )
+        .first()
+
+      if (await chatBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
         await chatBtn.click({ force: true })
         await page.waitForTimeout(3000)
       }
@@ -293,9 +290,9 @@ async function sendBrowserDM(
 
     // 3. Locate the message textbox in the chat thread
     console.log('   🔍 Detecting message input box in chat thread...')
-    const textBox = await findMessageBox(page, 15000)
+    const textBoxLocator = await findMessageBox(page, 15000)
 
-    if (!textBox) {
+    if (!textBoxLocator) {
       return {
         success: false,
         error: 'Could not locate message input box in thread (timed out after 15s)',
@@ -303,7 +300,7 @@ async function sendBrowserDM(
     }
 
     console.log('   ✍️ Typing personalized message with human speed...')
-    await textBox.click({ force: true })
+    await textBoxLocator.click({ force: true })
     await page.waitForTimeout(500)
 
     // Human typing simulation with multi-line support
@@ -330,33 +327,34 @@ async function sendBrowserDM(
 
     for (let attempt = 1; attempt <= 4; attempt++) {
       // Step A: Click visible Send button (text "Send" or send SVG arrow)
-      const sendButtons = await page.$$(
-        'div[role="button"]:has-text("Send"), button:has-text("Send"), span:has-text("Send"), svg[aria-label="Send"], div.x1i10hfl[role="button"]:has-text("Send")',
-      )
+      const sendButton = page
+        .locator(
+          'div[role="button"]:has-text("Send"), button:has-text("Send"), span:has-text("Send"), svg[aria-label="Send"], div.x1i10hfl[role="button"]:has-text("Send")',
+        )
+        .first()
 
       let clickedSend = false
-      for (const btn of sendButtons) {
-        if (await btn.isVisible().catch(() => false)) {
-          await btn.click({ force: true }).catch(() => {})
-          clickedSend = true
-          await page.waitForTimeout(1200)
-          break
-        }
+      if (await sendButton.isVisible({ timeout: 800 }).catch(() => false)) {
+        await sendButton.click({ force: true }).catch(() => {})
+        clickedSend = true
+        await page.waitForTimeout(1200)
       }
 
       // Step B: If Send button wasn't clicked, focus textbox and press Enter
       if (!clickedSend) {
-        await textBox.focus().catch(() => {})
+        await textBoxLocator.focus().catch(() => {})
         await page.keyboard.press('Enter')
         await page.waitForTimeout(1200)
       }
 
       // Step C: Delivery verification
-      const sentBubble = await page.$(
-        'div[role="row"]:has-text("Artistora"), div[dir="auto"]:has-text("Artistora"), div:has-text("artistora.com")',
-      )
+      const sentBubble = await page
+        .$(
+          'div[role="row"]:has-text("Artistora"), div[dir="auto"]:has-text("Artistora"), div:has-text("artistora.com")',
+        )
+        .catch(() => null)
 
-      const remainingText = (await textBox.innerText().catch(() => '')).trim()
+      const remainingText = (await textBoxLocator.innerText().catch(() => '')).trim()
       const isCleared =
         !remainingText ||
         remainingText === 'Message...' ||
