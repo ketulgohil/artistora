@@ -170,11 +170,18 @@ export async function sendInstagramDM(
     for (const c of cookieList) {
       if (c.key && c.value) uniqueCookieMap.set(c.key, c.value)
     }
-    const cookieString = Array.from(uniqueCookieMap.entries())
-      .map(([k, v]) => `${k}=${v}`)
-      .join('; ')
 
-    let csrfToken = uniqueCookieMap.get('csrftoken') || ''
+    const cleanCookieList: string[] = []
+    for (const [k, v] of uniqueCookieMap.entries()) {
+      if (k && v) {
+        const cleanK = String(k).trim()
+        const cleanV = String(v).trim().replace(/[\r\n;]/g, '')
+        cleanCookieList.push(`${cleanK}=${cleanV}`)
+      }
+    }
+    const cookieString = cleanCookieList.join('; ')
+
+    let csrfToken = (uniqueCookieMap.get('csrftoken') || '').trim().replace(/[\r\n;]/g, '')
     if (!csrfToken) {
       try {
         const homeRes = await fetch('https://www.instagram.com/', {
@@ -189,21 +196,24 @@ export async function sendInstagramDM(
             ? homeRes.headers.getSetCookie()
             : [homeRes.headers.get('set-cookie') || '']
         for (const c of setCookies) {
-          if (c.includes('csrftoken=')) csrfToken = c.match(/csrftoken=([^;]+)/)?.[1] || ''
+          if (c.includes('csrftoken=')) {
+            const match = c.match(/csrftoken=([^;]+)/)
+            if (match) csrfToken = match[1].trim().replace(/[\r\n;]/g, '')
+          }
         }
       } catch {}
     }
 
     // 1. Send via Web Direct Broadcast API
     try {
-      const clientContext = Date.now().toString() + Math.floor(Math.random() * 1000000).toString()
+      const clientContext = `${Date.now()}${Math.floor(Math.random() * 1000000)}`
 
-      const body = new URLSearchParams({
-        recipient_users: `[["${targetPk}"]]`,
-        client_context: clientContext,
-        action: 'send_item',
-        text: message,
-      })
+      const body = new URLSearchParams()
+      body.append('recipient_users', `[[${targetPk}]]`)
+      body.append('client_context', clientContext)
+      body.append('action', 'send_item')
+      body.append('text', message)
+      body.append('mutation_token', clientContext)
 
       const dmRes = await fetch(
         'https://www.instagram.com/api/v1/direct_v2/threads/broadcast/text/',
@@ -234,11 +244,14 @@ export async function sendInstagramDM(
         }
       } else {
         const errBody = await dmRes.text().catch(() => '')
-        console.warn(`[InstagramDM] Web broadcast HTTP ${dmRes.status}: ${errBody.slice(0, 150)}`)
+        console.warn(
+          `[InstagramDM] Web broadcast HTTP ${dmRes.status}: ${errBody.slice(0, 150)}, attempting thread fallback...`,
+        )
       }
     } catch (fetchErr: any) {
+      const detailedErr = fetchErr?.cause?.message || fetchErr?.message || String(fetchErr)
       console.warn(
-        `[InstagramDM] Web broadcast notice: ${fetchErr.message}, attempting thread fallback...`,
+        `[InstagramDM] Web broadcast notice: ${detailedErr}, attempting thread fallback...`,
       )
     }
 
@@ -250,6 +263,13 @@ export async function sendInstagramDM(
       console.log(`[InstagramDM] ✉️ Direct message sent to ${targetUsernameOrPk}`)
       return { success: true, threadId: (result as any)?.thread_id }
     } catch (entityErr: any) {
+      if (entityErr.message?.includes('login_required')) {
+        return {
+          success: false,
+          error:
+            'Instagram web session needs refresh. Please re-run: npx tsx scripts/auth-instagram.ts --cookie "YOUR_SESSION_ID"',
+        }
+      }
       return { success: false, error: entityErr.message }
     }
   } catch (err: any) {
