@@ -31,7 +31,6 @@ import makeWASocket, {
 import pino from 'pino'
 import qrcode from 'qrcode-terminal'
 import { Boom } from '@hapi/boom'
-import { Pool } from 'pg'
 import * as path from 'path'
 import * as fs from 'fs'
 import dotenv from 'dotenv'
@@ -41,6 +40,7 @@ import {
 } from '../src/outreach/whatsapp/baileys-session'
 import { validateAndNormalizePhone } from '../src/outreach/whatsapp/queue-send'
 import { logOutreachMessage } from '../src/outreach/whatsapp/log-message'
+import { getPayloadClient } from '../src/lib/payload'
 
 dotenv.config()
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
@@ -59,7 +59,10 @@ interface OutreachTarget {
 function cleanArtistName(name: string): string {
   return (
     name
-      .replace(/\b(in\s+ahmedabad|ahmedabad|artist|art|classes|class|designer|mehandi|mehndi|henna|makeup|makeover|studio|photography|films|event|events|planner|decorator|decoration)\b/gi, '')
+      .replace(
+        /\b(in\s+ahmedabad|ahmedabad|artist|art|classes|class|designer|mehandi|mehndi|henna|makeup|makeover|studio|photography|films|event|events|planner|decorator|decoration)\b/gi,
+        '',
+      )
       .replace(/[()&|\-•]/g, '')
       .replace(/\s+/g, ' ')
       .trim()
@@ -71,44 +74,48 @@ function cleanArtistName(name: string): string {
 }
 
 /**
- * Dynamically queries uncontacted artists by category from PostgreSQL database.
+ * Dynamically queries uncontacted artists by category using Payload Local API.
  */
 async function getArtistsFromDB(
+  payload: any,
   category: 'mehndi' | 'decor' | 'makeup' | 'photography',
   limit: number,
 ): Promise<OutreachTarget[]> {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-  let keyword = ''
-  if (category === 'mehndi') keyword = '%mehndi%'
-  if (category === 'decor') keyword = '%decor%'
-  if (category === 'makeup') keyword = '%makeup%'
-  if (category === 'photography') keyword = '%photo%'
-
   try {
-    const res = await pool.query(
-      `
-      SELECT id, name, phone, business_name as "businessName", specializations
-      FROM discovered_artists
-      WHERE phone IS NOT NULL
-        AND phone != ''
-        AND outreach_status = 'new'
-        AND (name ILIKE $1 OR specializations ILIKE $1 OR business_name ILIKE $1)
-      LIMIT $2
-      `,
-      [keyword, limit],
-    )
-    await pool.end()
+    const res = await payload.find({
+      collection: 'discovered-artists',
+      where: {
+        and: [{ phone: { exists: true } }, { outreachStatus: { equals: 'new' } }],
+      },
+      limit: 200,
+    })
 
-    return res.rows.map((row: any) => ({
-      id: row.id,
-      name: row.name || row.businessName,
-      phone: row.phone,
+    const filtered = (res.docs || []).filter((doc: any) => {
+      const combined = `${doc.services?.[0]?.name || ''} ${doc.specializations || ''} ${doc.name || ''} ${doc.businessName || ''}`.toLowerCase()
+      if (category === 'mehndi') {
+        return combined.includes('mehndi') || combined.includes('mehendi') || combined.includes('henna')
+      }
+      if (category === 'decor') {
+        return combined.includes('decor') || combined.includes('planner') || combined.includes('event') || combined.includes('mandap')
+      }
+      if (category === 'makeup') {
+        return combined.includes('makeup') || combined.includes('mua') || combined.includes('makeover') || combined.includes('beauty')
+      }
+      if (category === 'photography') {
+        return combined.includes('photo') || combined.includes('cinematograph') || combined.includes('film') || combined.includes('studio') || combined.includes('camera')
+      }
+      return false
+    })
+
+    return filtered.slice(0, limit).map((doc: any) => ({
+      id: doc.id,
+      name: doc.name || doc.businessName || 'Artist',
+      phone: doc.phone || doc.whatsappNumber,
       category,
-      cleanName: cleanArtistName(row.name || row.businessName),
+      cleanName: cleanArtistName(doc.name || doc.businessName || 'Artist'),
     }))
   } catch (err: any) {
-    console.warn(`[DB] Notice fetching ${category} artists:`, err.message)
-    await pool.end()
+    console.warn(`[Payload] Notice fetching ${category} artists:`, err.message)
     return []
   }
 }
@@ -204,28 +211,28 @@ Team Artistora | Ahmedabad`
 }
 
 /**
- * Queries PostgreSQL to find all phone numbers already contacted.
+ * Queries Payload database to find all phone numbers already contacted.
  */
-async function getAlreadyContactedPhones(): Promise<Set<string>> {
+async function getAlreadyContactedPhones(payload: any): Promise<Set<string>> {
   const contacted = new Set<string>()
   try {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-    const res = await pool.query(`
-      SELECT recipient_phone FROM (
-        SELECT da.phone as recipient_phone, om.status
-        FROM outreach_messages om
-        JOIN discovered_artists da ON om.artist_id = da.id
-        WHERE om.status = 'sent' AND om.channel = 'whatsapp'
-      ) sub
-    `)
-    for (const row of res.rows) {
-      if (row.recipient_phone) {
-        contacted.add(row.recipient_phone.replace(/\D/g, ''))
+    const res = await payload.find({
+      collection: 'outreach-messages',
+      where: {
+        and: [
+          { channel: { equals: 'whatsapp' } },
+          { status: { equals: 'sent' } },
+        ],
+      },
+      limit: 1000,
+    })
+    for (const doc of res.docs) {
+      if (doc.recipientPhone) {
+        contacted.add(String(doc.recipientPhone).replace(/\D/g, ''))
       }
     }
-    await pool.end()
   } catch (err: any) {
-    console.warn('[Deduplication] PostgreSQL query notice:', err.message)
+    console.warn('[Deduplication] Query notice:', err.message)
   }
   return contacted
 }
@@ -236,36 +243,46 @@ async function startBatch() {
   console.log('================================================================\n')
 
   const args = process.argv.slice(2)
-  const categoryArg = args.includes('--category') ? args[args.indexOf('--category') + 1]?.toLowerCase() : null
-  const limitArg = args.includes('--limit') ? parseInt(args[args.indexOf('--limit') + 1], 10) || 10 : 10
+  const categoryArg = args.includes('--category')
+    ? args[args.indexOf('--category') + 1]?.toLowerCase()
+    : null
+  const limitArg = args.includes('--limit')
+    ? parseInt(args[args.indexOf('--limit') + 1], 10) || 10
+    : 10
+
+  const payload = await getPayloadClient()
 
   // 1. Fetch uncontacted artists dynamically from database by category
-  console.log('🔍 Fetching uncontacted artists from PostgreSQL database...')
+  console.log('🔍 Fetching uncontacted artists from database...')
   const groups: { name: string; key: string; artists: OutreachTarget[] }[] = []
 
   if (!categoryArg || categoryArg === 'mehndi') {
-    const mehndiList = await getArtistsFromDB('mehndi', limitArg)
+    const mehndiList = await getArtistsFromDB(payload, 'mehndi', limitArg)
     groups.push({ name: 'Mehndi Artists', key: 'mehndi', artists: mehndiList })
   }
   if (!categoryArg || categoryArg === 'decor') {
-    const decorList = await getArtistsFromDB('decor', limitArg)
+    const decorList = await getArtistsFromDB(payload, 'decor', limitArg)
     groups.push({ name: 'Decor & Event Planners', key: 'decor', artists: decorList })
   }
   if (!categoryArg || categoryArg === 'makeup') {
-    const makeupList = await getArtistsFromDB('makeup', limitArg)
+    const makeupList = await getArtistsFromDB(payload, 'makeup', limitArg)
     groups.push({ name: 'Makeup Artists', key: 'makeup', artists: makeupList })
   }
   if (!categoryArg || categoryArg === 'photography' || categoryArg === 'photographer') {
-    const photoList = await getArtistsFromDB('photography', limitArg)
+    const photoList = await getArtistsFromDB(payload, 'photography', limitArg)
     groups.push({ name: 'Photographers', key: 'photography', artists: photoList })
   }
 
   const totalArtists = groups.reduce((acc, g) => acc + g.artists.length, 0)
-  console.log(`📋 Total Selected: ${totalArtists} artists across ${groups.length} categories (Limit: ${limitArg} per category)\n`)
+  console.log(
+    `📋 Total Selected: ${totalArtists} artists across ${groups.length} categories (Limit: ${limitArg} per category)\n`,
+  )
 
   // 2. Check Deduplication
-  const alreadyContacted = await getAlreadyContactedPhones()
-  console.log(`🛡️ Database Deduplication: Found ${alreadyContacted.size} previously contacted numbers in PostgreSQL.\n`)
+  const alreadyContacted = await getAlreadyContactedPhones(payload)
+  console.log(
+    `🛡️ Database Deduplication: Found ${alreadyContacted.size} previously contacted numbers in database.\n`,
+  )
 
   // 3. Restore Baileys auth session from Redis
   console.log('🔄 Restoring Baileys WhatsApp session from Redis...')
@@ -307,7 +324,9 @@ async function startBatch() {
     if (connection === 'close') {
       const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
-      console.log(`\n[WhatsApp] Connection closed (status: ${statusCode}). Reconnecting: ${shouldReconnect}`)
+      console.log(
+        `\n[WhatsApp] Connection closed (status: ${statusCode}). Reconnecting: ${shouldReconnect}`,
+      )
       if (shouldReconnect) {
         startBatch()
       } else {
@@ -325,7 +344,9 @@ async function startBatch() {
       for (let gIdx = 0; gIdx < groups.length; gIdx++) {
         const group = groups[gIdx]
         console.log(`\n================================================================`)
-        console.log(`🎯 Category [${gIdx + 1}/${groups.length}]: ${group.name} (${group.artists.length} targets)`)
+        console.log(
+          `🎯 Category [${gIdx + 1}/${groups.length}]: ${group.name} (${group.artists.length} targets)`,
+        )
         console.log(`================================================================\n`)
 
         for (let i = 0; i < group.artists.length; i++) {
@@ -333,14 +354,18 @@ async function startBatch() {
           const cleanPhone = validateAndNormalizePhone(artist.phone)
 
           if (!cleanPhone) {
-            console.log(`❌ [${i + 1}/${group.artists.length}] Invalid phone for ${artist.name}: ${artist.phone}`)
+            console.log(
+              `❌ [${i + 1}/${group.artists.length}] Invalid phone for ${artist.name}: ${artist.phone}`,
+            )
             overallSkipped++
             continue
           }
 
           const rawPhoneDigits = cleanPhone.replace(/\D/g, '')
           if (alreadyContacted.has(rawPhoneDigits)) {
-            console.log(`⏩ [${i + 1}/${group.artists.length}] Skipping ${artist.name} (${cleanPhone}) — already contacted.`)
+            console.log(
+              `⏩ [${i + 1}/${group.artists.length}] Skipping ${artist.name} (${cleanPhone}) — already contacted.`,
+            )
             overallSkipped++
             continue
           }
@@ -348,7 +373,9 @@ async function startBatch() {
           const jid = `${cleanPhone}@s.whatsapp.net`
           const messageText = buildMessage(artist)
 
-          console.log(`\n[${i + 1}/${group.artists.length}] 📤 Dispatching to: ${artist.cleanName || artist.name} (${cleanPhone})...`)
+          console.log(
+            `\n[${i + 1}/${group.artists.length}] 📤 Dispatching to: ${artist.cleanName || artist.name} (${cleanPhone})...`,
+          )
 
           try {
             const sendResult = await sock.sendMessage(jid, { text: messageText })
@@ -356,7 +383,9 @@ async function startBatch() {
             overallSent++
             alreadyContacted.add(rawPhoneDigits)
 
-            console.log(`   ✅ Message delivered successfully! (Message ID: ${messageId || 'sent'})`)
+            console.log(
+              `   ✅ Message delivered successfully! (Message ID: ${messageId || 'sent'})`,
+            )
 
             // Log outreach in PostgreSQL
             try {
@@ -375,7 +404,9 @@ async function startBatch() {
             // Human delay jitter between consecutive sends
             if (i < group.artists.length - 1) {
               const delaySeconds = Math.floor(Math.random() * (65 - 45 + 1)) + 45
-              console.log(`   ⏳ Human jitter delay: waiting ${delaySeconds}s before next message...`)
+              console.log(
+                `   ⏳ Human jitter delay: waiting ${delaySeconds}s before next message...`,
+              )
               await sleep(delaySeconds * 1000)
             }
           } catch (sendErr: any) {
