@@ -20,6 +20,7 @@ import {
   saveInstagramSessionToRedis,
   loadInstagramSessionFromRedis,
   clearInstagramSessionFromRedis,
+  verifyInstagramSession,
   loginWithSessionId,
 } from '../src/outreach/instagram/session'
 
@@ -45,22 +46,16 @@ async function main() {
   console.log('====================================================\n')
 
   const ig = new IgApiClient()
+  const args = process.argv.slice(2)
 
-  // 1. Check if an active session already exists in Redis
-  console.log('🔍 Checking for existing session in Redis...')
-  const existingSession = await loadInstagramSessionFromRedis(ig)
-
-  if (existingSession.success && existingSession.username) {
-    console.log(`\n🎉 Active session found and verified in Redis!`)
-    console.log(`   Logged in as: @${existingSession.username}`)
-    console.log(
-      '\n✅ Your Instagram Baileys-style engine is connected and ready to send outreach DMs.\n',
-    )
+  // 1. Handle --clear flag
+  if (args.includes('--clear')) {
+    await clearInstagramSessionFromRedis()
+    console.log('🗑️ Instagram session cleared from Redis.\n')
     process.exit(0)
   }
 
   // 2. Check for CLI --cookie or --sessionid argument or env
-  const args = process.argv.slice(2)
   const cookieArgIdx =
     args.indexOf('--cookie') !== -1 ? args.indexOf('--cookie') : args.indexOf('--sessionid')
   const cookieVal =
@@ -80,6 +75,31 @@ async function main() {
     } else {
       console.error(`❌ SessionID authentication failed: ${result.error}`)
       process.exit(1)
+    }
+  }
+
+  // 3. Check if an active session already exists in Redis (unless --force is passed)
+  if (!args.includes('--force')) {
+    console.log('🔍 Checking for existing session in Redis...')
+    const existingSession = await loadInstagramSessionFromRedis(ig)
+
+    if (existingSession.success && existingSession.username) {
+      console.log('⏳ Verifying session with Instagram API...')
+      const verification = await verifyInstagramSession(ig)
+
+      if (verification.valid) {
+        console.log(`\n🎉 Active session verified on Instagram!`)
+        console.log(`   Logged in as: @${existingSession.username}`)
+        console.log(
+          '\n✅ Your Instagram Baileys-style engine is connected and ready to send outreach DMs.\n',
+        )
+        process.exit(0)
+      } else {
+        console.warn(
+          `\n⚠️ Stored session for @${existingSession.username} is EXPIRED or invalid (${verification.error}).`,
+        )
+        console.log('👉 Please paste a fresh sessionid cookie below to re-link.\n')
+      }
     }
   }
 

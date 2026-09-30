@@ -48,6 +48,54 @@ export async function saveInstagramSessionToRedis(
 }
 
 /**
+ * Tests whether the currently loaded session cookies are still valid on Instagram.
+ */
+export async function verifyInstagramSession(
+  ig: IgApiClient,
+): Promise<{ valid: boolean; username?: string; error?: string }> {
+  try {
+    const cookies = await ig.state.serializeCookieJar()
+    const cookieList = cookies?.cookies || []
+    const uniqueCookieMap = new Map<string, string>()
+    for (const c of cookieList) {
+      if (c.key && c.value) uniqueCookieMap.set(c.key, c.value)
+    }
+    const cookieString = Array.from(uniqueCookieMap.entries())
+      .map(([k, v]) => `${k}=${v}`)
+      .join('; ')
+    const sessionId = uniqueCookieMap.get('sessionid')
+
+    if (!sessionId) {
+      return { valid: false, error: 'No sessionid found in cookies' }
+    }
+
+    const res = await fetch(
+      'https://www.instagram.com/api/v1/users/web_profile_info/?username=instagram',
+      {
+        headers: {
+          Cookie: cookieString,
+          'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'X-IG-App-ID': '936619743392459',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      },
+    )
+
+    if (res.status === 401 || res.status === 403 || res.redirected) {
+      return {
+        valid: false,
+        error: `Session expired (Status ${res.status}${res.redirected ? ' - Redirected' : ''})`,
+      }
+    }
+
+    return { valid: res.ok, error: res.ok ? undefined : `HTTP ${res.status}` }
+  } catch (err: any) {
+    return { valid: false, error: err.message }
+  }
+}
+
+/**
  * Loads Instagram session from Redis and restores cookie jar and device identity.
  */
 export async function loadInstagramSessionFromRedis(

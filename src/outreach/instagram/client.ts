@@ -166,24 +166,32 @@ export async function sendInstagramDM(
 
     const cookies = await ig.state.serializeCookieJar()
     const cookieList = cookies?.cookies || []
-    const cookieString = cookieList.map((c: any) => `${c.key}=${c.value}`).join('; ')
+    const uniqueCookieMap = new Map<string, string>()
+    for (const c of cookieList) {
+      if (c.key && c.value) uniqueCookieMap.set(c.key, c.value)
+    }
+    const cookieString = Array.from(uniqueCookieMap.entries())
+      .map(([k, v]) => `${k}=${v}`)
+      .join('; ')
 
-    let csrfToken = cookieList.find((c: any) => c.key === 'csrftoken')?.value || ''
+    let csrfToken = uniqueCookieMap.get('csrftoken') || ''
     if (!csrfToken) {
-      const homeRes = await fetch('https://www.instagram.com/', {
-        headers: {
-          Cookie: cookieString,
-          'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        },
-      })
-      const setCookies =
-        typeof homeRes.headers.getSetCookie === 'function'
-          ? homeRes.headers.getSetCookie()
-          : [homeRes.headers.get('set-cookie') || '']
-      for (const c of setCookies) {
-        if (c.includes('csrftoken=')) csrfToken = c.match(/csrftoken=([^;]+)/)?.[1] || ''
-      }
+      try {
+        const homeRes = await fetch('https://www.instagram.com/', {
+          headers: {
+            Cookie: cookieString,
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          },
+        })
+        const setCookies =
+          typeof homeRes.headers.getSetCookie === 'function'
+            ? homeRes.headers.getSetCookie()
+            : [homeRes.headers.get('set-cookie') || '']
+        for (const c of setCookies) {
+          if (c.includes('csrftoken=')) csrfToken = c.match(/csrftoken=([^;]+)/)?.[1] || ''
+        }
+      } catch {}
     }
 
     // 1. Send via Web Direct Broadcast API
@@ -207,8 +215,10 @@ export async function sendInstagramDM(
               'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'X-IG-App-ID': '936619743392459',
             'X-CSRFToken': csrfToken,
+            'X-Instagram-AJAX': '1',
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/x-www-form-urlencoded',
+            Origin: 'https://www.instagram.com',
             Referer: 'https://www.instagram.com/direct/inbox/',
           },
           body: body.toString(),
@@ -222,6 +232,9 @@ export async function sendInstagramDM(
           success: true,
           threadId: (data as any)?.thread_id || (data as any)?.payload?.thread_id,
         }
+      } else {
+        const errBody = await dmRes.text().catch(() => '')
+        console.warn(`[InstagramDM] Web broadcast HTTP ${dmRes.status}: ${errBody.slice(0, 150)}`)
       }
     } catch (fetchErr: any) {
       console.warn(

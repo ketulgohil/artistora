@@ -27,6 +27,7 @@ import {
   sendInstagramDM,
   resolveInstagramUser,
 } from '../src/outreach/instagram/client'
+import { verifyInstagramSession } from '../src/outreach/instagram/session'
 import { getPayloadClient } from '../src/lib/payload'
 
 dotenv.config()
@@ -168,7 +169,18 @@ async function main() {
   // 1. Initialize authenticated Instagram client via Redis session
   console.log('⏳ Connecting to Instagram Mobile API via Redis session...')
   const { ig, username: senderAccount } = await getInstagramClient()
-  console.log(`✅ Authenticated as @${senderAccount}\n`)
+
+  // 1.1. Health Check: Verify session is actually active on Instagram API
+  console.log('⏳ Verifying Instagram session health...')
+  const verification = await verifyInstagramSession(ig)
+  if (!verification.valid) {
+    console.error(`\n🛑 Instagram session is expired or invalid (${verification.error}).`)
+    console.error('👉 Please link a fresh session cookie with:')
+    console.error('   npx tsx scripts/auth-instagram.ts --cookie "YOUR_SESSION_ID"\n')
+    process.exit(1)
+  }
+
+  console.log(`✅ Authenticated & verified as @${senderAccount}\n`)
 
   const payload = await getPayloadClient()
 
