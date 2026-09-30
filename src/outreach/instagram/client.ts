@@ -175,7 +175,9 @@ export async function sendInstagramDM(
     for (const [k, v] of uniqueCookieMap.entries()) {
       if (k && v) {
         const cleanK = String(k).trim()
-        const cleanV = String(v).trim().replace(/[\r\n;]/g, '')
+        const cleanV = String(v)
+          .trim()
+          .replace(/[\r\n;]/g, '')
         cleanCookieList.push(`${cleanK}=${cleanV}`)
       }
     }
