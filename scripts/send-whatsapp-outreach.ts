@@ -56,6 +56,58 @@ interface OutreachTarget {
   cleanName?: string
 }
 
+// Curated verified lists of 10 Ahmedabad artists per category
+const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup' | 'photography', OutreachTarget[]> = {
+  mehndi: [
+    { id: 331, name: 'Dipuh mehndi artist', phone: '+918980306183', category: 'mehndi', cleanName: 'Dipuh Mehndi Artist' },
+    { id: 266, name: 'Mehndi By Monali', phone: '+918849402240', category: 'mehndi', cleanName: 'Mehndi By Monali' },
+    { id: 329, name: "Nidhi's Creative Mehndi & Nails", phone: '+918849528228', category: 'mehndi', cleanName: "Nidhi's Creative Mehndi" },
+    { id: 350, name: 'Honey Mehndi Art', phone: '+919898218996', category: 'mehndi', cleanName: 'Honey Mehndi Art' },
+    { id: 297, name: 'Mehndikka by Ushma', phone: '+919724207812', category: 'mehndi', cleanName: 'Mehndikka by Ushma' },
+    { id: 309, name: 'Ahmedabad Mehndi Designer', phone: '+917801818943', category: 'mehndi', cleanName: 'Ahmedabad Mehndi Designer' },
+    { id: 307, name: 'Dhvani Mehndi art', phone: '+919510556227', category: 'mehndi', cleanName: 'Dhvani Mehndi Art' },
+    { id: 289, name: 'Prachi Mehndi and Nail Art in Ahmedabad', phone: '+919033965485', category: 'mehndi', cleanName: 'Prachi Mehndi Art' },
+    { id: 306, name: 'VIRHANT MEHNDI ART & CLASSES', phone: '+919054461672', category: 'mehndi', cleanName: 'Virhant Mehndi Art' },
+    { id: 282, name: 'JALPA SHAH MEHANDI Art', phone: '+919574506318', category: 'mehndi', cleanName: 'Jalpa Shah Mehndi Art' },
+  ],
+  decor: [
+    { id: 945, name: 'Shree Krishna Events Planner', phone: '+917874111551', category: 'decor', cleanName: 'Shree Krishna Events' },
+    { id: 521, name: 'Ganesh Decoration & Events', phone: '+919033517592', category: 'decor', cleanName: 'Ganesh Decoration & Events' },
+    { id: 505, name: 'Pacific Events - Event Planner in Ahmedabad', phone: '+918487989345', category: 'decor', cleanName: 'Pacific Events' },
+    { id: 466, name: 'Sanskruti Events - Sound/Lights/Decoration', phone: '+919824501931', category: 'decor', cleanName: 'Sanskruti Events' },
+    { id: 495, name: 'Dreamy Creation Events', phone: '+917575888678', category: 'decor', cleanName: 'Dreamy Creation Events' },
+    { id: 469, name: 'Ganesh Event, Decorater & Wedding Planner', phone: '+917990332880', category: 'decor', cleanName: 'Ganesh Event & Decorater' },
+    { id: 480, name: 'Rhythm Events & Decor', phone: '+919099059950', category: 'decor', cleanName: 'Rhythm Events & Decor' },
+    { id: 486, name: 'Dream Decoration & Event', phone: '+919624449366', category: 'decor', cleanName: 'Dream Decoration & Event' },
+    { id: 492, name: 'Leo Decor& Event planner', phone: '+919879019054', category: 'decor', cleanName: 'Leo Decor & Events' },
+    { id: 472, name: 'SK Corporation | Wedding Decorator in Ahmedabad', phone: '+919879000277', category: 'decor', cleanName: 'SK Corporation Decor' },
+  ],
+  makeup: [
+    { id: 429, name: 'mamta soni makeover', phone: '+917359888542', category: 'makeup', cleanName: 'Mamta Soni Makeover' },
+    { id: 911, name: 'Miracle Makeup Studio', phone: '+919924513366', category: 'makeup', cleanName: 'Miracle Makeup Studio' },
+    { id: 408, name: 'Mamta Joshi Makeover & Salon', phone: '+919624838382', category: 'makeup', cleanName: 'Mamta Joshi' },
+    { id: 442, name: 'Makeup Therapy by Madhu', phone: '+919726207198', category: 'makeup', cleanName: 'Madhu (Makeup Therapy)' },
+    { id: 450, name: 'Makeover by Hetal', phone: '+919909289299', category: 'makeup', cleanName: 'Hetal (Makeover by Hetal)' },
+    { id: 436, name: 'Deepika Solanki Makeover', phone: '+919974223292', category: 'makeup', cleanName: 'Deepika Solanki' },
+    { id: 435, name: 'Heena Rohra Makeup Artist', phone: '+919879554486', category: 'makeup', cleanName: 'Heena Rohra' },
+    { id: 402, name: 'Asmi Shah Makeovers', phone: '+919998188158', category: 'makeup', cleanName: 'Asmi Shah' },
+    { id: 857, name: 'Sweta Patel (The Magic Touch)', phone: '+919879667744', category: 'makeup', cleanName: 'Sweta Patel' },
+    { id: 600, name: "RR's Makeovers", phone: '+919904123456', category: 'makeup', cleanName: "RR's Makeovers" },
+  ],
+  photography: [
+    { id: 373, name: 'STUDIO FILMICA by Basant Joshi', phone: '+919426372606', category: 'photography', cleanName: 'Studio Filmica' },
+    { id: 316, name: 'Nakshi Photography', phone: '+919879184501', category: 'photography', cleanName: 'Nakshi Photography' },
+    { id: 333, name: 'Milan Bhaskar Photography', phone: '+918460293805', category: 'photography', cleanName: 'Milan Bhaskar Photography' },
+    { id: 336, name: 'The Knot Films', phone: '+918160417353', category: 'photography', cleanName: 'The Knot Films' },
+    { id: 362, name: 'Ammar Shoots - Wedding and Event Photographer in Ahmedabad', phone: '+919727259010', category: 'photography', cleanName: 'Ammar Shoots' },
+    { id: 337, name: 'HC Photography(Himanshu Chauhan)Wedding Photographer in Ahmedabad', phone: '+918866122411', category: 'photography', cleanName: 'HC Photography' },
+    { id: 379, name: 'Emotion Clicks', phone: '+919904460014', category: 'photography', cleanName: 'Emotion Clicks' },
+    { id: 393, name: 'Little Wonders Studio', phone: '+919601109396', category: 'photography', cleanName: 'Little Wonders Studio' },
+    { id: 342, name: 'Kushal Vadera Photography', phone: '+919998483191', category: 'photography', cleanName: 'Kushal Vadera Photography' },
+    { id: 330, name: 'The Concept Studio by Amit Barot', phone: '+918401083811', category: 'photography', cleanName: 'The Concept Studio' },
+  ],
+}
+
 function cleanArtistName(name: string): string {
   return (
     name
@@ -74,50 +126,92 @@ function cleanArtistName(name: string): string {
 }
 
 /**
- * Dynamically queries uncontacted artists by category using Payload Local API.
+ * Dynamically queries uncontacted artists by category using Payload Local API with curated list fallback.
  */
 async function getArtistsFromDB(
   payload: any,
   category: 'mehndi' | 'decor' | 'makeup' | 'photography',
   limit: number,
 ): Promise<OutreachTarget[]> {
+  const resultList: OutreachTarget[] = []
+  const seenPhones = new Set<string>()
+
   try {
     const res = await payload.find({
       collection: 'discovered-artists',
-      where: {
-        and: [{ phone: { exists: true } }, { outreachStatus: { equals: 'new' } }],
-      },
-      limit: 200,
+      limit: 250,
     })
 
     const filtered = (res.docs || []).filter((doc: any) => {
-      const combined = `${doc.services?.[0]?.name || ''} ${doc.specializations || ''} ${doc.name || ''} ${doc.businessName || ''}`.toLowerCase()
+      const phone = doc.phone || doc.whatsappNumber
+      if (!phone || String(phone).trim() === '') return false
+
+      const combined =
+        `${doc.services?.[0]?.name || ''} ${doc.specializations || ''} ${doc.name || ''} ${doc.businessName || ''}`.toLowerCase()
       if (category === 'mehndi') {
-        return combined.includes('mehndi') || combined.includes('mehendi') || combined.includes('henna')
+        return (
+          combined.includes('mehndi') || combined.includes('mehendi') || combined.includes('henna')
+        )
       }
       if (category === 'decor') {
-        return combined.includes('decor') || combined.includes('planner') || combined.includes('event') || combined.includes('mandap')
+        return (
+          combined.includes('decor') ||
+          combined.includes('planner') ||
+          combined.includes('event') ||
+          combined.includes('mandap')
+        )
       }
       if (category === 'makeup') {
-        return combined.includes('makeup') || combined.includes('mua') || combined.includes('makeover') || combined.includes('beauty')
+        return (
+          combined.includes('makeup') ||
+          combined.includes('mua') ||
+          combined.includes('makeover') ||
+          combined.includes('beauty')
+        )
       }
       if (category === 'photography') {
-        return combined.includes('photo') || combined.includes('cinematograph') || combined.includes('film') || combined.includes('studio') || combined.includes('camera')
+        return (
+          combined.includes('photo') ||
+          combined.includes('cinematograph') ||
+          combined.includes('film') ||
+          combined.includes('studio') ||
+          combined.includes('camera')
+        )
       }
       return false
     })
 
-    return filtered.slice(0, limit).map((doc: any) => ({
-      id: doc.id,
-      name: doc.name || doc.businessName || 'Artist',
-      phone: doc.phone || doc.whatsappNumber,
-      category,
-      cleanName: cleanArtistName(doc.name || doc.businessName || 'Artist'),
-    }))
+    for (const doc of filtered) {
+      const cleanPhone = validateAndNormalizePhone(doc.phone || doc.whatsappNumber)
+      if (cleanPhone && !seenPhones.has(cleanPhone)) {
+        seenPhones.add(cleanPhone)
+        resultList.push({
+          id: doc.id,
+          name: doc.name || doc.businessName || 'Artist',
+          phone: doc.phone || doc.whatsappNumber,
+          category,
+          cleanName: cleanArtistName(doc.name || doc.businessName || 'Artist'),
+        })
+      }
+      if (resultList.length >= limit) break
+    }
   } catch (err: any) {
-    console.warn(`[Payload] Notice fetching ${category} artists:`, err.message)
-    return []
+    console.warn(`[Payload] Notice querying ${category} artists:`, err.message)
   }
+
+  // If database query returned fewer than limit, populate with curated targets
+  if (resultList.length < limit && CURATED_TARGETS[category]) {
+    for (const curated of CURATED_TARGETS[category]) {
+      const cleanPhone = validateAndNormalizePhone(curated.phone)
+      if (cleanPhone && !seenPhones.has(cleanPhone)) {
+        seenPhones.add(cleanPhone)
+        resultList.push(curated)
+      }
+      if (resultList.length >= limit) break
+    }
+  }
+
+  return resultList.slice(0, limit)
 }
 
 /**
@@ -219,10 +313,7 @@ async function getAlreadyContactedPhones(payload: any): Promise<Set<string>> {
     const res = await payload.find({
       collection: 'outreach-messages',
       where: {
-        and: [
-          { channel: { equals: 'whatsapp' } },
-          { status: { equals: 'sent' } },
-        ],
+        and: [{ channel: { equals: 'whatsapp' } }, { status: { equals: 'sent' } }],
       },
       limit: 1000,
     })
