@@ -66,13 +66,37 @@ export async function PATCH(request: NextRequest) {
     if (body.bio !== undefined) updateData.bio = body.bio
     if (body.city !== undefined) updateData.city = body.city
     if (body.area !== undefined) updateData.area = body.area
-    if (body.yearsOfExperience !== undefined) updateData.yearsOfExperience = body.yearsOfExperience ? Number(body.yearsOfExperience) : null
+    if (body.yearsOfExperience !== undefined)
+      updateData.yearsOfExperience = body.yearsOfExperience ? Number(body.yearsOfExperience) : null
     if (body.priceType !== undefined) updateData.priceType = body.priceType
-    if (body.startingPrice !== undefined) updateData.startingPrice = body.startingPrice ? Number(body.startingPrice) : null
+    if (body.startingPrice !== undefined)
+      updateData.startingPrice = body.startingPrice ? Number(body.startingPrice) : null
     if (body.styles !== undefined) updateData.styles = body.styles
     if (body.services !== undefined) updateData.services = body.services
-    if (body.profilePhoto !== undefined) updateData.profilePhoto = body.profilePhoto
-    if (body.portfolioImages !== undefined) updateData.portfolioImages = body.portfolioImages
+    if (body.profilePhoto !== undefined) {
+      updateData.profilePhoto =
+        typeof body.profilePhoto === 'object' && body.profilePhoto !== null
+          ? body.profilePhoto.id
+          : body.profilePhoto
+    }
+    if (body.portfolioImages !== undefined) {
+      if (Array.isArray(body.portfolioImages)) {
+        updateData.portfolioImages = body.portfolioImages
+          .map((item: any) => {
+            const imageId =
+              typeof item?.image === 'object' && item?.image !== null ? item.image.id : item?.image
+            return {
+              image: imageId,
+              caption: typeof item?.caption === 'string' ? item.caption : '',
+            }
+          })
+          .filter(
+            (item: any) => item.image !== undefined && item.image !== null && item.image !== '',
+          )
+      } else {
+        updateData.portfolioImages = body.portfolioImages
+      }
+    }
 
     const updated = await payload.update({
       collection: 'artists',
@@ -84,6 +108,9 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true, doc: updated })
   } catch (error: any) {
     console.error('Dashboard profile PATCH error:', error)
-    return NextResponse.json({ error: error.message || 'Failed to update profile' }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || 'Failed to update profile' },
+      { status: 500 },
+    )
   }
 }

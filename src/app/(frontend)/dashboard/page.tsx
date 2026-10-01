@@ -6,36 +6,86 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
 
-const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })))
-const Bar = lazy(() => import('recharts').then(m => ({ default: m.Bar })))
-const XAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis })))
-const YAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis })))
-const CartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid })))
-const Tooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip })))
-const ResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })))
-const PieChart = lazy(() => import('recharts').then(m => ({ default: m.PieChart })))
-const Pie = lazy(() => import('recharts').then(m => ({ default: m.Pie })))
-const Cell = lazy(() => import('recharts').then(m => ({ default: m.Cell })))
-const FunnelChart = lazy(() => import('recharts').then(m => ({ default: m.FunnelChart })))
-const Funnel = lazy(() => import('recharts').then(m => ({ default: m.Funnel })))
-const LabelList = lazy(() => import('recharts').then(m => ({ default: m.LabelList })))
-const LineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart })))
-const Line = lazy(() => import('recharts').then(m => ({ default: m.Line })))
-const Area = lazy(() => import('recharts').then(m => ({ default: m.Area })))
-const AreaChart = lazy(() => import('recharts').then(m => ({ default: m.AreaChart })))
+const BarChart = lazy(() => import('recharts').then((m) => ({ default: m.BarChart })))
+const Bar = lazy(() => import('recharts').then((m) => ({ default: m.Bar })))
+const XAxis = lazy(() => import('recharts').then((m) => ({ default: m.XAxis })))
+const YAxis = lazy(() => import('recharts').then((m) => ({ default: m.YAxis })))
+const CartesianGrid = lazy(() => import('recharts').then((m) => ({ default: m.CartesianGrid })))
+const Tooltip = lazy(() => import('recharts').then((m) => ({ default: m.Tooltip })))
+const ResponsiveContainer = lazy(() =>
+  import('recharts').then((m) => ({ default: m.ResponsiveContainer })),
+)
+const PieChart = lazy(() => import('recharts').then((m) => ({ default: m.PieChart })))
+const Pie = lazy(() => import('recharts').then((m) => ({ default: m.Pie })))
+const Cell = lazy(() => import('recharts').then((m) => ({ default: m.Cell })))
+const FunnelChart = lazy(() => import('recharts').then((m) => ({ default: m.FunnelChart })))
+const Funnel = lazy(() => import('recharts').then((m) => ({ default: m.Funnel })))
+const LabelList = lazy(() => import('recharts').then((m) => ({ default: m.LabelList })))
+const LineChart = lazy(() => import('recharts').then((m) => ({ default: m.LineChart })))
+const Line = lazy(() => import('recharts').then((m) => ({ default: m.Line })))
+const Area = lazy(() => import('recharts').then((m) => ({ default: m.Area })))
+const AreaChart = lazy(() => import('recharts').then((m) => ({ default: m.AreaChart })))
 
 function ChartFallback() {
-  return <div className="flex h-64! items-center justify-center text-sm text-ink-muted">Loading chart...</div>
+  return (
+    <div className="flex h-64! items-center justify-center text-sm text-ink-muted">
+      Loading chart...
+    </div>
+  )
 }
 
 const CONTAINER = 'mx-auto max-w-5xl! px-3.5! sm:px-4! md:px-6!'
 const SECTION = 'py-4! sm:py-8! md:py-14!'
 
 const STYLE_OPTIONS: Record<string, string[]> = {
-  'photographers': ['Wedding', 'Portrait', 'Candid', 'Traditional', 'Pre-Wedding', 'Event', 'Product', 'Fashion', 'Documentary', 'Drone/Aerial'],
-  'makeup-artists': ['Bridal', 'Party', 'Reception', 'Engagement', 'Editorial', 'Natural', 'Glam', 'Traditional', 'Airbrush', 'SFX'],
-  'decor-event-planners': ['Floral', 'Traditional', 'Modern', 'Minimal', 'Rustic', 'Vintage', 'Bohemian', 'Royal', 'Themed', 'Outdoor'],
-  'mehndi-artists': ['Bridal', 'Arabic', 'Indo-Western', 'Minimal', 'Traditional', 'Rajasthani', 'Modern', 'Floral', 'Geometric', 'Custom Design'],
+  photographers: [
+    'Wedding',
+    'Portrait',
+    'Candid',
+    'Traditional',
+    'Pre-Wedding',
+    'Event',
+    'Product',
+    'Fashion',
+    'Documentary',
+    'Drone/Aerial',
+  ],
+  'makeup-artists': [
+    'Bridal',
+    'Party',
+    'Reception',
+    'Engagement',
+    'Editorial',
+    'Natural',
+    'Glam',
+    'Traditional',
+    'Airbrush',
+    'SFX',
+  ],
+  'decor-event-planners': [
+    'Floral',
+    'Traditional',
+    'Modern',
+    'Minimal',
+    'Rustic',
+    'Vintage',
+    'Bohemian',
+    'Royal',
+    'Themed',
+    'Outdoor',
+  ],
+  'mehndi-artists': [
+    'Bridal',
+    'Arabic',
+    'Indo-Western',
+    'Minimal',
+    'Traditional',
+    'Rajasthani',
+    'Modern',
+    'Floral',
+    'Geometric',
+    'Custom Design',
+  ],
 }
 
 const SERVICE_OPTIONS = [
@@ -128,7 +178,9 @@ interface LeadItem {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'profile' | 'leads' | 'bookings' | 'availability' | 'analytics'>('profile')
+  const [activeTab, setActiveTab] = useState<
+    'profile' | 'leads' | 'bookings' | 'availability' | 'analytics'
+  >('profile')
 
   const [user, setUser] = useState<UserData | null>(null)
   const [artist, setArtist] = useState<ArtistData | null>(null)
@@ -185,7 +237,9 @@ export default function DashboardPage() {
   const [submittingQuote, setSubmittingQuote] = useState(false)
 
   // Availability state
-  const [unavailableDates, setUnavailableDates] = useState<Array<{ date: string; reason?: string }>>([])
+  const [unavailableDates, setUnavailableDates] = useState<
+    Array<{ date: string; reason?: string }>
+  >([])
   const [bookedDates, setBookedDates] = useState<any[]>([])
   const [loadingAvailability, setLoadingAvailability] = useState(false)
   const [newBlockDate, setNewBlockDate] = useState('')
@@ -202,7 +256,10 @@ export default function DashboardPage() {
     async function load() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' })
-        if (!res.ok) { router.push('/login'); return }
+        if (!res.ok) {
+          router.push('/login')
+          return
+        }
         const data = await res.json()
         if (!data.user) {
           router.push('/login')
@@ -232,11 +289,13 @@ export default function DashboardPage() {
         const a = profileData.artist
         if (a) {
           setArtist(a)
-          const serviceSlugs = (a.services || []).map((s: any) => {
-            if (typeof s === 'object' && s?.slug) return s.slug
-            if (typeof s === 'number' || typeof s === 'string') return idToSlug[Number(s)]
-            return null
-          }).filter(Boolean)
+          const serviceSlugs = (a.services || [])
+            .map((s: any) => {
+              if (typeof s === 'object' && s?.slug) return s.slug
+              if (typeof s === 'number' || typeof s === 'string') return idToSlug[Number(s)]
+              return null
+            })
+            .filter(Boolean)
           setForm({
             displayName: a.displayName || '',
             phone: a.phone || '',
@@ -621,7 +680,14 @@ export default function DashboardPage() {
         newImages.push({ image: media.doc.id, caption: '' })
       }
 
-      const updatedPortfolio = [...(artist.portfolioImages || []), ...newImages]
+      const existingMapped = (artist.portfolioImages || [])
+        .map((item: any) => ({
+          image: typeof item.image === 'object' && item.image !== null ? item.image.id : item.image,
+          caption: item.caption || '',
+        }))
+        .filter((item: any) => Boolean(item.image))
+
+      const updatedPortfolio = [...existingMapped, ...newImages]
 
       const patchRes = await fetch('/api/dashboard/profile', {
         method: 'PATCH',
@@ -710,7 +776,8 @@ export default function DashboardPage() {
               Your artist profile is not available yet
             </h1>
             <p className="mx-auto mt-4! max-w-xl text-sm leading-7 text-ink-soft">
-              Your account is signed in, but it is not linked to an artist profile. Please contact Artistora support so the profile can be linked safely.
+              Your account is signed in, but it is not linked to an artist profile. Please contact
+              Artistora support so the profile can be linked safely.
             </p>
             <div className="mt-7! flex flex-wrap justify-center gap-3!">
               <Link href="/contact" className="btn-brand">
@@ -730,7 +797,8 @@ export default function DashboardPage() {
 
   // Filter bookings
   const filteredBookings = bookings.filter((b) => {
-    if (bookingFilter === 'pending') return b.status === 'artist_pending' || b.status === 'requested'
+    if (bookingFilter === 'pending')
+      return b.status === 'artist_pending' || b.status === 'requested'
     if (bookingFilter === 'confirmed') return b.status === 'confirmed' || b.status === 'in_progress'
     return true
   })
@@ -752,7 +820,14 @@ export default function DashboardPage() {
                 </span>
                 {artist.verified && (
                   <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-2! py-0.5! text-[11px] font-semibold text-green">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
                       <path d="M20 6 9 17l-5-5" />
                     </svg>
                     Verified
@@ -774,7 +849,16 @@ export default function DashboardPage() {
                 title="View Public Profile"
                 className="inline-flex h-9! w-9! cursor-pointer items-center justify-center rounded-full border border-brand/30 bg-white text-brand-deep shadow-xs transition-colors hover:bg-brand/10"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
@@ -795,7 +879,16 @@ export default function DashboardPage() {
                 title="Log Out"
                 className="inline-flex h-9! w-9! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink-muted shadow-xs transition-colors hover:border-red-200 hover:text-red-600"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
@@ -811,7 +904,16 @@ export default function DashboardPage() {
               className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-brand/40 bg-transparent px-5! py-2.5! text-sm font-semibold text-brand-deep transition-colors duration-200 hover:border-brand hover:bg-brand/10"
             >
               View Public Profile
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                 <polyline points="15 3 21 3 21 9" />
                 <line x1="10" y1="14" x2="21" y2="3" />
@@ -842,7 +944,9 @@ export default function DashboardPage() {
             {
               shortLabel: 'Requests',
               fullLabel: 'Pending Requests',
-              value: bookings.filter((b) => b.status === 'artist_pending' || b.status === 'requested').length,
+              value: bookings.filter(
+                (b) => b.status === 'artist_pending' || b.status === 'requested',
+              ).length,
               color: 'text-brand',
               bg: 'bg-brand/5',
               border: 'border-brand/20',
@@ -850,7 +954,8 @@ export default function DashboardPage() {
             {
               shortLabel: 'Active',
               fullLabel: 'Active Bookings',
-              value: bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_progress').length,
+              value: bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_progress')
+                .length,
               color: 'text-green',
               bg: 'bg-green/5',
               border: 'border-green/20',
@@ -872,12 +977,19 @@ export default function DashboardPage() {
               border: 'border-line',
             },
           ].map((stat) => (
-            <div key={stat.shortLabel} className={`flex flex-col justify-center rounded-xl border ${stat.border} ${stat.bg} p-2.5! text-center sm:rounded-2xl sm:p-4! sm:text-left`}>
+            <div
+              key={stat.shortLabel}
+              className={`flex flex-col justify-center rounded-xl border ${stat.border} ${stat.bg} p-2.5! text-center sm:rounded-2xl sm:p-4! sm:text-left`}
+            >
               <p className="text-[11px] font-medium text-ink-muted sm:text-xs">
                 <span className="sm:hidden">{stat.shortLabel}</span>
                 <span className="hidden sm:inline">{stat.fullLabel}</span>
               </p>
-              <p className={`mt-0.5! font-display text-lg! font-semibold sm:mt-1! sm:text-2xl! ${stat.color}`}>{stat.value}</p>
+              <p
+                className={`mt-0.5! font-display text-lg! font-semibold sm:mt-1! sm:text-2xl! ${stat.color}`}
+              >
+                {stat.value}
+              </p>
             </div>
           ))}
         </div>
@@ -886,8 +998,17 @@ export default function DashboardPage() {
         {(() => {
           const checks = [
             { label: 'Profile photo', done: !!artist.profilePhoto },
-            { label: 'Display name', done: !!artist.displayName && artist.displayName !== 'Profile coming soon' },
-            { label: 'Bio', done: !!artist.bio && artist.bio !== 'Profile coming soon' && (artist.bio?.length || 0) > 20 },
+            {
+              label: 'Display name',
+              done: !!artist.displayName && artist.displayName !== 'Profile coming soon',
+            },
+            {
+              label: 'Bio',
+              done:
+                !!artist.bio &&
+                artist.bio !== 'Profile coming soon' &&
+                (artist.bio?.length || 0) > 20,
+            },
             { label: 'Phone number', done: !!artist.phone && artist.phone !== '0000000000' },
             { label: 'WhatsApp number', done: !!artist.whatsappNumber },
             { label: 'City', done: !!artist.city },
@@ -895,7 +1016,10 @@ export default function DashboardPage() {
             { label: 'Years of exp.', done: !!artist.yearsOfExperience },
             { label: 'Services offered', done: !!(artist.services && artist.services.length > 0) },
             { label: 'Starting price', done: !!artist.startingPrice },
-            { label: 'Portfolio images', done: !!(artist.portfolioImages && artist.portfolioImages.length > 0) },
+            {
+              label: 'Portfolio images',
+              done: !!(artist.portfolioImages && artist.portfolioImages.length > 0),
+            },
           ]
           const completed = checks.filter((c) => c.done).length
           const total = checks.length
@@ -910,19 +1034,36 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3!">
                   <div className="relative h-10! w-10! shrink-0 sm:h-12! sm:w-12!">
                     <svg className="h-10! w-10! -rotate-90 sm:h-12! sm:w-12!" viewBox="0 0 36 36">
-                      <circle cx="18" cy="18" r="16" fill="none" stroke="#f1d9dc" strokeWidth="3.5" />
                       <circle
-                        cx="18" cy="18" r="16" fill="none" stroke="#ec6783" strokeWidth="3.5"
+                        cx="18"
+                        cy="18"
+                        r="16"
+                        fill="none"
+                        stroke="#f1d9dc"
+                        strokeWidth="3.5"
+                      />
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="16"
+                        fill="none"
+                        stroke="#ec6783"
+                        strokeWidth="3.5"
                         strokeDasharray={`${pct} ${100 - pct}`}
                         strokeLinecap="round"
                       />
                     </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-bold text-brand">{pct}%</span>
+                    <span className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-bold text-brand">
+                      {pct}%
+                    </span>
                   </div>
                   <div>
-                    <h3 className="font-display text-sm! font-semibold text-ink sm:text-base!">Profile Completion</h3>
+                    <h3 className="font-display text-sm! font-semibold text-ink sm:text-base!">
+                      Profile Completion
+                    </h3>
                     <p className="text-[11px] sm:text-xs text-ink-soft">
-                      {completed}/{total} completed — <span className="text-brand font-medium">Add details to rank higher</span>
+                      {completed}/{total} completed —{' '}
+                      <span className="text-brand font-medium">Add details to rank higher</span>
                     </p>
                   </div>
                 </div>
@@ -967,14 +1108,31 @@ export default function DashboardPage() {
                       >
                         {check.done ? (
                           <span className="flex h-4! w-4! sm:h-5! sm:w-5! shrink-0 items-center justify-center rounded-full bg-green/10 text-green">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                            <svg
+                              width="10"
+                              height="10"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
                           </span>
                         ) : (
                           <span className="flex h-4! w-4! sm:h-5! sm:w-5! shrink-0 items-center justify-center rounded-full border border-line text-ink-muted">
                             <span className="h-1.5! w-1.5! rounded-full bg-ink-muted/40" />
                           </span>
                         )}
-                        <span className={check.done ? 'text-ink-soft/70 line-through decoration-ink-muted/40' : 'text-ink font-medium'}>
+                        <span
+                          className={
+                            check.done
+                              ? 'text-ink-soft/70 line-through decoration-ink-muted/40'
+                              : 'text-ink font-medium'
+                          }
+                        >
                           {check.label}
                         </span>
                       </button>
@@ -1020,9 +1178,11 @@ export default function DashboardPage() {
           >
             <span>Bookings</span>
             {pendingBookingsCount > 0 && (
-              <span className={`rounded-full px-1.5! py-0.2! sm:px-2! sm:py-0.5! text-[10px] sm:text-xs font-bold ${
-                activeTab === 'bookings' ? 'bg-white text-brand' : 'bg-brand text-white'
-              }`}>
+              <span
+                className={`rounded-full px-1.5! py-0.2! sm:px-2! sm:py-0.5! text-[10px] sm:text-xs font-bold ${
+                  activeTab === 'bookings' ? 'bg-white text-brand' : 'bg-brand text-white'
+                }`}
+              >
                 {pendingBookingsCount}
               </span>
             )}
@@ -1047,7 +1207,19 @@ export default function DashboardPage() {
                 : 'bg-white text-ink-soft hover:bg-cream/70 border border-line/60'
             }`}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
             <span>Analytics</span>
           </button>
         </div>
@@ -1056,7 +1228,12 @@ export default function DashboardPage() {
         {error && (
           <div className="mb-6! rounded-xl border border-red-200 bg-red-50 px-4! py-3! text-sm text-red-700 flex justify-between items-center">
             <span>{error}</span>
-            <button onClick={() => setError('')} className="text-red-500 font-bold ml-4! cursor-pointer">×</button>
+            <button
+              onClick={() => setError('')}
+              className="text-red-500 font-bold ml-4! cursor-pointer"
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -1073,7 +1250,12 @@ export default function DashboardPage() {
                     : 'bg-white text-ink-muted border border-line'
                 }`}
               >
-                Pending Requests ({bookings.filter((b) => b.status === 'artist_pending' || b.status === 'requested').length})
+                Pending Requests (
+                {
+                  bookings.filter((b) => b.status === 'artist_pending' || b.status === 'requested')
+                    .length
+                }
+                )
               </button>
               <button
                 onClick={() => setBookingFilter('confirmed')}
@@ -1083,7 +1265,12 @@ export default function DashboardPage() {
                     : 'bg-white text-ink-muted border border-line'
                 }`}
               >
-                Confirmed / Active ({bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_progress').length})
+                Confirmed / Active (
+                {
+                  bookings.filter((b) => b.status === 'confirmed' || b.status === 'in_progress')
+                    .length
+                }
+                )
               </button>
               <button
                 onClick={() => setBookingFilter('all')}
@@ -1126,7 +1313,9 @@ export default function DashboardPage() {
                       <div className="flex flex-wrap items-start justify-between gap-4!">
                         <div>
                           <div className="flex items-center gap-3!">
-                            <h3 className="font-display text-lg! font-semibold text-ink">{b.name}</h3>
+                            <h3 className="font-display text-lg! font-semibold text-ink">
+                              {b.name}
+                            </h3>
                             <span
                               className={`rounded-full px-2.5! py-0.5! text-xs font-semibold capitalize ${
                                 isPending
@@ -1144,7 +1333,9 @@ export default function DashboardPage() {
                             </span>
                           </div>
                           <p className="mt-1! text-xs text-ink-muted">
-                            Event Date: <strong className="text-ink">{formatDate(b.eventDate)}</strong> • {b.eventType} • {b.location}
+                            Event Date:{' '}
+                            <strong className="text-ink">{formatDate(b.eventDate)}</strong> •{' '}
+                            {b.eventType} • {b.location}
                           </p>
                         </div>
 
@@ -1182,7 +1373,9 @@ export default function DashboardPage() {
                         {b.quote?.amount && (
                           <div>
                             <span className="text-ink-muted">Quote Amount: </span>
-                            <strong className="text-brand">₹{b.quote.amount.toLocaleString('en-IN')}</strong>
+                            <strong className="text-brand">
+                              ₹{b.quote.amount.toLocaleString('en-IN')}
+                            </strong>
                           </div>
                         )}
                       </div>
@@ -1287,7 +1480,10 @@ export default function DashboardPage() {
                                 Confirm Cancel
                               </button>
                               <button
-                                onClick={() => { setCancelBookingId(null); setCancelReason('') }}
+                                onClick={() => {
+                                  setCancelBookingId(null)
+                                  setCancelReason('')
+                                }}
                                 className="cursor-pointer text-xs text-ink-muted hover:text-ink"
                               >
                                 Back
@@ -1295,7 +1491,10 @@ export default function DashboardPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => { setCancelBookingId(b.id); setCancelReason('') }}
+                              onClick={() => {
+                                setCancelBookingId(b.id)
+                                setCancelReason('')
+                              }}
                               disabled={actionLoading}
                               className="cursor-pointer rounded-full border border-line px-4! py-1.5! text-xs font-medium text-red-500 hover:border-red-300 hover:bg-red-50"
                             >
@@ -1333,7 +1532,10 @@ export default function DashboardPage() {
                                 Confirm Cancel
                               </button>
                               <button
-                                onClick={() => { setCancelBookingId(null); setCancelReason('') }}
+                                onClick={() => {
+                                  setCancelBookingId(null)
+                                  setCancelReason('')
+                                }}
                                 className="cursor-pointer text-xs text-ink-muted hover:text-ink"
                               >
                                 Back
@@ -1341,7 +1543,10 @@ export default function DashboardPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => { setCancelBookingId(b.id); setCancelReason('') }}
+                              onClick={() => {
+                                setCancelBookingId(b.id)
+                                setCancelReason('')
+                              }}
                               disabled={actionLoading}
                               className="cursor-pointer rounded-full border border-line px-4! py-1.5! text-xs font-medium text-red-500 hover:border-red-300 hover:bg-red-50"
                             >
@@ -1365,22 +1570,31 @@ export default function DashboardPage() {
               <div className="py-12! text-center text-ink-muted">Loading leads...</div>
             ) : leads.length === 0 ? (
               <div className="rounded-3xl border border-line bg-white p-8! text-center">
-                <p className="text-ink-muted">No leads matched to your profile yet. Make sure your services and service areas are up to date!</p>
+                <p className="text-ink-muted">
+                  No leads matched to your profile yet. Make sure your services and service areas
+                  are up to date!
+                </p>
               </div>
             ) : (
               <div className="space-y-4!">
                 {leads.map((lead) => (
-                  <div key={lead.id} className="rounded-3xl border border-line bg-white p-6! shadow-soft">
+                  <div
+                    key={lead.id}
+                    className="rounded-3xl border border-line bg-white p-6! shadow-soft"
+                  >
                     <div className="flex flex-wrap items-start justify-between gap-4!">
                       <div>
                         <div className="flex items-center gap-2!">
-                          <h3 className="font-display text-lg! font-semibold text-ink">{lead.eventType}</h3>
+                          <h3 className="font-display text-lg! font-semibold text-ink">
+                            {lead.eventType}
+                          </h3>
                           <span className="rounded-full bg-cream px-2.5! py-0.5! text-xs font-medium text-ink-muted">
                             Lead #{lead.id}
                           </span>
                         </div>
                         <p className="mt-1! text-xs text-ink-muted">
-                          Date: <strong className="text-ink">{formatDate(lead.eventDate)}</strong> • Location: <strong className="text-ink">{lead.eventLocation}</strong>
+                          Date: <strong className="text-ink">{formatDate(lead.eventDate)}</strong> •
+                          Location: <strong className="text-ink">{lead.eventLocation}</strong>
                         </p>
                       </div>
 
@@ -1389,7 +1603,9 @@ export default function DashboardPage() {
                           <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-2.5! py-0.5! text-xs font-semibold text-green">
                             Quote Sent: ₹{lead.myQuote.amount.toLocaleString('en-IN')}
                           </span>
-                          <p className="text-[11px] text-ink-muted mt-0.5! capitalize">Status: {lead.myQuote.status}</p>
+                          <p className="text-[11px] text-ink-muted mt-0.5! capitalize">
+                            Status: {lead.myQuote.status}
+                          </p>
                         </div>
                       ) : (
                         <button
@@ -1430,7 +1646,9 @@ export default function DashboardPage() {
 
                     {lead.referenceImages && lead.referenceImages.length > 0 && (
                       <div className="mt-3!">
-                        <p className="mb-2! text-xs font-medium text-ink-muted">Reference Design Images:</p>
+                        <p className="mb-2! text-xs font-medium text-ink-muted">
+                          Reference Design Images:
+                        </p>
                         <div className="flex flex-wrap gap-2!">
                           {lead.referenceImages.map((ref: any, i: number) => (
                             <a
@@ -1477,10 +1695,14 @@ export default function DashboardPage() {
                   <form onSubmit={handleQuoteSubmit} className="mt-4! space-y-4!">
                     <div className="grid gap-4! sm:grid-cols-2">
                       <div>
-                        <label className="block text-xs font-medium text-ink-soft mb-1!">Pricing Model *</label>
+                        <label className="block text-xs font-medium text-ink-soft mb-1!">
+                          Pricing Model *
+                        </label>
                         <select
                           value={quoteForm.priceType}
-                          onChange={(e) => setQuoteForm({ ...quoteForm, priceType: e.target.value })}
+                          onChange={(e) =>
+                            setQuoteForm({ ...quoteForm, priceType: e.target.value })
+                          }
                           className="w-full rounded-xl border border-line bg-cream/50 px-3! py-2! text-xs text-ink outline-none focus:border-brand"
                         >
                           <option value="package">Package / Fixed Rate</option>
@@ -1491,7 +1713,9 @@ export default function DashboardPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-ink-soft mb-1!">Total Quote Amount (₹) *</label>
+                        <label className="block text-xs font-medium text-ink-soft mb-1!">
+                          Total Quote Amount (₹) *
+                        </label>
                         <input
                           type="number"
                           required
@@ -1508,12 +1732,16 @@ export default function DashboardPage() {
                       <div className="grid gap-4! sm:grid-cols-2 bg-cream/40 p-3! rounded-xl">
                         <div>
                           <label className="block text-xs font-medium text-ink-soft mb-1!">
-                            {quoteForm.priceType === 'hourly' ? 'Rate per Hour (₹)' : 'Rate per Person (₹)'}
+                            {quoteForm.priceType === 'hourly'
+                              ? 'Rate per Hour (₹)'
+                              : 'Rate per Person (₹)'}
                           </label>
                           <input
                             type="number"
                             value={quoteForm.unitRate}
-                            onChange={(e) => setQuoteForm({ ...quoteForm, unitRate: e.target.value })}
+                            onChange={(e) =>
+                              setQuoteForm({ ...quoteForm, unitRate: e.target.value })
+                            }
                             placeholder="e.g. 500"
                             className="w-full rounded-xl border border-line bg-white px-3! py-2! text-xs text-ink outline-none focus:border-brand"
                           />
@@ -1535,31 +1763,41 @@ export default function DashboardPage() {
 
                     <div className="grid gap-4! sm:grid-cols-2">
                       <div>
-                        <label className="block text-xs font-medium text-ink-soft mb-1!">Travel Fee (₹)</label>
+                        <label className="block text-xs font-medium text-ink-soft mb-1!">
+                          Travel Fee (₹)
+                        </label>
                         <input
                           type="number"
                           min="0"
                           value={quoteForm.travelFee}
-                          onChange={(e) => setQuoteForm({ ...quoteForm, travelFee: e.target.value })}
+                          onChange={(e) =>
+                            setQuoteForm({ ...quoteForm, travelFee: e.target.value })
+                          }
                           placeholder="e.g. 300"
                           className="w-full rounded-xl border border-line bg-cream/50 px-3! py-2! text-xs text-ink outline-none focus:border-brand"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-ink-soft mb-1!">Artists Required</label>
+                        <label className="block text-xs font-medium text-ink-soft mb-1!">
+                          Artists Required
+                        </label>
                         <input
                           type="number"
                           min="1"
                           value={quoteForm.numberOfArtists}
-                          onChange={(e) => setQuoteForm({ ...quoteForm, numberOfArtists: e.target.value })}
+                          onChange={(e) =>
+                            setQuoteForm({ ...quoteForm, numberOfArtists: e.target.value })
+                          }
                           className="w-full rounded-xl border border-line bg-cream/50 px-3! py-2! text-xs text-ink outline-none focus:border-brand"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-ink-soft mb-1!">Message to Customer</label>
+                      <label className="block text-xs font-medium text-ink-soft mb-1!">
+                        Message to Customer
+                      </label>
                       <textarea
                         rows={2}
                         value={quoteForm.message}
@@ -1597,14 +1835,19 @@ export default function DashboardPage() {
           <div className="space-y-8!">
             {/* Block Date Form */}
             <div className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-8!">
-              <h3 className="font-display text-lg! font-semibold text-ink">Block Out Unavailable Dates</h3>
+              <h3 className="font-display text-lg! font-semibold text-ink">
+                Block Out Unavailable Dates
+              </h3>
               <p className="mt-1! text-xs text-ink-soft">
-                Add dates when you are on leave, fully booked elsewhere, or not taking new bookings. Customers and platform cannot assign bookings on blocked dates.
+                Add dates when you are on leave, fully booked elsewhere, or not taking new bookings.
+                Customers and platform cannot assign bookings on blocked dates.
               </p>
 
               <form onSubmit={handleBlockDate} className="mt-5! flex flex-wrap items-end gap-4!">
                 <div>
-                  <label className="block text-xs font-medium text-ink-soft mb-1!">Select Date *</label>
+                  <label className="block text-xs font-medium text-ink-soft mb-1!">
+                    Select Date *
+                  </label>
                   <input
                     type="date"
                     required
@@ -1616,7 +1859,9 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex-1 min-w-[200px]">
-                  <label className="block text-xs font-medium text-ink-soft mb-1!">Reason (optional)</label>
+                  <label className="block text-xs font-medium text-ink-soft mb-1!">
+                    Reason (optional)
+                  </label>
                   <input
                     type="text"
                     value={newBlockReason}
@@ -1689,7 +1934,9 @@ export default function DashboardPage() {
                       >
                         <div>
                           <strong className="text-ink">{formatDate(item.eventDate)}</strong>
-                          <span className="ml-2! text-green font-medium">({item.eventType} - {item.customerName})</span>
+                          <span className="ml-2! text-green font-medium">
+                            ({item.eventType} - {item.customerName})
+                          </span>
                         </div>
                         <span className="rounded-full bg-green/10 px-2! py-0.5! text-[11px] font-semibold text-green">
                           Booked
@@ -1722,7 +1969,11 @@ export default function DashboardPage() {
                         sizes="112px"
                       />
                     ) : (
-                      <ArtistPlaceholder name={artist.displayName} size="sm" className="h-28! w-28! ring-4 ring-brand/20" />
+                      <ArtistPlaceholder
+                        name={artist.displayName}
+                        size="sm"
+                        className="h-28! w-28! ring-4 ring-brand/20"
+                      />
                     )}
                   </div>
                   <label className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full border border-line bg-white px-5! py-2.5! text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-brand">
@@ -1747,7 +1998,16 @@ export default function DashboardPage() {
                     <span className="text-sm text-ink-soft">Verified Badge</span>
                     {artist.verified ? (
                       <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-2.5! py-0.5! text-xs font-semibold text-green">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5" /></svg>
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
                         Verified
                       </span>
                     ) : (
@@ -1757,7 +2017,9 @@ export default function DashboardPage() {
                   {artist.rating > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-ink-soft">Rating</span>
-                      <span className="text-sm font-semibold text-ink">{artist.rating} ({artist.reviewCount} reviews)</span>
+                      <span className="text-sm font-semibold text-ink">
+                        {artist.rating} ({artist.reviewCount} reviews)
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
@@ -1774,7 +2036,9 @@ export default function DashboardPage() {
                 <h3 className="font-display text-lg! font-semibold text-ink">Business Details</h3>
                 <div className="mt-5! flex flex-col gap-4!">
                   <div>
-                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">Display Name *</label>
+                    <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                      Display Name *
+                    </label>
                     <input
                       type="text"
                       value={form.displayName}
@@ -1784,7 +2048,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="grid gap-4! sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">Phone *</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        Phone *
+                      </label>
                       <input
                         type="tel"
                         value={form.phone}
@@ -1794,7 +2060,9 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">WhatsApp Number</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        WhatsApp Number
+                      </label>
                       <input
                         type="tel"
                         value={form.whatsappNumber}
@@ -1816,7 +2084,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="grid gap-4! sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">City *</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        City *
+                      </label>
                       <input
                         type="text"
                         value={form.city}
@@ -1825,7 +2095,9 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">Area / Locality</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        Area / Locality
+                      </label>
                       <input
                         type="text"
                         value={form.area}
@@ -1837,7 +2109,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="grid gap-4! sm:grid-cols-3">
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">Years of Exp.</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        Years of Exp.
+                      </label>
                       <input
                         type="number"
                         min="0"
@@ -1848,7 +2122,9 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">Pricing Model</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        Pricing Model
+                      </label>
                       <select
                         value={form.priceType}
                         onChange={(e) => update('priceType', e.target.value)}
@@ -1861,7 +2137,9 @@ export default function DashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">Starting Price (₹)</label>
+                      <label className="mb-1.5! block text-sm font-medium text-ink-soft">
+                        Starting Price (₹)
+                      </label>
                       <input
                         type="number"
                         min="0"
@@ -1878,10 +2156,14 @@ export default function DashboardPage() {
               {/* Services & Styles */}
               <div className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-7!">
                 <h3 className="font-display text-lg! font-semibold text-ink">Services & Styles</h3>
-                <p className="mt-1! text-sm text-ink-soft">Select the services you offer, then pick your styles</p>
+                <p className="mt-1! text-sm text-ink-soft">
+                  Select the services you offer, then pick your styles
+                </p>
 
                 <div className="mt-4!">
-                  <p className="mb-2! text-xs font-medium uppercase tracking-wide text-ink-muted">Services</p>
+                  <p className="mb-2! text-xs font-medium uppercase tracking-wide text-ink-muted">
+                    Services
+                  </p>
                   <div className="flex flex-wrap gap-2!">
                     {SERVICE_OPTIONS.map((svc) => (
                       <button
@@ -1902,22 +2184,26 @@ export default function DashboardPage() {
 
                 {form.services.length > 0 && (
                   <div className="mt-5!">
-                    <p className="mb-2! text-xs font-medium uppercase tracking-wide text-ink-muted">Styles</p>
+                    <p className="mb-2! text-xs font-medium uppercase tracking-wide text-ink-muted">
+                      Styles
+                    </p>
                     <div className="flex flex-wrap gap-2!">
-                      {form.services.flatMap((slug) => STYLE_OPTIONS[slug] || []).map((style) => (
-                        <button
-                          key={style}
-                          type="button"
-                          onClick={() => toggleStyle(style)}
-                          className={`cursor-pointer rounded-full border px-4! py-2! text-sm font-medium transition-all duration-200 ${
-                            form.styles.includes(style)
-                              ? 'border-brand bg-brand text-white'
-                              : 'border-line bg-white text-ink-soft hover:border-brand/40'
-                          }`}
-                        >
-                          {style}
-                        </button>
-                      ))}
+                      {form.services
+                        .flatMap((slug) => STYLE_OPTIONS[slug] || [])
+                        .map((style) => (
+                          <button
+                            key={style}
+                            type="button"
+                            onClick={() => toggleStyle(style)}
+                            className={`cursor-pointer rounded-full border px-4! py-2! text-sm font-medium transition-all duration-200 ${
+                              form.styles.includes(style)
+                                ? 'border-brand bg-brand text-white'
+                                : 'border-line bg-white text-ink-soft hover:border-brand/40'
+                            }`}
+                          >
+                            {style}
+                          </button>
+                        ))}
                     </div>
                   </div>
                 )}
@@ -1927,7 +2213,9 @@ export default function DashboardPage() {
               <div className="rounded-3xl border border-line bg-white p-6! shadow-soft md:p-7!">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-display text-lg! font-semibold text-ink">Portfolio Images</h3>
+                    <h3 className="font-display text-lg! font-semibold text-ink">
+                      Portfolio Images
+                    </h3>
                     <p className="mt-1! text-sm text-ink-soft">Showcase your best work</p>
                   </div>
                   <label className="inline-flex min-h-10! cursor-pointer items-center justify-center gap-2! rounded-full bg-gradient-to-r from-brand to-brand-dark px-5! py-2.5! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift disabled:opacity-50">
@@ -1945,13 +2233,18 @@ export default function DashboardPage() {
                 </div>
 
                 {portfolioError && (
-                  <p className="mt-3! rounded-xl border border-red-200 bg-red-50 px-4! py-2! text-sm text-red-700">{portfolioError}</p>
+                  <p className="mt-3! rounded-xl border border-red-200 bg-red-50 px-4! py-2! text-sm text-red-700">
+                    {portfolioError}
+                  </p>
                 )}
 
                 {artist.portfolioImages?.length > 0 ? (
                   <div className="mt-5! grid grid-cols-2 gap-3! sm:grid-cols-3 md:grid-cols-4">
                     {artist.portfolioImages.map((item: any, i: number) => (
-                      <div key={i} className="group relative overflow-hidden rounded-xl border border-line">
+                      <div
+                        key={i}
+                        className="group relative overflow-hidden rounded-xl border border-line"
+                      >
                         <Image
                           src={`/api/media/file/${item.image?.filename || item.image}`}
                           alt={item.caption || `Portfolio ${i + 1}`}
@@ -1966,14 +2259,25 @@ export default function DashboardPage() {
                           title="Delete photo"
                           className="absolute top-2! right-2! flex h-7! w-7! items-center justify-center rounded-full bg-coal/75 text-white backdrop-blur-xs transition-all duration-200 opacity-85 sm:opacity-0 sm:group-hover:opacity-100 hover:scale-110 active:scale-95 cursor-pointer shadow-xs"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M18 6 6 18M6 6l12 12" />
+                          </svg>
                         </button>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="mt-5! rounded-xl border-2 border-dashed border-line bg-cream/30 p-8! text-center">
-                    <p className="text-sm text-ink-muted">No portfolio images yet. Upload your best work to attract customers.</p>
+                    <p className="text-sm text-ink-muted">
+                      No portfolio images yet. Upload your best work to attract customers.
+                    </p>
                   </div>
                 )}
               </div>
@@ -2002,185 +2306,323 @@ export default function DashboardPage() {
               </div>
             ) : analytics ? (
               <Suspense fallback={<ChartFallback />}>
-              <>
-                {/* KPI Cards */}
-                <div className="grid grid-cols-2 gap-4! md:grid-cols-4">
-                  {[
-                    { label: 'Total Earnings', value: `₹${(analytics.stats.totalEarnings || 0).toLocaleString('en-IN')}`, color: 'text-green', bg: 'bg-green/5' },
-                    { label: 'Profile Views', value: analytics.stats.profileViews || 0, color: 'text-brand', bg: 'bg-brand/5' },
-                    { label: 'Conversion Rate', value: `${analytics.stats.conversionRate || 0}%`, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    { label: 'Avg Response', value: `${analytics.stats.avgResponseHours || 0}h`, color: 'text-ink', bg: 'bg-cream' },
-                  ].map((stat) => (
-                    <div key={stat.label} className={`rounded-2xl border border-line ${stat.bg} p-4!`}>
-                      <p className="text-xs font-medium text-ink-muted">{stat.label}</p>
-                      <p className={`mt-1! text-2xl! font-display font-semibold ${stat.color}`}>{stat.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Revenue Trend */}
-                <div className="rounded-2xl border border-line bg-white p-6!">
-                  <h3 className="mb-4! text-sm font-semibold text-ink">Revenue Trend (6 Months)</h3>
-                  <div className="h-72!">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={analytics.revenueByMonth}>
-                        <defs>
-                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#ec6783" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#ec6783" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1d9dc" />
-                        <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#7e8aa3' }} />
-                        <YAxis tick={{ fontSize: 12, fill: '#7e8aa3' }} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
-                        <Tooltip
-                          contentStyle={{ borderRadius: 12, border: '1px solid #f1d9dc', fontSize: 13 }}
-                          formatter={(value) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Revenue']}
-                        />
-                        <Area type="monotone" dataKey="revenue" stroke="#ec6783" strokeWidth={2} fill="url(#colorRevenue)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                <>
+                  {/* KPI Cards */}
+                  <div className="grid grid-cols-2 gap-4! md:grid-cols-4">
+                    {[
+                      {
+                        label: 'Total Earnings',
+                        value: `₹${(analytics.stats.totalEarnings || 0).toLocaleString('en-IN')}`,
+                        color: 'text-green',
+                        bg: 'bg-green/5',
+                      },
+                      {
+                        label: 'Profile Views',
+                        value: analytics.stats.profileViews || 0,
+                        color: 'text-brand',
+                        bg: 'bg-brand/5',
+                      },
+                      {
+                        label: 'Conversion Rate',
+                        value: `${analytics.stats.conversionRate || 0}%`,
+                        color: 'text-amber-600',
+                        bg: 'bg-amber-50',
+                      },
+                      {
+                        label: 'Avg Response',
+                        value: `${analytics.stats.avgResponseHours || 0}h`,
+                        color: 'text-ink',
+                        bg: 'bg-cream',
+                      },
+                    ].map((stat) => (
+                      <div
+                        key={stat.label}
+                        className={`rounded-2xl border border-line ${stat.bg} p-4!`}
+                      >
+                        <p className="text-xs font-medium text-ink-muted">{stat.label}</p>
+                        <p className={`mt-1! text-2xl! font-display font-semibold ${stat.color}`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                </div>
 
-                <div className="grid gap-6! md:grid-cols-2">
-                  {/* Bookings by Status */}
+                  {/* Revenue Trend */}
                   <div className="rounded-2xl border border-line bg-white p-6!">
-                    <h3 className="mb-4! text-sm font-semibold text-ink">Bookings by Status</h3>
-                    <div className="h-64!">
+                    <h3 className="mb-4! text-sm font-semibold text-ink">
+                      Revenue Trend (6 Months)
+                    </h3>
+                    <div className="h-72!">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={Object.entries(analytics.bookingsByStatus).map(([key, val]) => ({
-                          name: key.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
-                          count: val as number,
-                        })).filter((d) => d.count > 0)}>
+                        <AreaChart data={analytics.revenueByMonth}>
+                          <defs>
+                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#ec6783" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#ec6783" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f1d9dc" />
-                          <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#7e8aa3' }} angle={-20} textAnchor="end" height={60} />
-                          <YAxis tick={{ fontSize: 12, fill: '#7e8aa3' }} allowDecimals={false} />
-                          <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #f1d9dc', fontSize: 13 }} />
-                          <Bar dataKey="count" fill="#ec6783" radius={[6, 6, 0, 0]} />
-                        </BarChart>
+                          <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#7e8aa3' }} />
+                          <YAxis
+                            tick={{ fontSize: 12, fill: '#7e8aa3' }}
+                            tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              borderRadius: 12,
+                              border: '1px solid #f1d9dc',
+                              fontSize: 13,
+                            }}
+                            formatter={(value) => [
+                              `₹${Number(value).toLocaleString('en-IN')}`,
+                              'Revenue',
+                            ]}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="#ec6783"
+                            strokeWidth={2}
+                            fill="url(#colorRevenue)"
+                          />
+                        </AreaChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
 
-                  {/* Event Types */}
-                  <div className="rounded-2xl border border-line bg-white p-6!">
-                    <h3 className="mb-4! text-sm font-semibold text-ink">Event Types</h3>
-                    <div className="h-64!">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={analytics.eventTypes}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={50}
-                            outerRadius={90}
-                            paddingAngle={3}
-                            dataKey="value"
-                            nameKey="name"
+                  <div className="grid gap-6! md:grid-cols-2">
+                    {/* Bookings by Status */}
+                    <div className="rounded-2xl border border-line bg-white p-6!">
+                      <h3 className="mb-4! text-sm font-semibold text-ink">Bookings by Status</h3>
+                      <div className="h-64!">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={Object.entries(analytics.bookingsByStatus)
+                              .map(([key, val]) => ({
+                                name: key
+                                  .replace(/_/g, ' ')
+                                  .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+                                count: val as number,
+                              }))
+                              .filter((d) => d.count > 0)}
                           >
-                            {analytics.eventTypes.map((_: any, i: number) => (
-                              <Cell key={i} fill={['#ec6783', '#d14a68', '#04224B', '#f6a6b8', '#c77e90', '#17856b', '#7e8aa3'][i % 7]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #f1d9dc', fontSize: 13 }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="mt-2! flex flex-wrap gap-3!">
-                      {analytics.eventTypes.slice(0, 5).map((et: any, i: number) => (
-                        <span key={et.name} className="flex items-center gap-1.5! text-xs text-ink-muted">
-                          <span className="inline-block h-2.5! w-2.5! rounded-full" style={{ backgroundColor: ['#ec6783', '#d14a68', '#04224B', '#f6a6b8', '#c77e90'][i % 5] }} />
-                          {et.name} ({et.value})
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-6! md:grid-cols-2">
-                  {/* Conversion Funnel */}
-                  <div className="rounded-2xl border border-line bg-white p-6!">
-                    <h3 className="mb-4! text-sm font-semibold text-ink">Conversion Funnel</h3>
-                    <div className="space-y-3!">
-                      {[
-                        { label: 'Leads Received', value: analytics.funnel.leads, pct: 100 },
-                        { label: 'Quotes Sent', value: analytics.funnel.quotes, pct: analytics.funnel.leads > 0 ? Math.round((analytics.funnel.quotes / analytics.funnel.leads) * 100) : 0 },
-                        { label: 'Quotes Accepted', value: analytics.funnel.accepted, pct: analytics.funnel.leads > 0 ? Math.round((analytics.funnel.accepted / analytics.funnel.leads) * 100) : 0 },
-                        { label: 'Bookings Completed', value: analytics.funnel.bookings, pct: analytics.funnel.leads > 0 ? Math.round((analytics.funnel.bookings / analytics.funnel.leads) * 100) : 0 },
-                      ].map((step, i) => (
-                        <div key={step.label}>
-                          <div className="mb-1! flex items-center justify-between text-sm">
-                            <span className="text-ink-soft">{step.label}</span>
-                            <span className="font-semibold text-ink">{step.value}</span>
-                          </div>
-                          <div className="h-3! overflow-hidden rounded-full bg-cream">
-                            <div
-                              className="h-full! rounded-full transition-all duration-500"
-                              style={{
-                                width: `${step.pct}%`,
-                                backgroundColor: ['#ec6783', '#d14a68', '#04224B', '#17856b'][i],
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f1d9dc" />
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 10, fill: '#7e8aa3' }}
+                              angle={-20}
+                              textAnchor="end"
+                              height={60}
+                            />
+                            <YAxis tick={{ fontSize: 12, fill: '#7e8aa3' }} allowDecimals={false} />
+                            <Tooltip
+                              contentStyle={{
+                                borderRadius: 12,
+                                border: '1px solid #f1d9dc',
+                                fontSize: 13,
                               }}
                             />
-                          </div>
-                          <p className="mt-0.5! text-right text-xs text-ink-muted">{step.pct}%</p>
-                        </div>
-                      ))}
+                            <Bar dataKey="count" fill="#ec6783" radius={[6, 6, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Event Types */}
+                    <div className="rounded-2xl border border-line bg-white p-6!">
+                      <h3 className="mb-4! text-sm font-semibold text-ink">Event Types</h3>
+                      <div className="h-64!">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={analytics.eventTypes}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={50}
+                              outerRadius={90}
+                              paddingAngle={3}
+                              dataKey="value"
+                              nameKey="name"
+                            >
+                              {analytics.eventTypes.map((_: any, i: number) => (
+                                <Cell
+                                  key={i}
+                                  fill={
+                                    [
+                                      '#ec6783',
+                                      '#d14a68',
+                                      '#04224B',
+                                      '#f6a6b8',
+                                      '#c77e90',
+                                      '#17856b',
+                                      '#7e8aa3',
+                                    ][i % 7]
+                                  }
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              contentStyle={{
+                                borderRadius: 12,
+                                border: '1px solid #f1d9dc',
+                                fontSize: 13,
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-2! flex flex-wrap gap-3!">
+                        {analytics.eventTypes.slice(0, 5).map((et: any, i: number) => (
+                          <span
+                            key={et.name}
+                            className="flex items-center gap-1.5! text-xs text-ink-muted"
+                          >
+                            <span
+                              className="inline-block h-2.5! w-2.5! rounded-full"
+                              style={{
+                                backgroundColor: [
+                                  '#ec6783',
+                                  '#d14a68',
+                                  '#04224B',
+                                  '#f6a6b8',
+                                  '#c77e90',
+                                ][i % 5],
+                              }}
+                            />
+                            {et.name} ({et.value})
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Rating Distribution */}
-                  <div className="rounded-2xl border border-line bg-white p-6!">
-                    <h3 className="mb-4! text-sm font-semibold text-ink">Rating Distribution</h3>
-                    <div className="space-y-2.5!">
-                      {[5, 4, 3, 2, 1].map((star) => {
-                        const count = analytics.ratingDistribution[star - 1] || 0
-                        const total = analytics.ratingDistribution.reduce((a: number, b: number) => a + b, 0)
-                        const pct = total > 0 ? Math.round((count / total) * 100) : 0
-                        return (
-                          <div key={star} className="flex items-center gap-3!">
-                            <span className="w-8! text-right text-sm text-ink-muted">{star}★</span>
-                            <div className="h-3! flex-1 overflow-hidden rounded-full bg-cream">
+                  <div className="grid gap-6! md:grid-cols-2">
+                    {/* Conversion Funnel */}
+                    <div className="rounded-2xl border border-line bg-white p-6!">
+                      <h3 className="mb-4! text-sm font-semibold text-ink">Conversion Funnel</h3>
+                      <div className="space-y-3!">
+                        {[
+                          { label: 'Leads Received', value: analytics.funnel.leads, pct: 100 },
+                          {
+                            label: 'Quotes Sent',
+                            value: analytics.funnel.quotes,
+                            pct:
+                              analytics.funnel.leads > 0
+                                ? Math.round(
+                                    (analytics.funnel.quotes / analytics.funnel.leads) * 100,
+                                  )
+                                : 0,
+                          },
+                          {
+                            label: 'Quotes Accepted',
+                            value: analytics.funnel.accepted,
+                            pct:
+                              analytics.funnel.leads > 0
+                                ? Math.round(
+                                    (analytics.funnel.accepted / analytics.funnel.leads) * 100,
+                                  )
+                                : 0,
+                          },
+                          {
+                            label: 'Bookings Completed',
+                            value: analytics.funnel.bookings,
+                            pct:
+                              analytics.funnel.leads > 0
+                                ? Math.round(
+                                    (analytics.funnel.bookings / analytics.funnel.leads) * 100,
+                                  )
+                                : 0,
+                          },
+                        ].map((step, i) => (
+                          <div key={step.label}>
+                            <div className="mb-1! flex items-center justify-between text-sm">
+                              <span className="text-ink-soft">{step.label}</span>
+                              <span className="font-semibold text-ink">{step.value}</span>
+                            </div>
+                            <div className="h-3! overflow-hidden rounded-full bg-cream">
                               <div
-                                className="h-full! rounded-full bg-amber-400 transition-all duration-500"
-                                style={{ width: `${pct}%` }}
+                                className="h-full! rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${step.pct}%`,
+                                  backgroundColor: ['#ec6783', '#d14a68', '#04224B', '#17856b'][i],
+                                }}
                               />
                             </div>
-                            <span className="w-8! text-sm text-ink-muted">{count}</span>
+                            <p className="mt-0.5! text-right text-xs text-ink-muted">{step.pct}%</p>
                           </div>
-                        )
-                      })}
+                        ))}
+                      </div>
                     </div>
-                    <div className="mt-4! border-t border-line pt-4! text-center">
-                      <p className="text-3xl! font-display font-semibold text-ink">{analytics.stats.rating || '—'}</p>
-                      <p className="text-xs text-ink-muted">{analytics.stats.reviewCount || 0} reviews</p>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Quote Performance */}
-                <div className="rounded-2xl border border-line bg-white p-6!">
-                  <h3 className="mb-4! text-sm font-semibold text-ink">Quote Performance</h3>
-                  <div className="grid grid-cols-3 gap-4! text-center">
-                    <div>
-                      <p className="text-3xl! font-display font-semibold text-brand">{analytics.stats.totalQuotes}</p>
-                      <p className="text-xs text-ink-muted">Quotes Sent</p>
-                    </div>
-                    <div>
-                      <p className="text-3xl! font-display font-semibold text-green">{analytics.stats.acceptedQuotes}</p>
-                      <p className="text-xs text-ink-muted">Accepted</p>
-                    </div>
-                    <div>
-                      <p className="text-3xl! font-display font-semibold text-ink">{analytics.stats.conversionRate || 0}%</p>
-                      <p className="text-xs text-ink-muted">Win Rate</p>
+                    {/* Rating Distribution */}
+                    <div className="rounded-2xl border border-line bg-white p-6!">
+                      <h3 className="mb-4! text-sm font-semibold text-ink">Rating Distribution</h3>
+                      <div className="space-y-2.5!">
+                        {[5, 4, 3, 2, 1].map((star) => {
+                          const count = analytics.ratingDistribution[star - 1] || 0
+                          const total = analytics.ratingDistribution.reduce(
+                            (a: number, b: number) => a + b,
+                            0,
+                          )
+                          const pct = total > 0 ? Math.round((count / total) * 100) : 0
+                          return (
+                            <div key={star} className="flex items-center gap-3!">
+                              <span className="w-8! text-right text-sm text-ink-muted">
+                                {star}★
+                              </span>
+                              <div className="h-3! flex-1 overflow-hidden rounded-full bg-cream">
+                                <div
+                                  className="h-full! rounded-full bg-amber-400 transition-all duration-500"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="w-8! text-sm text-ink-muted">{count}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="mt-4! border-t border-line pt-4! text-center">
+                        <p className="text-3xl! font-display font-semibold text-ink">
+                          {analytics.stats.rating || '—'}
+                        </p>
+                        <p className="text-xs text-ink-muted">
+                          {analytics.stats.reviewCount || 0} reviews
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </>
+
+                  {/* Quote Performance */}
+                  <div className="rounded-2xl border border-line bg-white p-6!">
+                    <h3 className="mb-4! text-sm font-semibold text-ink">Quote Performance</h3>
+                    <div className="grid grid-cols-3 gap-4! text-center">
+                      <div>
+                        <p className="text-3xl! font-display font-semibold text-brand">
+                          {analytics.stats.totalQuotes}
+                        </p>
+                        <p className="text-xs text-ink-muted">Quotes Sent</p>
+                      </div>
+                      <div>
+                        <p className="text-3xl! font-display font-semibold text-green">
+                          {analytics.stats.acceptedQuotes}
+                        </p>
+                        <p className="text-xs text-ink-muted">Accepted</p>
+                      </div>
+                      <div>
+                        <p className="text-3xl! font-display font-semibold text-ink">
+                          {analytics.stats.conversionRate || 0}%
+                        </p>
+                        <p className="text-xs text-ink-muted">Win Rate</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
               </Suspense>
             ) : (
               <div className="rounded-2xl border border-line bg-white p-12! text-center">
-                <p className="text-ink-muted">No analytics data yet. Complete bookings to see your performance insights.</p>
+                <p className="text-ink-muted">
+                  No analytics data yet. Complete bookings to see your performance insights.
+                </p>
               </div>
             )}
           </div>

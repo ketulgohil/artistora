@@ -34,6 +34,7 @@ let leadId: number
 let leadToken: string
 let quoteId: number
 let bookingId: number
+let mediaId: number
 
 describe('API', () => {
   beforeAll(async () => {
@@ -71,6 +72,11 @@ describe('API', () => {
       if (artistProfileId) {
         try {
           await payload.delete({ collection: 'artists', id: artistProfileId })
+        } catch {}
+      }
+      if (mediaId) {
+        try {
+          await payload.delete({ collection: 'media', id: mediaId })
         } catch {}
       }
       if (customerId) {
@@ -385,6 +391,60 @@ describe('API', () => {
       })
       expect(updated.bio).toBe('Updated bio')
       expect(updated.startingPrice).toBe(15000)
+    })
+
+    it('uploads media and updates artist portfolio images cleanly', async () => {
+      // Create a test 1x1 GIF image buffer
+      const gifBuffer = Buffer.from(
+        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        'base64',
+      )
+      const media = await payload.create({
+        collection: 'media',
+        data: {
+          alt: 'Test portfolio sample',
+          uploadedBy: artistUserId,
+        },
+        file: {
+          data: gifBuffer,
+          mimetype: 'image/gif',
+          name: 'test-portfolio.gif',
+          size: gifBuffer.length,
+        },
+        overrideAccess: true,
+      })
+      expect(media.id).toBeDefined()
+      mediaId = media.id
+
+      // 1. Initial portfolio addition with media ID
+      const updatedWithId = await payload.update({
+        collection: 'artists',
+        id: artistProfileId,
+        data: {
+          portfolioImages: [{ image: media.id, caption: 'First sample' }],
+        },
+        depth: 2,
+      })
+      expect(updatedWithId.portfolioImages?.length).toBe(1)
+
+      // 2. Simulate frontend depth-2 array structure being mapped and updated
+      const rawPortfolio = updatedWithId.portfolioImages || []
+      const mappedPortfolio = rawPortfolio.map((item: any) => ({
+        image:
+          typeof item?.image === 'object' && item?.image !== null ? item.image.id : item?.image,
+        caption: item?.caption || '',
+      }))
+
+      const reUpdated = await payload.update({
+        collection: 'artists',
+        id: artistProfileId,
+        data: {
+          portfolioImages: mappedPortfolio,
+        },
+        depth: 2,
+      })
+      expect(reUpdated.portfolioImages?.length).toBe(1)
+      expect((reUpdated.portfolioImages?.[0]?.image as any)?.id).toBe(media.id)
     })
   })
 

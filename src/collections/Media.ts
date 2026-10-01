@@ -43,7 +43,8 @@ export const Media: CollectionConfig = {
             if (existingArtist.docs.length > 0) return doc
 
             // Skip HEIC files (not supported by browsers)
-            if (doc.mimeType === 'image/heic' || doc.filename?.toLowerCase().endsWith('.heic')) return doc
+            if (doc.mimeType === 'image/heic' || doc.filename?.toLowerCase().endsWith('.heic'))
+              return doc
 
             // Find artist linked to this user
             const artists = await req.payload.find({
@@ -65,13 +66,13 @@ export const Media: CollectionConfig = {
                 overrideAccess: true,
               })
 
-              // Determine service category from artist's specializations
-              const specs = (artist as any).specializations || ''
+              // Determine service category from artist's service type
+              const artistType = (artist as any).artistType || ''
               let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
-              if (specs.toLowerCase().includes('mehndi')) serviceCategory = 'mehndi'
-              else if (specs.toLowerCase().includes('photo')) serviceCategory = 'photography'
-              else if (specs.toLowerCase().includes('make') || specs.toLowerCase().includes('beauty')) serviceCategory = 'makeup'
-              else if (specs.toLowerCase().includes('decor') || specs.toLowerCase().includes('event')) serviceCategory = 'decor'
+              if (artistType.includes('mehndi')) serviceCategory = 'mehndi'
+              else if (artistType.includes('photo')) serviceCategory = 'photography'
+              else if (artistType.includes('makeup')) serviceCategory = 'makeup'
+              else if (artistType.includes('decor')) serviceCategory = 'decor'
 
               // Find matching category
               const categoryMap: Record<string, string> = {
@@ -82,7 +83,8 @@ export const Media: CollectionConfig = {
                 other: 'event-decor',
               }
               const targetSlug = categoryMap[serviceCategory] || 'event-decor'
-              const category = categories.docs.find((c: any) => c.slug === targetSlug) || categories.docs[0]
+              const category =
+                categories.docs.find((c: any) => c.slug === targetSlug) || categories.docs[0]
 
               if (category) {
                 await req.payload.create({
@@ -98,29 +100,37 @@ export const Media: CollectionConfig = {
                   req,
                   overrideAccess: true,
                 })
-                req.payload.logger.info(`[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`)
+                req.payload.logger.info(
+                  `[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`,
+                )
               }
 
               // Also add to artist's portfolioImages array (used by artist profile page)
-              const existingPortfolio = (artist as any).portfolioImages || []
-              const alreadyHasImage = existingPortfolio.some((item: any) => {
-                const imgId = typeof item.image === 'object' ? item.image?.id : item.image
-                return imgId === doc.id
-              })
+              const rawPortfolio = (artist as any).portfolioImages || []
+              const existingPortfolio = rawPortfolio
+                .map((item: any) => ({
+                  image:
+                    typeof item?.image === 'object' && item?.image !== null
+                      ? item.image.id
+                      : item?.image,
+                  caption: item?.caption || '',
+                }))
+                .filter((item: any) => Boolean(item.image))
+
+              const alreadyHasImage = existingPortfolio.some((item: any) => item.image === doc.id)
               if (!alreadyHasImage) {
                 await req.payload.update({
                   collection: 'artists',
                   id: artist.id,
                   data: {
-                    portfolioImages: [
-                      ...existingPortfolio,
-                      { image: doc.id, caption: '' },
-                    ],
+                    portfolioImages: [...existingPortfolio, { image: doc.id, caption: '' }],
                   },
                   req,
                   overrideAccess: true,
                 })
-                req.payload.logger.info(`[Media] Added to artist portfolioImages for ${(artist as any).displayName}`)
+                req.payload.logger.info(
+                  `[Media] Added to artist portfolioImages for ${(artist as any).displayName}`,
+                )
               }
             }
           } catch (err: any) {
@@ -156,9 +166,13 @@ export const Media: CollectionConfig = {
     staticDir: 'media',
     mimeTypes: [
       'image/jpeg',
+      'image/jpg',
+      'image/pjpeg',
       'image/png',
+      'image/x-png',
       'image/webp',
       'image/gif',
+      'image/avif',
     ],
     imageSizes: [
       {
