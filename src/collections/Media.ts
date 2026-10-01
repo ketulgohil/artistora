@@ -69,12 +69,16 @@ export const Media: CollectionConfig = {
               // Determine service category from artist's service type
               const artistType = (artist as any).artistType || ''
               let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
-              if (artistType.includes('mehndi')) serviceCategory = 'mehndi'
-              else if (artistType.includes('photo')) serviceCategory = 'photography'
-              else if (artistType.includes('makeup')) serviceCategory = 'makeup'
-              else if (artistType.includes('decor')) serviceCategory = 'decor'
+              if (artistType.includes('mehndi') || artistType.includes('henna'))
+                serviceCategory = 'mehndi'
+              else if (artistType.includes('photo') || artistType.includes('shoot'))
+                serviceCategory = 'photography'
+              else if (artistType.includes('makeup') || artistType.includes('beauty'))
+                serviceCategory = 'makeup'
+              else if (artistType.includes('decor') || artistType.includes('planner'))
+                serviceCategory = 'decor'
 
-              // Find matching category
+              // Find matching category (optional)
               const categoryMap: Record<string, string> = {
                 mehndi: 'bridal-mehndi',
                 photography: 'wedding-photography',
@@ -83,27 +87,24 @@ export const Media: CollectionConfig = {
                 other: 'event-decor',
               }
               const targetSlug = categoryMap[serviceCategory] || 'event-decor'
-              const category =
-                categories.docs.find((c: any) => c.slug === targetSlug) || categories.docs[0]
+              const category = categories.docs.find((c: any) => c.slug === targetSlug) || null
 
-              if (category) {
-                await req.payload.create({
-                  collection: 'portfolio-items',
-                  data: {
-                    image: doc.id,
-                    category: category.id,
-                    serviceCategory,
-                    artist: artist.id,
-                    altText: doc.alt || `Portfolio image by ${(artist as any).displayName}`,
-                    featured: false,
-                  },
-                  req,
-                  overrideAccess: true,
-                })
-                req.payload.logger.info(
-                  `[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`,
-                )
-              }
+              await req.payload.create({
+                collection: 'portfolio-items',
+                data: {
+                  image: doc.id,
+                  ...(category ? { category: category.id } : {}),
+                  serviceCategory,
+                  artist: artist.id,
+                  altText: doc.alt || `Portfolio image by ${(artist as any).displayName}`,
+                  featured: false,
+                } as any,
+                req,
+                overrideAccess: true,
+              })
+              req.payload.logger.info(
+                `[Media] Auto-created portfolio item for artist ${(artist as any).displayName}`,
+              )
 
               // Also add to artist's portfolioImages array (used by artist profile page)
               const rawPortfolio = (artist as any).portfolioImages || []

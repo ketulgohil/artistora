@@ -86,15 +86,18 @@ export const Artists: CollectionConfig = {
     ],
     afterChange: [
       async ({ doc, operation, previousDoc, req, context }: any) => {
-        // Revalidate cache on any artist profile change (unless explicitly skipped for background view counters)
+        // Revalidate cache asynchronously so it does not block or deadlock the database transaction
         if (operation === 'update' && !context?.skipRevalidate && !req.context?.skipRevalidate) {
-          try {
-            revalidatePath('/artists')
-            if (doc.slug) revalidatePath(`/artists/${doc.slug}`)
-            revalidatePath('/')
-          } catch (err) {
-            req.payload.logger.error(`Failed to revalidate artists: ${err}`)
-          }
+          queueMicrotask(async () => {
+            try {
+              revalidatePath('/artists')
+              if (doc.slug) revalidatePath(`/artists/${doc.slug}`)
+              revalidatePath('/portfolio')
+              revalidatePath('/')
+            } catch {
+              // Silently ignore static generation store errors when called from admin/test contexts
+            }
+          })
         }
 
         // Send approval email when approvalStatus changes to 'approved'
@@ -108,22 +111,25 @@ export const Artists: CollectionConfig = {
             typeof doc.user === 'object' && doc.user !== null ? (doc.user as any).id : doc.user
 
           if (userId) {
-            try {
-              const user = await req.payload.findByID({
-                collection: 'users',
-                id: userId,
-              } as any)
+            queueMicrotask(async () => {
+              try {
+                const user = await req.payload.findByID({
+                  collection: 'users',
+                  id: userId,
+                  req,
+                } as any)
 
-              const email = (user as any)?.email
-              if (email) {
-                await sendArtistApprovedNotification({
-                  name: doc.displayName || 'Artist',
-                  email,
-                })
+                const email = (user as any)?.email
+                if (email) {
+                  await sendArtistApprovedNotification({
+                    name: doc.displayName || 'Artist',
+                    email,
+                  })
+                }
+              } catch (err) {
+                console.error('Failed to send artist approval email:', err)
               }
-            } catch (err) {
-              console.error('Failed to send artist approval email:', err)
-            }
+            })
           }
         }
         return doc

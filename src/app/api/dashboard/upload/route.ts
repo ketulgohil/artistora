@@ -109,6 +109,9 @@ export async function POST(request: NextRequest) {
         size: file.size,
       },
       overrideAccess: true,
+      req: {
+        user: authResult.user,
+      } as any,
     })
 
     return NextResponse.json({

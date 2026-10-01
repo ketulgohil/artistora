@@ -58,6 +58,359 @@ export async function generateMetadata({
   })
 }
 
+function toAbsoluteUrl(url: string | null | undefined): string | undefined {
+  if (!url || typeof url !== 'string') return undefined
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  const cleanPath = url.startsWith('/') ? url : `/${url}`
+  return `https://www.artistora.com${cleanPath}`
+}
+
+const ARTIST_TYPE_LABELS: Record<string, string> = {
+  'mehndi-artists': 'Mehndi Artist',
+  photographers: 'Wedding & Event Photographer',
+  'makeup-artists': 'Bridal & Event Makeup Artist',
+  'decor-event-planners': 'Decor & Event Planner',
+}
+
+interface BuildArtistJsonLdParams {
+  artist: any
+  slug: string
+  pageTitle: string
+  pageDescription: string
+}
+
+function buildArtistJsonLd({ artist, slug, pageTitle, pageDescription }: BuildArtistJsonLdParams) {
+  const name = artist.displayName || 'Artist'
+  const location = artist.city || 'Ahmedabad'
+  const canonicalUrl = `https://www.artistora.com/artists/${slug}`
+  const artistId = `${canonicalUrl}#artist`
+  const galleryId = `${canonicalUrl}#gallery`
+  const breadcrumbId = `${canonicalUrl}#breadcrumb`
+  const webpageId = `${canonicalUrl}#webpage`
+
+  const categoryLabel =
+    (artist.artistType && ARTIST_TYPE_LABELS[artist.artistType]) || 'Wedding & Event Artist'
+
+  // Phone formatting
+  const rawPhone = artist.whatsappNumber || artist.phone
+  const formattedPhone = rawPhone
+    ? `+91${rawPhone.replace(/\D/g, '').replace(/^91/, '')}`
+    : undefined
+
+  // Profile photo absolute URL
+  const profilePhotoUrl = artist.profilePhoto
+    ? toAbsoluteUrl(mediaUrl(artist.profilePhoto))
+    : undefined
+
+  // Portfolio image items
+  const portfolioItems = Array.isArray(artist.portfolioImages) ? artist.portfolioImages : []
+  const portfolioImageObjects: any[] = []
+  const allImageUrls: string[] = []
+
+  if (profilePhotoUrl) {
+    allImageUrls.push(profilePhotoUrl)
+  }
+
+  portfolioItems.forEach((item: any, idx: number) => {
+    if (!item?.image) return
+    const rawUrl = mediaUrl(item.image)
+    const absUrl = toAbsoluteUrl(rawUrl)
+    if (!absUrl) return
+
+    allImageUrls.push(absUrl)
+
+    const caption =
+      typeof item.caption === 'string' && item.caption.trim() ? item.caption.trim() : undefined
+    portfolioImageObjects.push({
+      '@type': 'ImageObject',
+      contentUrl: absUrl,
+      url: absUrl,
+      name: caption || `${name} — Portfolio Work ${idx + 1}`,
+      caption: caption || `${name} — ${categoryLabel} sample in ${location}`,
+      description:
+        caption || `Portfolio sample ${idx + 1} by ${name} (${categoryLabel}) in ${location}.`,
+      author: {
+        '@id': artistId,
+      },
+    })
+  })
+
+  // Parsed structured bio
+  const parsedBio = artist.bio ? parseStructuredBio(artist.bio) : null
+
+  // KnowsAbout & Highlights extraction
+  const knowsAboutSet = new Set<string>()
+  knowsAboutSet.add(categoryLabel)
+  if (artist.area) {
+    knowsAboutSet.add(`${categoryLabel} in ${artist.area}`)
+  }
+  knowsAboutSet.add(`${categoryLabel} in ${location}`)
+
+  const awards: string[] = []
+
+  // Extract from styles
+  if (Array.isArray(artist.styles)) {
+    artist.styles.forEach((s: any) => {
+      if (typeof s?.style === 'string' && s.style.trim()) {
+        knowsAboutSet.add(s.style.trim())
+      }
+    })
+  }
+
+  // Extract from services
+  if (Array.isArray(artist.services)) {
+    artist.services.forEach((svc: any) => {
+      const title = typeof svc === 'object' ? svc?.title : svc
+      if (typeof title === 'string' && title.trim()) {
+        knowsAboutSet.add(title.trim())
+      }
+    })
+  }
+
+  // Extract from structured bio sections
+  if (parsedBio?.isStructured) {
+    parsedBio.sections.forEach((sec) => {
+      sec.items.forEach((item) => {
+        if (item && item.length <= 100) {
+          knowsAboutSet.add(item)
+        }
+      })
+      if (sec.type === 'highlights') {
+        sec.items.forEach((item) => {
+          if (
+            /award|winner|featured|celebrity|recognized|gold|best/i.test(item) &&
+            item.length <= 120
+          ) {
+            awards.push(item)
+          }
+        })
+      }
+    })
+  }
+
+  // Build Offer Catalog (hasOfferCatalog)
+  const catalogOffers: any[] = []
+
+  // Add services as offers
+  if (Array.isArray(artist.services) && artist.services.length > 0) {
+    artist.services.forEach((svc: any) => {
+      const serviceTitle = (typeof svc === 'object' ? svc?.title : svc) || 'Specialized Service'
+      const serviceDesc =
+        (typeof svc === 'object' ? svc?.shortDescription || svc?.description : '') ||
+        `${serviceTitle} provided by ${name} in ${location}.`
+
+      catalogOffers.push({
+        '@type': 'Offer',
+        position: catalogOffers.length + 1,
+        name: serviceTitle,
+        itemOffered: {
+          '@type': 'Service',
+          name: serviceTitle,
+          description: serviceDesc,
+          provider: { '@id': artistId },
+          areaServed: {
+            '@type': 'City',
+            name: location,
+          },
+        },
+        ...(typeof artist.startingPrice === 'number' && artist.startingPrice > 0
+          ? {
+              price: artist.startingPrice,
+              priceCurrency: 'INR',
+              availability: 'https://schema.org/InStock',
+              url: canonicalUrl,
+            }
+          : {}),
+      })
+    })
+  }
+
+  // Add styles as offers
+  if (Array.isArray(artist.styles) && artist.styles.length > 0) {
+    artist.styles.forEach((s: any) => {
+      if (!s?.style) return
+      catalogOffers.push({
+        '@type': 'Offer',
+        position: catalogOffers.length + 1,
+        name: `${s.style} Design & Styling`,
+        itemOffered: {
+          '@type': 'Service',
+          name: `${s.style} Design`,
+          serviceType: s.style,
+          description: `Custom ${s.style} design and application by ${name} in ${location}.`,
+          provider: { '@id': artistId },
+          areaServed: {
+            '@type': 'City',
+            name: location,
+          },
+        },
+        ...(typeof artist.startingPrice === 'number' && artist.startingPrice > 0
+          ? {
+              price: artist.startingPrice,
+              priceCurrency: 'INR',
+              availability: 'https://schema.org/InStock',
+              url: canonicalUrl,
+            }
+          : {}),
+      })
+    })
+  }
+
+  // Clean description for schema
+  const schemaDescription =
+    parsedBio?.intro && parsedBio.intro.length > 0
+      ? parsedBio.intro.join(' ').slice(0, 500)
+      : artist.bio
+        ? artist.bio.slice(0, 500)
+        : `${name} — Verified ${categoryLabel} on Artistora serving ${location}.`
+
+  // Areas served
+  const areasServedList: any[] = [
+    {
+      '@type': 'City',
+      name: location,
+      containedInPlace: {
+        '@type': 'AdministrativeArea',
+        name: 'Gujarat',
+      },
+    },
+  ]
+  if (artist.area) {
+    areasServedList.unshift({
+      '@type': 'AdministrativeArea',
+      name: `${artist.area}, ${location}`,
+    })
+  }
+
+  // Aggregate Rating
+  const aggregateRating =
+    typeof artist.rating === 'number' && artist.rating > 0
+      ? {
+          '@type': 'AggregateRating',
+          ratingValue: artist.rating.toFixed(1),
+          reviewCount: String(Math.max(1, artist.reviewCount || 1)),
+          bestRating: '5',
+          worstRating: '1',
+        }
+      : undefined
+
+  // ProfessionalService schema node
+  const professionalServiceNode: any = {
+    '@type': ['ProfessionalService', 'LocalBusiness'],
+    '@id': artistId,
+    name,
+    description: schemaDescription,
+    url: canonicalUrl,
+    ...(allImageUrls.length > 0 ? { image: allImageUrls } : {}),
+    ...(profilePhotoUrl ? { logo: profilePhotoUrl } : {}),
+    ...(formattedPhone ? { telephone: formattedPhone } : {}),
+    ...(artist.email ? { email: artist.email } : {}),
+    ...(typeof artist.startingPrice === 'number' && artist.startingPrice > 0
+      ? {
+          priceRange: `₹${artist.startingPrice.toLocaleString('en-IN')}+`,
+          currenciesAccepted: 'INR',
+          paymentAccepted: 'Cash, UPI, Credit Card, Bank Transfer',
+          offers: {
+            '@type': 'AggregateOffer',
+            lowPrice: artist.startingPrice,
+            priceCurrency: 'INR',
+            offerCount: String(Math.max(1, catalogOffers.length)),
+            availability: 'https://schema.org/InStock',
+            url: canonicalUrl,
+          },
+        }
+      : {}),
+    address: {
+      '@type': 'PostalAddress',
+      ...(artist.area ? { streetAddress: artist.area } : {}),
+      addressLocality: location,
+      addressRegion: 'Gujarat',
+      addressCountry: 'IN',
+    },
+    areaServed: areasServedList,
+    ...(aggregateRating ? { aggregateRating } : {}),
+    ...(catalogOffers.length > 0
+      ? {
+          hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: `${name} — Services & Specializations`,
+            itemListElement: catalogOffers,
+          },
+        }
+      : {}),
+    knowsAbout: Array.from(knowsAboutSet).slice(0, 25),
+    ...(awards.length > 0 ? { award: awards } : {}),
+    ...(parsedBio?.closing?.title || parsedBio?.closing?.subtitle
+      ? { slogan: parsedBio.closing.title || parsedBio.closing.subtitle }
+      : {}),
+    parentOrganization: {
+      '@type': 'Organization',
+      name: 'Artistora',
+      url: 'https://www.artistora.com',
+      logo: 'https://www.artistora.com/artistora/social-profile-1000x1000.png',
+    },
+  }
+
+  // BreadcrumbList schema node
+  const breadcrumbNode = {
+    '@type': 'BreadcrumbList',
+    '@id': breadcrumbId,
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://www.artistora.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Artists',
+        item: 'https://www.artistora.com/artists',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name,
+        item: canonicalUrl,
+      },
+    ],
+  }
+
+  // WebPage schema node
+  const webpageNode = {
+    '@type': 'WebPage',
+    '@id': webpageId,
+    url: canonicalUrl,
+    name: pageTitle,
+    description: pageDescription,
+    breadcrumb: { '@id': breadcrumbId },
+    mainEntity: { '@id': artistId },
+  }
+
+  // Assemble graph
+  const graph: any[] = [webpageNode, breadcrumbNode, professionalServiceNode]
+
+  // Add ImageGallery if portfolio images are present
+  if (portfolioImageObjects.length > 0) {
+    const imageGalleryNode = {
+      '@type': 'ImageGallery',
+      '@id': galleryId,
+      name: `${name} — Portfolio Work & Gallery`,
+      description: `Portfolio samples, bridal work, and recent event designs by ${name} in ${location}.`,
+      url: canonicalUrl,
+      about: { '@id': artistId },
+      associatedMedia: portfolioImageObjects,
+    }
+    graph.push(imageGalleryNode)
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': graph,
+  }
+}
+
 const CONTAINER = 'mx-auto max-w-6xl px-4! md:px-6!'
 const SECTION = 'py-16! md:py-24!'
 
@@ -89,19 +442,22 @@ function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
   )
 }
 
-function VerifiedBadge() {
+function VerifiedBadge({ className = '' }: { className?: string }) {
   return (
-    <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-3! py-1! text-xs font-semibold text-green">
+    <span
+      className={`inline-flex items-center gap-1.5! rounded-full border border-emerald-500/25 bg-emerald-50/95 px-3! py-1! text-xs font-semibold text-emerald-700 shadow-2xs backdrop-blur-xs ${className}`}
+    >
       <svg
-        width="14"
-        height="14"
+        width="13"
+        height="13"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
+        className="text-emerald-600"
       >
         <path d="M20 6 9 17l-5-5" />
       </svg>
@@ -199,58 +555,40 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   const location = artist.city || 'Ahmedabad'
   const parsedBio = artist.bio ? parseStructuredBio(artist.bio) : null
 
+  const service = (artist.services?.[0] as any)?.title || ''
+  const pageTitle =
+    (artist as any).metaTitle ||
+    (service
+      ? `${name} — ${service} in ${location} | Artistora`
+      : `${name} — Verified Artist in ${location} | Artistora`)
+  const pageDescription =
+    (artist as any).metaDescription ||
+    (parsedBio?.intro && parsedBio.intro.length > 0
+      ? parsedBio.intro.join(' ').slice(0, 160)
+      : artist.bio?.slice(0, 160)) ||
+    `Book ${name} for ${service || 'events'} in ${location}. ${artist.yearsOfExperience || 0}+ years experience. Verified on Artistora.`
+
+  const jsonLd = buildArtistJsonLd({
+    artist,
+    slug,
+    pageTitle,
+    pageDescription,
+  })
+
   return (
     <>
       {/* ── JSON-LD Structured Data ── */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'ProfessionalService',
-            name: name,
-            description:
-              artist.bio?.slice(0, 300) || `${name} — Verified artist on Artistora in ${location}`,
-            url: `https://www.artistora.com/artists/${slug}`,
-            image: artist.profilePhoto ? mediaUrl(artist.profilePhoto) : undefined,
-            telephone: phone ? `+91${phone.replace(/\D/g, '').replace(/^91/, '')}` : undefined,
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: artist.city || 'Ahmedabad',
-              addressRegion: 'Gujarat',
-              addressCountry: 'IN',
-            },
-            areaServed: {
-              '@type': 'City',
-              name: artist.city || 'Ahmedabad',
-            },
-            aggregateRating:
-              typeof artist.rating === 'number' && artist.rating > 0
-                ? {
-                    '@type': 'AggregateRating',
-                    ratingValue: artist.rating.toString(),
-                    reviewCount: (artist.reviewCount || 0).toString(),
-                    bestRating: '5',
-                    worstRating: '1',
-                  }
-                : undefined,
-            offers: artist.startingPrice
-              ? {
-                  '@type': 'AggregateOffer',
-                  lowPrice: artist.startingPrice,
-                  priceCurrency: 'INR',
-                  offerCount: '1',
-                  availability: 'https://schema.org/InStock',
-                }
-              : undefined,
-            priceRange: artist.startingPrice
-              ? `₹${artist.startingPrice.toLocaleString('en-IN')}+`
-              : undefined,
-          }),
+          __html: JSON.stringify(jsonLd),
         }}
       />
 
-      <Breadcrumbs items={[{ label: 'Artists', href: '/artists' }, { label: name }]} />
+      <Breadcrumbs
+        items={[{ label: 'Artists', href: '/artists' }, { label: name }]}
+        hideJsonLd={true}
+      />
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
@@ -285,20 +623,27 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                       className="aspect-square w-full max-w-[340px]"
                     />
                   )}
+                  {artist.verified && (
+                    <div className="absolute top-4! right-4! z-10">
+                      <VerifiedBadge />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Info */}
             <div>
-              <div className="flex flex-wrap items-center gap-3!">
-                <Eyebrow>Artist</Eyebrow>
-                {artist.verified && <VerifiedBadge />}
-              </div>
+              <Eyebrow>
+                {(artist.artistType && ARTIST_TYPE_LABELS[artist.artistType]) || 'Artist Profile'}
+              </Eyebrow>
 
-              <h1 className="font-display mt-3! text-[2.2rem]! leading-[1.15] font-semibold text-ink md:text-[2.8rem]!">
-                {artist.displayName}
-              </h1>
+              <div className="mt-2! flex flex-wrap items-center gap-3!">
+                <h1 className="font-display text-[2.2rem]! leading-[1.15] font-semibold text-ink md:text-[2.8rem]!">
+                  {artist.displayName}
+                </h1>
+                {artist.verified && <VerifiedBadge className="hidden sm:inline-flex" />}
+              </div>
 
               {/* Rating */}
               {typeof artist.rating === 'number' && artist.rating > 0 && (

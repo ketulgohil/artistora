@@ -446,6 +446,88 @@ describe('API', () => {
       expect(reUpdated.portfolioImages?.length).toBe(1)
       expect((reUpdated.portfolioImages?.[0]?.image as any)?.id).toBe(media.id)
     })
+
+    it('sets artist as featured with featuredUntil date cleanly', async () => {
+      const updated = await payload.update({
+        collection: 'artists',
+        id: artistProfileId,
+        data: {
+          isFeatured: true,
+          featuredUntil: '2026-12-31',
+        },
+        depth: 1,
+      })
+      expect(updated.isFeatured).toBe(true)
+      expect(updated.featuredUntil).toBeDefined()
+    })
+
+    it('creates multiple media items in bulk and appends to artist portfolio', async () => {
+      const gifBuffer1 = Buffer.from(
+        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        'base64',
+      )
+      const gifBuffer2 = Buffer.from(
+        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        'base64',
+      )
+
+      const media1 = await payload.create({
+        collection: 'media',
+        data: { alt: 'Bulk Sample 1', uploadedBy: artistUserId },
+        file: {
+          data: gifBuffer1,
+          mimetype: 'image/gif',
+          name: 'bulk1.gif',
+          size: gifBuffer1.length,
+        },
+        overrideAccess: true,
+      })
+      const media2 = await payload.create({
+        collection: 'media',
+        data: { alt: 'Bulk Sample 2', uploadedBy: artistUserId },
+        file: {
+          data: gifBuffer2,
+          mimetype: 'image/gif',
+          name: 'bulk2.gif',
+          size: gifBuffer2.length,
+        },
+        overrideAccess: true,
+      })
+
+      expect(media1.id).toBeDefined()
+      expect(media2.id).toBeDefined()
+
+      const artist = await payload.findByID({
+        collection: 'artists',
+        id: artistProfileId,
+        depth: 1,
+      })
+      const existing = (artist.portfolioImages || []).map((p: any) => ({
+        image: typeof p?.image === 'object' && p?.image !== null ? p.image.id : p?.image,
+        caption: p?.caption || '',
+      }))
+
+      const updated = await payload.update({
+        collection: 'artists',
+        id: artistProfileId,
+        data: {
+          portfolioImages: [
+            ...existing,
+            { image: media1.id, caption: 'B1' },
+            { image: media2.id, caption: 'B2' },
+          ],
+        },
+        depth: 1,
+      })
+
+      expect(updated.portfolioImages?.length).toBeGreaterThanOrEqual(2)
+
+      // Clean up extra test media
+      try {
+        await payload.delete({ collection: 'media', id: media1.id })
+        await payload.delete({ collection: 'media', id: media2.id })
+      } catch {}
+    })
   })
 
   describe('Security: Token Auth', () => {
@@ -548,6 +630,29 @@ describe('API', () => {
         limit: 1,
       })
       expect(existingBookings.docs.length).toBe(1)
+    })
+  })
+
+  describe('Portfolio & Service Categories', () => {
+    it('correctly maps artist types to service categories', async () => {
+      const { mapArtistTypeToServiceCategory } = await import('../../src/lib/payload')
+      expect(mapArtistTypeToServiceCategory('makeup-artists')).toBe('makeup')
+      expect(mapArtistTypeToServiceCategory('photographers')).toBe('photography')
+      expect(mapArtistTypeToServiceCategory('mehndi-artists')).toBe('mehndi')
+      expect(mapArtistTypeToServiceCategory('decor-event-planners')).toBe('decor')
+      expect(mapArtistTypeToServiceCategory('unknown-type')).toBe('other')
+    })
+
+    it('fetches unified portfolio items including approved artists and category filters', async () => {
+      const { getPortfolioItems } = await import('../../src/lib/payload')
+      const allItems = await getPortfolioItems()
+      expect(allItems).toBeInstanceOf(Array)
+
+      const makeupItems = await getPortfolioItems({ serviceCategory: 'makeup' })
+      expect(makeupItems).toBeInstanceOf(Array)
+      makeupItems.forEach((item) => {
+        expect(item.serviceCategory).toBe('makeup')
+      })
     })
   })
 

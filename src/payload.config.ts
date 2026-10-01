@@ -89,7 +89,9 @@ const ALLOWED_ORIGINS = Array.from(
       'https://www.artistora.com',
       'https://artistora.com',
       process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-      process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
+      process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : null,
       process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : null,
       'http://localhost:3000',
       'http://127.0.0.1:3000',
@@ -142,7 +144,15 @@ export default buildConfig({
       titleSuffix: ' — Artistora CMS',
       description: 'Artistora Artist Marketplace CMS',
     },
-    components: {},
+    components: {
+      afterNavLinks: ['/components/admin/BulkUploadNavLink#BulkUploadNavLink'],
+      views: {
+        bulkUpload: {
+          Component: '/components/admin/BulkUploadView#BulkUploadView',
+          path: '/bulk-upload',
+        },
+      },
+    },
   },
   collections: [
     Users,
@@ -167,12 +177,14 @@ export default buildConfig({
   ],
   globals: [SiteSettings, HeaderFooter],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || (() => {
-    if (isProd) {
-      throw new Error('CRITICAL: PAYLOAD_SECRET environment variable is required in production.')
-    }
-    return 'artistora-secret-key-fallback-2026'
-  })(),
+  secret:
+    process.env.PAYLOAD_SECRET ||
+    (() => {
+      if (isProd) {
+        throw new Error('CRITICAL: PAYLOAD_SECRET environment variable is required in production.')
+      }
+      return 'artistora-secret-key-fallback-2026'
+    })(),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
@@ -183,15 +195,18 @@ export default buildConfig({
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
       // Only disable TLS verification for local development
-      ssl: isRemoteDb && isProd
-        ? { rejectUnauthorized: true }
-        : isRemoteDb
-          ? { rejectUnauthorized: false }
-          : false,
+      ssl:
+        isRemoteDb && isProd
+          ? { rejectUnauthorized: true }
+          : isRemoteDb
+            ? { rejectUnauthorized: false }
+            : false,
     },
   }),
   sharp,
   plugins: s3Plugin ? [s3Plugin] : [],
   // Security: disable GraphQL in production unless explicitly enabled
-  graphQL: isProd ? { disablePlaygroundInProduction: true, disableIntrospectionInProduction: true } : {},
+  graphQL: isProd
+    ? { disablePlaygroundInProduction: true, disableIntrospectionInProduction: true }
+    : {},
 })

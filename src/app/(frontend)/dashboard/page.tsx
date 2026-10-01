@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
+import { prepareImageForUpload } from '@/lib/image-upload-helper'
 
 const BarChart = lazy(() => import('recharts').then((m) => ({ default: m.BarChart })))
 const Bar = lazy(() => import('recharts').then((m) => ({ default: m.Bar })))
@@ -592,11 +593,12 @@ export default function DashboardPage() {
   }
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !artist) return
+    const rawFile = e.target.files?.[0]
+    if (!rawFile || !artist) return
 
     setUploading(true)
     try {
+      const file = await prepareImageForUpload(rawFile)
       const formData = new FormData()
       formData.append('file', file)
       formData.append('alt', `${form.displayName} profile photo`)
@@ -661,7 +663,8 @@ export default function DashboardPage() {
       const newImages = []
 
       for (let i = 0; i < toUpload.length; i++) {
-        const file = toUpload[i]
+        const rawFile = toUpload[i]
+        const file = await prepareImageForUpload(rawFile)
         const formData = new FormData()
         formData.append('file', file)
         formData.append('alt', `${form.displayName} portfolio ${i + 1}`)

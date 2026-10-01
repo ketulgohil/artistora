@@ -504,7 +504,7 @@ export interface PortfolioCategory {
 export interface PortfolioItem {
   id: number;
   image: number | Media;
-  category: number | PortfolioCategory;
+  category?: (number | null) | PortfolioCategory;
   /**
    * Broad service category used for the public portfolio filter
    */

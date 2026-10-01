@@ -22,7 +22,17 @@ function Star({ filled = true }: { filled?: boolean }) {
 function VerifiedBadge() {
   return (
     <span className="inline-flex items-center gap-1! rounded-full bg-green/10 px-2.5! py-0.5! text-[0.7rem] font-semibold text-green">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         <path d="M20 6 9 17l-5-5" />
       </svg>
       Verified
@@ -55,7 +65,9 @@ interface Artist {
 
 export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'rating' | 'price-low' | 'price-high' | 'experience'>('rating')
+  const [sortBy, setSortBy] = useState<'rating' | 'price-low' | 'price-high' | 'experience'>(
+    'rating',
+  )
   const [styleFilter, setStyleFilter] = useState<string>('all')
 
   const allStyles = useMemo(() => {
@@ -104,7 +116,18 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
       {/* Filters */}
       <div className="mb-8! flex flex-col items-stretch gap-3! sm:flex-row sm:flex-wrap sm:items-center">
         <div className="relative w-full flex-1 sm:min-w-[200px] sm:max-w-md">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted pointer-events-none">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
@@ -113,32 +136,73 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, area, or style..."
-            className="w-full rounded-full border border-line bg-white pl-10! pr-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20"
+            aria-label="Search by name, area, or style"
+            className="w-full rounded-full border border-line bg-white pl-10! pr-4! py-2.5! text-sm text-ink shadow-xs outline-none transition-all duration-200 hover:border-brand/50 focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </div>
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
-          className="w-full rounded-full border border-line bg-white px-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand cursor-pointer sm:w-auto"
-        >
-          <option value="rating">Top Rated</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="experience">Most Experienced</option>
-        </select>
+        <div className="relative w-full sm:w-auto">
+          <select
+            value={sortBy}
+            onChange={(e) =>
+              setSortBy(e.target.value as 'rating' | 'price-low' | 'price-high' | 'experience')
+            }
+            aria-label="Sort artists by"
+            className="w-full cursor-pointer appearance-none! [appearance:none]! [-webkit-appearance:none]! [-moz-appearance:none]! [background-image:none]! rounded-full border border-line bg-white pl-4! pr-9! py-2.5! text-sm font-medium text-ink shadow-xs outline-none transition-all duration-200 hover:border-brand/50 hover:bg-cream/30 focus:border-brand focus:ring-2 focus:ring-brand/20 sm:min-w-[170px]"
+          >
+            <option value="rating">Top Rated</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="experience">Most Experienced</option>
+          </select>
+          <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3.5! flex items-center justify-center text-ink-muted">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </div>
 
         {allStyles.length > 0 && (
-          <select
-            value={styleFilter}
-            onChange={(e) => setStyleFilter(e.target.value)}
-            className="w-full rounded-full border border-line bg-white px-4! py-2.5! text-sm text-ink outline-none transition-colors focus:border-brand cursor-pointer sm:w-auto"
-          >
-            <option value="all">All Styles</option>
-            {allStyles.map((style) => (
-              <option key={style} value={style}>{style}</option>
-            ))}
-          </select>
+          <div className="relative w-full sm:w-auto">
+            <select
+              value={styleFilter}
+              onChange={(e) => setStyleFilter(e.target.value)}
+              aria-label="Filter artists by style"
+              className="w-full cursor-pointer appearance-none! [appearance:none]! [-webkit-appearance:none]! [-moz-appearance:none]! [background-image:none]! rounded-full border border-line bg-white pl-4! pr-9! py-2.5! text-sm font-medium text-ink shadow-xs outline-none transition-all duration-200 hover:border-brand/50 hover:bg-cream/30 focus:border-brand focus:ring-2 focus:ring-brand/20 sm:min-w-[160px]"
+            >
+              <option value="all">All Styles</option>
+              {allStyles.map((style) => (
+                <option key={style} value={style}>
+                  {style}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3.5! flex items-center justify-center text-ink-muted">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+          </div>
         )}
       </div>
 
@@ -193,7 +257,18 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
 
                 {artist.area && (
                   <p className="mt-1! flex items-center gap-1.5! text-sm text-ink-soft">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-brand/60">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      className="shrink-0 text-brand/60"
+                    >
                       <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" />
                       <circle cx="12" cy="10" r="3" />
                     </svg>

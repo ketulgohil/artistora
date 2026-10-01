@@ -110,6 +110,7 @@ async function main() {
   console.log(`📁 Profile directory: ${PROFILE_DIR}\n`)
 
   const context = await chromium.launchPersistentContext(PROFILE_DIR, {
+    channel: 'chrome',
     headless: isHeadless,
     viewport: { width: 1280, height: 800 },
     userAgent:

@@ -58,7 +58,9 @@ export function isArtistIndexable(artist: any): boolean {
   const hasContact = !!(artist.phone || artist.whatsappNumber)
   const hasQuotePath = !!artist.slug
 
-  return hasDisplayName && hasCity && hasService && hasBio && hasPortfolio && hasContact && hasQuotePath
+  return (
+    hasDisplayName && hasCity && hasService && hasBio && hasPortfolio && hasContact && hasQuotePath
+  )
 }
 
 // ── Site Settings ──
@@ -91,6 +93,64 @@ export async function getServices() {
   return docs
 }
 
+export type ServiceCategory = 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other'
+
+export function mapArtistTypeToServiceCategory(artistType?: string | null): ServiceCategory {
+  if (!artistType) return 'other'
+  const norm = artistType.toLowerCase()
+  if (norm.includes('makeup') || norm.includes('make-up') || norm.includes('beauty'))
+    return 'makeup'
+  if (norm.includes('photo') || norm.includes('shoot') || norm.includes('camera'))
+    return 'photography'
+  if (norm.includes('mehndi') || norm.includes('mehendi') || norm.includes('henna')) return 'mehndi'
+  if (norm.includes('decor') || norm.includes('planner') || norm.includes('event')) return 'decor'
+  return 'other'
+}
+
+export function formatServiceCategoryLabel(category?: string | null): string {
+  switch (category) {
+    case 'mehndi':
+      return 'Mehndi'
+    case 'photography':
+      return 'Photography'
+    case 'makeup':
+      return 'Makeup'
+    case 'decor':
+      return 'Decor & Planning'
+    default:
+      return 'Other'
+  }
+}
+
+export interface UnifiedPortfolioItem {
+  id: string
+  altText: string
+  description?: string
+  image: {
+    id: string | number
+    filename: string
+    url?: string
+    width?: number
+    height?: number
+  }
+  category?: {
+    id?: string | number
+    title: string
+    slug: string
+  }
+  serviceCategory: ServiceCategory
+  artist?: {
+    id: string | number
+    displayName: string
+    slug: string
+    verified?: boolean
+    rating?: number
+    isFeatured?: boolean
+  }
+  isFeatured?: boolean
+  order?: number
+}
+
 // ── Portfolio Categories ──
 export async function getPortfolioCategories() {
   const payload = await getPayloadClient()
@@ -102,24 +162,211 @@ export async function getPortfolioCategories() {
   return docs
 }
 
-// ── Portfolio Items (by category) ──
-export async function getPortfolioItems(categorySlug?: string) {
+// ── Portfolio Items (Unified from approved artists & curated portfolio-items) ──
+export async function getPortfolioItems(
+  optionsOrSlug?: string | { serviceCategory?: string; categorySlug?: string; limit?: number },
+): Promise<UnifiedPortfolioItem[]> {
   const payload = await getPayloadClient()
-  const where: Where = categorySlug ? { 'category.slug': { equals: categorySlug } } : {}
-  const { docs } = await payload.find({
-    collection: 'portfolio-items',
-    where: Object.keys(where).length > 0 ? where : undefined,
-    sort: 'order',
-    depth: 2,
-    select: {
-      image: true,
-      caption: true,
-      category: true,
-      artist: true,
-      serviceCategory: true,
-    },
+
+  let targetServiceCategory: string | undefined
+  let targetCategorySlug: string | undefined
+  let limit = 200
+
+  if (typeof optionsOrSlug === 'string') {
+    const normalized = optionsOrSlug.toLowerCase()
+    if (['mehndi', 'photography', 'makeup', 'decor', 'other'].includes(normalized)) {
+      targetServiceCategory = normalized
+    } else if (
+      ['mehndi-artists', 'photographers', 'makeup-artists', 'decor-event-planners'].includes(
+        normalized,
+      )
+    ) {
+      targetServiceCategory = mapArtistTypeToServiceCategory(normalized)
+    } else {
+      targetCategorySlug = optionsOrSlug
+    }
+  } else if (optionsOrSlug && typeof optionsOrSlug === 'object') {
+    if (optionsOrSlug.serviceCategory)
+      targetServiceCategory = optionsOrSlug.serviceCategory.toLowerCase()
+    if (optionsOrSlug.categorySlug) targetCategorySlug = optionsOrSlug.categorySlug.toLowerCase()
+    if (optionsOrSlug.limit) limit = optionsOrSlug.limit
+  }
+
+  const items: UnifiedPortfolioItem[] = []
+  const seenImageKeys = new Set<string>()
+
+  // 1. Fetch portfolio images from approved artists
+  try {
+    const { docs: approvedArtists } = await payload.find({
+      collection: 'artists',
+      where: {
+        approvalStatus: { equals: 'approved' },
+      },
+      limit: 100,
+      depth: 2,
+      sort: '-isFeatured,-rating,-reviewCount,order',
+    })
+
+    for (const artist of approvedArtists) {
+      const artistServiceCategory = mapArtistTypeToServiceCategory((artist as any).artistType)
+      const serviceLabel = formatServiceCategoryLabel(artistServiceCategory)
+
+      const portfolioImages = Array.isArray((artist as any).portfolioImages)
+        ? (artist as any).portfolioImages
+        : []
+
+      portfolioImages.forEach((item: any, idx: number) => {
+        const mediaObj = typeof item?.image === 'object' && item?.image !== null ? item.image : null
+        const mediaId = mediaObj?.id || item?.image
+        if (!mediaId) return
+
+        const imgFilename = mediaObj?.filename || ''
+        const imgUrl = mediaObj?.url || (imgFilename ? mediaFileUrl(imgFilename) : '')
+        if (!imgFilename && !imgUrl) return
+
+        const imageKey = `${artist.id}-${mediaId}`
+        const rawMediaKey = String(mediaId)
+        seenImageKeys.add(imageKey)
+        seenImageKeys.add(rawMediaKey)
+
+        const altText =
+          item.caption ||
+          mediaObj?.alt ||
+          `${(artist as any).displayName} - ${serviceLabel} portfolio`
+
+        items.push({
+          id: `artist-${artist.id}-${mediaId}-${idx}`,
+          altText,
+          description: item.caption || '',
+          image: {
+            id: mediaId,
+            filename: imgFilename,
+            url: imgUrl,
+            width: mediaObj?.width || 800,
+            height: mediaObj?.height || 1000,
+          },
+          category: {
+            title: serviceLabel,
+            slug: artistServiceCategory,
+          },
+          serviceCategory: artistServiceCategory,
+          artist: {
+            id: artist.id,
+            displayName: (artist as any).displayName,
+            slug: (artist as any).slug,
+            verified: (artist as any).verified,
+            rating: (artist as any).rating,
+            isFeatured: (artist as any).isFeatured,
+          },
+          isFeatured: (artist as any).isFeatured || false,
+          order: (artist as any).order ?? 99,
+        })
+      })
+    }
+  } catch (err: any) {
+    console.error('Failed to load artist portfolio images:', err.message)
+  }
+
+  // 2. Fetch from curated portfolio-items collection
+  try {
+    const { docs: portfolioDocs } = await payload.find({
+      collection: 'portfolio-items',
+      limit: 100,
+      depth: 2,
+      sort: 'order',
+    })
+
+    for (const doc of portfolioDocs) {
+      const mediaObj = typeof doc.image === 'object' && doc.image !== null ? doc.image : null
+      const mediaId =
+        mediaObj?.id ||
+        (typeof doc.image === 'number' || typeof doc.image === 'string' ? doc.image : null)
+      if (!mediaId) continue
+
+      const artistObj = typeof doc.artist === 'object' && doc.artist !== null ? doc.artist : null
+      const artistId =
+        artistObj?.id ||
+        (typeof doc.artist === 'number' || typeof doc.artist === 'string' ? doc.artist : null)
+
+      // Skip duplicate items already populated from approved artist portfolio
+      const imageKey = artistId ? `${artistId}-${mediaId}` : String(mediaId)
+      if (seenImageKeys.has(imageKey) || seenImageKeys.has(String(mediaId))) {
+        continue
+      }
+      seenImageKeys.add(imageKey)
+      seenImageKeys.add(String(mediaId))
+
+      const rawCategory =
+        typeof doc.category === 'object' && doc.category !== null ? doc.category : null
+      const serviceCategory: ServiceCategory =
+        (doc.serviceCategory as ServiceCategory) ||
+        (artistObj ? mapArtistTypeToServiceCategory((artistObj as any).artistType) : 'mehndi')
+      const serviceLabel = formatServiceCategoryLabel(serviceCategory)
+      const imgFilename = mediaObj?.filename || ''
+      const imgUrl = mediaObj?.url || (imgFilename ? mediaFileUrl(imgFilename) : '')
+
+      items.push({
+        id: String(doc.id),
+        altText:
+          doc.altText || doc.description || mediaObj?.alt || `${serviceLabel} design by Artistora`,
+        description: doc.description || '',
+        image: {
+          id: mediaId,
+          filename: imgFilename,
+          url: imgUrl,
+          width: mediaObj?.width || 800,
+          height: mediaObj?.height || 1000,
+        },
+        category: rawCategory
+          ? {
+              id: rawCategory.id,
+              title: (rawCategory as any).title,
+              slug: (rawCategory as any).slug,
+            }
+          : {
+              title: serviceLabel,
+              slug: serviceCategory,
+            },
+        serviceCategory,
+        artist: artistObj
+          ? {
+              id: artistObj.id,
+              displayName: (artistObj as any).displayName,
+              slug: (artistObj as any).slug,
+              verified: (artistObj as any).verified,
+              rating: (artistObj as any).rating,
+              isFeatured: (artistObj as any).isFeatured,
+            }
+          : undefined,
+        isFeatured: doc.featured || false,
+        order: doc.order ?? 99,
+      })
+    }
+  } catch (err: any) {
+    console.error('Failed to load portfolio-items collection:', err.message)
+  }
+
+  // 3. Filter if requested
+  let filtered = items
+  if (targetServiceCategory && targetServiceCategory !== 'all') {
+    filtered = filtered.filter((item) => item.serviceCategory === targetServiceCategory)
+  } else if (targetCategorySlug) {
+    filtered = filtered.filter((item) => item.category?.slug === targetCategorySlug)
+  }
+
+  // 4. Sort: featured first, then by order, then by rating
+  filtered.sort((a, b) => {
+    if (a.isFeatured && !b.isFeatured) return -1
+    if (!a.isFeatured && b.isFeatured) return 1
+    const orderA = a.order ?? 99
+    const orderB = b.order ?? 99
+    if (orderA !== orderB) return orderA - orderB
+    const ratingA = a.artist?.rating ?? 0
+    const ratingB = b.artist?.rating ?? 0
+    return ratingB - ratingA
   })
-  return docs
+
+  return filtered.slice(0, limit)
 }
 
 // ── Testimonials ──
@@ -245,10 +492,7 @@ export async function getArtistsByArea(areaSlug: string, limit = 12) {
       and: [
         { approvalStatus: { equals: 'approved' } },
         {
-          or: [
-            { area: { equals: areaSlug } },
-            { area: { exists: false } },
-          ],
+          or: [{ area: { equals: areaSlug } }, { area: { exists: false } }],
         },
       ],
     },

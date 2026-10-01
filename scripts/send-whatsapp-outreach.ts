@@ -781,10 +781,7 @@ async function startBatch() {
       console.log(
         `\n[WhatsApp] Connection closed (status: ${statusCode}). Reconnecting: ${shouldReconnect}`,
       )
-      if (shouldReconnect) {
-        isProcessing = false
-        startBatch()
-      } else {
+      if (!shouldReconnect) {
         console.error('[WhatsApp] ❌ Logged out from WhatsApp. Please re-run auth.')
       }
     }

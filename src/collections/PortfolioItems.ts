@@ -21,7 +21,7 @@ export const PortfolioItems: CollectionConfig = {
       name: 'category',
       type: 'relationship',
       relationTo: 'portfolio-categories',
-      required: true,
+      required: false,
       label: 'Style / Subcategory',
     },
     {
