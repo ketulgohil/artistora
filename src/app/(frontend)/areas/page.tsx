@@ -197,8 +197,8 @@ export default async function AreasPage() {
               Artists in Every Neighbourhood of Ahmedabad
             </h1>
             <p className="mt-5! text-[1.05rem] leading-relaxed text-ink-soft">
-              Find verified photographers, makeup artists, mehndi artists, and event planners in
-              your area. All artists offer home-visit services across Ahmedabad.
+              Find verified mehndi artists, photographers, makeup artists, nail artists, and event
+              planners in your area. All artists offer home-visit services across Ahmedabad.
             </p>
           </div>
         </div>

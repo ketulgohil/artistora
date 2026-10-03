@@ -60,6 +60,7 @@ const profileSteps = [
     fields: [
       'Photographers — weddings, events, portraits',
       'Makeup Artists — bridal, party, editorial',
+      'Nail Artists — bridal, extensions, 3D nail art',
       'Decor & Event Planners — stage, floral, themed',
       'Mehndi Artists — bridal, Arabic, Indo-Western',
     ],

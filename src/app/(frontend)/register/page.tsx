@@ -19,6 +19,8 @@ function normalizeArtistType(type: string | null | undefined): string {
   if (['mehndi-artists', 'mehndi-artist', 'mehndi', 'mehendi'].includes(t)) return 'mehndi-artists'
   if (['photographers', 'photographer', 'photography', 'photo'].includes(t)) return 'photographers'
   if (['makeup-artists', 'makeup-artist', 'makeup', 'makeover'].includes(t)) return 'makeup-artists'
+  if (['nail-artists', 'nail-artist', 'nail-art', 'nails', 'nail'].includes(t))
+    return 'nail-artists'
   if (
     [
       'decor-event-planners',
@@ -454,6 +456,7 @@ function RegisterForm() {
                   <option value="mehndi-artists">Mehndi Artists</option>
                   <option value="photographers">Photographers</option>
                   <option value="makeup-artists">Makeup Artists</option>
+                  <option value="nail-artists">Nail Artists</option>
                   <option value="decor-event-planners">Decor &amp; Event Planners</option>
                 </select>
                 <p className="mt-1! text-xs text-ink-muted">

@@ -336,6 +336,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
     'mehndi-artists': 'Mehndi Artist',
     photographers: 'Photographer',
     'makeup-artists': 'Makeup Artist',
+    'nail-artists': 'Nail Artist',
     'decor-event-planners': 'Decor & Events',
   }
 

@@ -87,11 +87,24 @@ const STYLE_OPTIONS: Record<string, string[]> = {
     'Geometric',
     'Custom Design',
   ],
+  'nail-artists': [
+    'Gel Extensions',
+    'Acrylic Extensions',
+    'Bridal Nail Art',
+    'French Tips',
+    '3D Nail Art',
+    'Chrome & Metallic',
+    'Ombre',
+    'Glitter & Rhinestone',
+    'Minimalist & Nude',
+    'Press-on Nails',
+  ],
 }
 
 const SERVICE_OPTIONS = [
   { slug: 'photographers', label: 'Photographers' },
   { slug: 'makeup-artists', label: 'Makeup Artists' },
+  { slug: 'nail-artists', label: 'Nail Artists' },
   { slug: 'decor-event-planners', label: 'Decor & Event Planners' },
   { slug: 'mehndi-artists', label: 'Mehndi Artists' },
 ]

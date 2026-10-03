@@ -282,6 +282,7 @@ export const Artists: CollectionConfig = {
         { label: 'Mehndi Artists', value: 'mehndi-artists' },
         { label: 'Photographers', value: 'photographers' },
         { label: 'Makeup Artists', value: 'makeup-artists' },
+        { label: 'Nail Artists', value: 'nail-artists' },
         { label: 'Decor & Event Planners', value: 'decor-event-planners' },
       ],
       admin: {

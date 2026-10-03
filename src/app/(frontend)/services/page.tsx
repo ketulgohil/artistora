@@ -152,6 +152,7 @@ const serviceTags = [
 const serviceImages: Record<string, string> = {
   Photographers: '/services/photographers.jpg',
   'Makeup Artists': '/services/makeup.jpg',
+  'Nail Artists': '/services/nail-art.jpg',
   'Decor & Event Planners': '/services/decor.jpg',
   'Mehndi Artists': '/api/media/file/Bridal.webp',
 }
@@ -160,6 +161,7 @@ const serviceImages: Record<string, string> = {
 const MAIN_SERVICES = [
   'Photographers',
   'Makeup Artists',
+  'Nail Artists',
   'Decor & Event Planners',
   'Mehndi Artists',
 ]

@@ -115,7 +115,7 @@ function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
   )
 }
 
-function ServiceIcon({ type }: { type: 'camera' | 'makeup' | 'decor' | 'mehndi' }) {
+function ServiceIcon({ type }: { type: 'camera' | 'makeup' | 'decor' | 'mehndi' | 'nail' }) {
   if (type === 'camera') {
     return (
       <svg
@@ -154,6 +154,24 @@ function ServiceIcon({ type }: { type: 'camera' | 'makeup' | 'decor' | 'mehndi' 
         <path d="m3 21 7.5-7.5" />
         <path d="m10 3 11 11-4 4L6 7l4-4Z" />
         <path d="M5 15 3 13" />
+      </svg>
+    )
+  }
+
+  if (type === 'nail') {
+    return (
+      <svg
+        width="21"
+        height="21"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
       </svg>
     )
   }
@@ -230,6 +248,11 @@ export default async function HomePage() {
       title: 'Mehndi Artists',
       type: 'mehndi' as const,
       text: 'Book bridal, engagement, and festive mehndi specialists with premium portfolios and home service availability.',
+    },
+    {
+      title: 'Nail Artists',
+      type: 'nail' as const,
+      text: 'Bridal nail art, gel & acrylic extensions, chrome finishes, and custom press-ons across Ahmedabad.',
     },
   ]
 
@@ -537,6 +560,7 @@ export default async function HomePage() {
                   'mehndi-artists': 'Mehndi Artist',
                   photographers: 'Photographer',
                   'makeup-artists': 'Makeup Artist',
+                  'nail-artists': 'Nail Artist',
                   'decor-event-planners': 'Decor & Events',
                 }
                 const artistTypeLabel = typeLabels[artist.artistType] || ''

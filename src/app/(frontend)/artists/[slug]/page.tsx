@@ -67,6 +67,7 @@ const ARTIST_TYPE_LABELS: Record<string, string> = {
   'mehndi-artists': 'Mehndi Artist',
   photographers: 'Wedding & Event Photographer',
   'makeup-artists': 'Bridal & Event Makeup Artist',
+  'nail-artists': 'Bridal & Event Nail Artist',
   'decor-event-planners': 'Decor & Event Planner',
 }
 

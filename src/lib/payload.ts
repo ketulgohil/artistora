@@ -93,11 +93,12 @@ export async function getServices() {
   return docs
 }
 
-export type ServiceCategory = 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other'
+export type ServiceCategory = 'mehndi' | 'photography' | 'makeup' | 'nail-art' | 'decor' | 'other'
 
 export function mapArtistTypeToServiceCategory(artistType?: string | null): ServiceCategory {
   if (!artistType) return 'other'
   const norm = artistType.toLowerCase()
+  if (norm.includes('nail')) return 'nail-art'
   if (norm.includes('makeup') || norm.includes('make-up') || norm.includes('beauty'))
     return 'makeup'
   if (norm.includes('photo') || norm.includes('shoot') || norm.includes('camera'))
@@ -115,6 +116,8 @@ export function formatServiceCategoryLabel(category?: string | null): string {
       return 'Photography'
     case 'makeup':
       return 'Makeup'
+    case 'nail-art':
+      return 'Nail Art'
     case 'decor':
       return 'Decor & Planning'
     default:
@@ -174,12 +177,16 @@ export async function getPortfolioItems(
 
   if (typeof optionsOrSlug === 'string') {
     const normalized = optionsOrSlug.toLowerCase()
-    if (['mehndi', 'photography', 'makeup', 'decor', 'other'].includes(normalized)) {
+    if (['mehndi', 'photography', 'makeup', 'nail-art', 'decor', 'other'].includes(normalized)) {
       targetServiceCategory = normalized
     } else if (
-      ['mehndi-artists', 'photographers', 'makeup-artists', 'decor-event-planners'].includes(
-        normalized,
-      )
+      [
+        'mehndi-artists',
+        'photographers',
+        'makeup-artists',
+        'nail-artists',
+        'decor-event-planners',
+      ].includes(normalized)
     ) {
       targetServiceCategory = mapArtistTypeToServiceCategory(normalized)
     } else {

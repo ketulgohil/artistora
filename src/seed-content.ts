@@ -82,6 +82,15 @@ const SERVICES = [
     points: ['Bridal & event specialists', 'Custom patterns', 'Home service available'],
     order: 4,
   },
+  {
+    title: 'Nail Artists',
+    slug: 'nail-artists',
+    imageAlt: 'Nail Art Service',
+    description:
+      'Bridal, acrylic, gel extensions, french tips, and custom 3D nail art for weddings, engagements, and special occasions across Ahmedabad.',
+    points: ['Gel & acrylic extensions', 'Bridal & 3D nail art', 'Home service & studio visits'],
+    order: 5,
+  },
 ]
 
 async function resolveMediaId(

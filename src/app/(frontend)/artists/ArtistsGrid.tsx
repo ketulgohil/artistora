@@ -52,6 +52,7 @@ interface Artist {
   id: number
   slug: string
   displayName: string
+  artistType?: string
   area: string
   city: string
   verified: boolean
@@ -84,6 +85,7 @@ export default function ArtistsGrid({ artists }: { artists: Artist[] }) {
       result = result.filter(
         (a) =>
           a.displayName?.toLowerCase().includes(q) ||
+          a.artistType?.toLowerCase().includes(q) ||
           a.area?.toLowerCase().includes(q) ||
           a.styles?.some((s) => s.style?.toLowerCase().includes(q)),
       )

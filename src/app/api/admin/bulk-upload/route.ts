@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
             'mehndi-artists': 'bridal-mehndi',
             photographers: 'wedding-photography',
             'makeup-artists': 'bridal-makeup',
+            'nail-artists': 'nail-art',
             'decor-event-planners': 'event-decor',
           }
           const defaultSlug = mapping[type] || 'event-decor'

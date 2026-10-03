@@ -12,12 +12,24 @@ export async function POST(request: NextRequest) {
   try {
     const limiter = await rateLimitAsync(getClientIp(request), RATE_LIMITS.register, 'register')
     if (!limiter.allowed) {
-      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 },
+      )
     }
     const payload = await getPayload({ config })
 
     // Handle both FormData and JSON
-    let name: string, email: string, password: string, role: string, phone: string, city: string, bio: string, startingPrice: string, yearsOfExperience: string, artistType: string
+    let name: string,
+      email: string,
+      password: string,
+      role: string,
+      phone: string,
+      city: string,
+      bio: string,
+      startingPrice: string,
+      yearsOfExperience: string,
+      artistType: string
     let profilePhotoFile: File | null = null
 
     const contentType = request.headers.get('content-type') || ''
@@ -27,12 +39,12 @@ export async function POST(request: NextRequest) {
       email = formData.get('email') as string
       password = formData.get('password') as string
       role = formData.get('role') as string
-      phone = formData.get('phone') as string || ''
-      city = formData.get('city') as string || 'Ahmedabad'
-      bio = formData.get('bio') as string || ''
-      startingPrice = formData.get('startingPrice') as string || ''
-      yearsOfExperience = formData.get('yearsOfExperience') as string || ''
-      artistType = formData.get('artistType') as string || ''
+      phone = (formData.get('phone') as string) || ''
+      city = (formData.get('city') as string) || 'Ahmedabad'
+      bio = (formData.get('bio') as string) || ''
+      startingPrice = (formData.get('startingPrice') as string) || ''
+      yearsOfExperience = (formData.get('yearsOfExperience') as string) || ''
+      artistType = (formData.get('artistType') as string) || ''
       profilePhotoFile = formData.get('profilePhoto') as File | null
       if (!profilePhotoFile || profilePhotoFile.size === 0) profilePhotoFile = null
     } else {
@@ -62,13 +74,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
-    if (typeof password !== 'string' || password.length < 6 || password.length > MAX_PASSWORD_LENGTH) {
+    if (
+      typeof password !== 'string' ||
+      password.length < 6 ||
+      password.length > MAX_PASSWORD_LENGTH
+    ) {
       return NextResponse.json({ error: 'Password must be 6-128 characters' }, { status: 400 })
     }
 
     // Only allow customer or artist registration — never admin
     const allowedRoles = ['customer', 'artist'] as const
-    const requestedRole: 'customer' | 'artist' = allowedRoles.includes(role as any) ? (role as 'customer' | 'artist') : 'customer'
+    const requestedRole: 'customer' | 'artist' = allowedRoles.includes(role as any)
+      ? (role as 'customer' | 'artist')
+      : 'customer'
 
     // Artist-specific validation
     if (requestedRole === 'artist') {
@@ -79,9 +97,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Please enter a valid starting price' }, { status: 400 })
       }
       if (!yearsOfExperience || isNaN(Number(yearsOfExperience)) || Number(yearsOfExperience) < 0) {
-        return NextResponse.json({ error: 'Please enter your years of experience' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'Please enter your years of experience' },
+          { status: 400 },
+        )
       }
-      const validArtistTypes = ['mehndi-artists', 'photographers', 'makeup-artists', 'decor-event-planners']
+      const validArtistTypes = [
+        'mehndi-artists',
+        'photographers',
+        'makeup-artists',
+        'nail-artists',
+        'decor-event-planners',
+      ]
       if (!artistType || !validArtistTypes.includes(artistType)) {
         return NextResponse.json({ error: 'Please select a valid artist type' }, { status: 400 })
       }
@@ -95,7 +122,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (existing.docs.length > 0) {
-      return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
+      return NextResponse.json(
+        { error: 'An account with this email already exists' },
+        { status: 409 },
+      )
     }
 
     // Create user (role forced to customer/artist, never admin)
@@ -112,7 +142,10 @@ export async function POST(request: NextRequest) {
     // If registering as artist, create artist profile with new fields
     let artistProfile = null
     if (requestedRole === 'artist') {
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
 
       // Upload profile photo if provided
       let profilePhotoId: number | undefined
@@ -196,7 +229,9 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      artistProfile: artistProfile ? { id: artistProfile.id, slug: (artistProfile as any).slug } : null,
+      artistProfile: artistProfile
+        ? { id: artistProfile.id, slug: (artistProfile as any).slug }
+        : null,
     })
 
     // Set token cookie

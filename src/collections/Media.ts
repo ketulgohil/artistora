@@ -68,13 +68,15 @@ export const Media: CollectionConfig = {
 
               // Determine service category from artist's service type
               const artistType = (artist as any).artistType || ''
-              let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
+              let serviceCategory:
+                'mehndi' | 'photography' | 'makeup' | 'nail-art' | 'decor' | 'other' = 'other'
               if (artistType.includes('mehndi') || artistType.includes('henna'))
                 serviceCategory = 'mehndi'
               else if (artistType.includes('photo') || artistType.includes('shoot'))
                 serviceCategory = 'photography'
               else if (artistType.includes('makeup') || artistType.includes('beauty'))
                 serviceCategory = 'makeup'
+              else if (artistType.includes('nail')) serviceCategory = 'nail-art'
               else if (artistType.includes('decor') || artistType.includes('planner'))
                 serviceCategory = 'decor'
 
@@ -83,6 +85,7 @@ export const Media: CollectionConfig = {
                 mehndi: 'bridal-mehndi',
                 photography: 'wedding-photography',
                 makeup: 'bridal-makeup',
+                'nail-art': 'bridal-makeup',
                 decor: 'event-decor',
                 other: 'event-decor',
               }

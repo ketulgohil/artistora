@@ -15,6 +15,7 @@ const SERVICE_CATEGORIES = [
   { value: 'mehndi', label: 'Mehndi' },
   { value: 'photography', label: 'Photography' },
   { value: 'makeup', label: 'Makeup' },
+  { value: 'nail-art', label: 'Nail Art' },
   { value: 'decor', label: 'Decor & Planning' },
   { value: 'other', label: 'Other' },
 ] as const
