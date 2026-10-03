@@ -16,7 +16,7 @@ import SectionHeading from '@/components/SectionHeading'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const metadata = withDefaultSeo({
-  title: 'Wedding & Event Artist Services in Ahmedabad | Artistora',
+  title: 'Wedding & Event Artist Services in Ahmedabad',
   description:
     'Browse verified artist services in Ahmedabad — bridal mehndi, wedding photography, makeup artists, and event decor. Compare free quotes and book online.',
   keywords: [
@@ -262,68 +262,68 @@ export default async function ServicesPage() {
         }))
       : fallbackFaqs
 
-  const servicesItemListSchema = {
+  const servicesPageJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: 'Artistora Services in Ahmedabad',
-    description:
-      'Professional wedding and event artist services in Ahmedabad — photography, makeup, decor, mehndi, and more.',
-    numberOfItems: (services as any[]).length,
-    itemListElement: (services as any[]).map((service: any, i: number) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      item: {
-        '@type': 'Service',
-        name: service.title,
-        serviceType: service.title,
+    '@graph': [
+      {
+        '@type': 'ItemList',
+        '@id': 'https://www.artistora.com/services#itemlist',
+        name: 'Artistora Services in Ahmedabad',
         description:
-          service.description ||
-          `Professional ${service.title} services in Ahmedabad by verified artists.`,
-        provider: {
-          '@type': 'Organization',
-          name: 'Artistora',
-          url: 'https://www.artistora.com',
-        },
-        areaServed: {
-          '@type': 'City',
-          name: 'Ahmedabad',
-          containedInPlace: {
-            '@type': 'AdministrativeArea',
-            name: 'Gujarat',
+          'Professional wedding and event artist services in Ahmedabad — photography, makeup, decor, mehndi, and more.',
+        numberOfItems: (services as any[]).length,
+        itemListElement: (services as any[]).map((service: any, i: number) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          item: {
+            '@type': 'Service',
+            '@id': `https://www.artistora.com/services#service-${service.slug || i + 1}`,
+            name: service.title,
+            serviceType: service.title,
+            description:
+              service.description ||
+              `Professional ${service.title} services in Ahmedabad by verified artists.`,
+            provider: {
+              '@id': 'https://www.artistora.com/#organization',
+            },
+            areaServed: {
+              '@type': 'City',
+              name: 'Ahmedabad',
+              containedInPlace: {
+                '@type': 'AdministrativeArea',
+                name: 'Gujarat',
+              },
+            },
           },
+        })),
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://www.artistora.com/services#faq',
+        isPartOf: {
+          '@id': 'https://www.artistora.com/#website',
         },
+        mainEntity: activeFaqs.map((faq: any) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer,
+          },
+        })),
       },
-    })),
-  }
-
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: activeFaqs.map((faq: any) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
+    ],
   }
 
   const bookingUrl = '/get-quote'
 
   return (
     <>
-      {/* ── JSON-LD Structured Data ── */}
+      {/* ── JSON-LD Structured Data (Unified Graph) ── */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(servicesItemListSchema),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqSchema),
+          __html: JSON.stringify(servicesPageJsonLd),
         }}
       />
 

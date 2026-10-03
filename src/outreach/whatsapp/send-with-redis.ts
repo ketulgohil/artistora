@@ -94,6 +94,12 @@ async function main() {
       console.log(`[WhatsApp] Sending message to ${cleanPhone}...`)
 
       try {
+        await sock.sendPresenceUpdate('available')
+        await new Promise((r) => setTimeout(r, 1000))
+        await sock.sendPresenceUpdate('composing', jid)
+        await new Promise((r) => setTimeout(r, 3000))
+        await sock.sendPresenceUpdate('paused', jid)
+
         const result = await sock.sendMessage(jid, { text: message })
         messageId = result?.key?.id || undefined
         sent = true

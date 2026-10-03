@@ -180,43 +180,49 @@ const benefits = [
 ]
 
 export default function HowItWorksPage() {
-  const howToCustomer = {
+  const howToJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    name: 'How to Book an Artist on Artistora',
-    description:
-      'Book verified artists in Ahmedabad in 3 simple steps — share your event, compare quotes, and confirm.',
-    step: customerSteps.map((step) => ({
-      '@type': 'HowToStep',
-      position: parseInt(step.num),
-      name: step.title,
-      text: step.description,
-    })),
-  }
-
-  const howToArtist = {
-    '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    name: 'How to Join Artistora as an Artist',
-    description:
-      'Register as an artist on Artistora, receive booking requests, and grow your client base in Ahmedabad.',
-    step: artistSteps.map((step) => ({
-      '@type': 'HowToStep',
-      position: parseInt(step.num),
-      name: step.title,
-      text: step.description,
-    })),
+    '@graph': [
+      {
+        '@type': 'HowTo',
+        '@id': 'https://www.artistora.com/how-it-works#howto-customer',
+        name: 'How to Book an Artist on Artistora',
+        description:
+          'Book verified artists in Ahmedabad in 3 simple steps — share your event, compare quotes, and confirm.',
+        publisher: {
+          '@id': 'https://www.artistora.com/#organization',
+        },
+        step: customerSteps.map((step) => ({
+          '@type': 'HowToStep',
+          position: parseInt(step.num),
+          name: step.title,
+          text: step.description,
+        })),
+      },
+      {
+        '@type': 'HowTo',
+        '@id': 'https://www.artistora.com/how-it-works#howto-artist',
+        name: 'How to Join Artistora as an Artist',
+        description:
+          'Register as an artist on Artistora, receive booking requests, and grow your client base in Ahmedabad.',
+        publisher: {
+          '@id': 'https://www.artistora.com/#organization',
+        },
+        step: artistSteps.map((step) => ({
+          '@type': 'HowToStep',
+          position: parseInt(step.num),
+          name: step.title,
+          text: step.description,
+        })),
+      },
+    ],
   }
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToCustomer) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToArtist) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
       />
 
       <Breadcrumbs items={[{ label: 'How It Works' }]} />

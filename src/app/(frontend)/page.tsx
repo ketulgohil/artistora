@@ -14,7 +14,7 @@ import {
 import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
 
 export const metadata = withDefaultSeo({
-  title: 'Book Verified Artists in Ahmedabad — Mehndi, Makeup, Photo | Artistora',
+  title: 'Book Verified Artists in Ahmedabad — Mehndi, Makeup, Photo',
   description:
     'Artistora connects you with verified artists in Ahmedabad for weddings, events, and celebrations. Compare quotes from mehndi, photography, makeup, and decor professionals.',
   alternates: {
@@ -239,70 +239,83 @@ export default async function HomePage() {
     { value: '50+', label: 'Areas Covered' },
   ]
 
+  const homepageJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://www.artistora.com/#website',
+        url: 'https://www.artistora.com',
+        name: 'Artistora',
+        description:
+          'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and event planning.',
+        publisher: {
+          '@id': 'https://www.artistora.com/#organization',
+        },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: 'https://www.artistora.com/artists?search={search_term_string}',
+          },
+          'query-input': 'required name=search_term_string',
+        },
+        inLanguage: 'en-IN',
+      },
+      {
+        '@type': ['LocalBusiness', 'ProfessionalService'],
+        '@id': 'https://www.artistora.com/#business',
+        name: 'Artistora',
+        url: 'https://www.artistora.com',
+        telephone: '+917405387720',
+        parentOrganization: {
+          '@id': 'https://www.artistora.com/#organization',
+        },
+        priceRange: '₹150 - ₹1,50,000',
+        currenciesAccepted: 'INR',
+        paymentAccepted: 'Cash, UPI, Credit Card, Bank Transfer',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'Ahmedabad',
+          addressRegion: 'Gujarat',
+          postalCode: '380015',
+          addressCountry: 'IN',
+        },
+        areaServed: {
+          '@type': 'City',
+          name: 'Ahmedabad',
+          containedInPlace: {
+            '@type': 'AdministrativeArea',
+            name: 'Gujarat',
+          },
+        },
+        sameAs: ['https://www.instagram.com/artistoraofficial'],
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': 'https://www.artistora.com/#faq',
+        isPartOf: {
+          '@id': 'https://www.artistora.com/#website',
+        },
+        mainEntity: faqs.slice(0, 6).map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: renderLexicalText(faq.answer),
+          },
+        })),
+      },
+    ],
+  }
+
   return (
     <>
-      {/* ── JSON-LD Structured Data ── */}
+      {/* ── JSON-LD Structured Data (Unified Knowledge Graph) ── */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'Artistora',
-            url: 'https://www.artistora.com',
-            description:
-              'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: {
-                '@type': 'EntryPoint',
-                urlTemplate: 'https://www.artistora.com/artists?search={search_term_string}',
-              },
-              'query-input': 'required name=search_term_string',
-            },
-          }),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'LocalBusiness',
-            name: 'Artistora',
-            description:
-              'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
-            url: 'https://www.artistora.com',
-            telephone: '+917405387720',
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: 'Ahmedabad',
-              addressRegion: 'Gujarat',
-              addressCountry: 'IN',
-            },
-            areaServed: {
-              '@type': 'City',
-              name: 'Ahmedabad',
-            },
-            sameAs: ['https://www.instagram.com/artistoraofficial'],
-          }),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: faqs.slice(0, 6).map((faq) => ({
-              '@type': 'Question',
-              name: faq.question,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: renderLexicalText(faq.answer),
-              },
-            })),
-          }),
+          __html: JSON.stringify(homepageJsonLd),
         }}
       />
 

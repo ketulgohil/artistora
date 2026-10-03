@@ -494,7 +494,7 @@ async function getUncontactedArtists(
   try {
     const res = await payload.find({
       collection: 'discovered-artists',
-      limit: 500,
+      limit: 2000,
     })
 
     const categoryDocs = (res.docs || []).filter((doc: any) => {
@@ -587,94 +587,163 @@ async function getUncontactedArtists(
   return resultList
 }
 
+// WhatsApp Safety Limits & Anti-Ban Protections
+const DAILY_WHATSAPP_CAP = 15 // Meta safe threshold for cold outbound messages per 24h
+const JITTER_MIN_SECONDS = 90 // Min 1.5 minutes between consecutive messages
+const JITTER_MAX_SECONDS = 160 // Max 2.5+ minutes between consecutive messages
+const MICRO_BATCH_SIZE = 3 // Take a 3-minute pause every 3 messages
+const MICRO_BATCH_PAUSE_MS = 180000 // 3-minute micro-break
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
 /**
- * Builds tailored, category-specific Gujarati/Hindi/English outreach messages.
+ * Checks how many WhatsApp messages have been sent in the last 24 hours.
+ */
+async function getWhatsAppSentCountLast24Hours(payload: any): Promise<number> {
+  try {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const recent = await payload.find({
+      collection: 'outreach-messages',
+      where: {
+        and: [
+          { channel: { equals: 'whatsapp' } },
+          { status: { equals: 'sent' } },
+          { sentAt: { greater_than_equal: yesterday } },
+        ],
+      },
+      limit: 200,
+    })
+    return recent.docs.length
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * WhatsApp Dynamic Spintax Engine (1,600+ unique message variations).
+ * Generates unique, natural, conversational messages for every single artist.
+ * Uses category-specific phrasing, short conversational pitch, opt-out note, and NO raw links.
  */
 function buildMessage(artist: OutreachTarget): string {
-  const shortName = artist.cleanName || artist.name
+  const shortName = artist.cleanName || cleanArtistName(artist.name)
 
-  if (artist.category === 'mehndi') {
-    return `🙏 Namaste ${shortName} Team,
+  const cat = artist.category
+  const isMehndi = cat === 'mehndi'
+  const isMakeup = cat === 'makeup'
+  const isDecor = cat === 'decor'
 
-Aapka Ahmedabad me Mehndi work aur Google par 5★ rating sach me impressive hai! ✨
+  const greetings = [
+    `🙏 Namaste ${shortName} ji,`,
+    `🙏 Namaste ${shortName} Team,`,
+    `Hello ${shortName} ji,`,
+    `Kem cho ${shortName} Team! 🙏`,
+    `Hi ${shortName},`,
+  ]
 
-Hum *Artistora* (artistora.com) — Ahmedabad ka exclusive Artist Marketplace launch kar rahe hain, jaha clients directly verified artists se connect karte hain.
+  let compliments: string[] = []
+  let serviceLabel = ''
 
-🚀 *Aapke liye Benefits:*
-• Free Dedicated Profile & Portfolio Page
-• Direct Customer Calls & WhatsApp Bookings
-• 0% Commission / No Hidden Charges
-• Bridal & Event Booking Alerts
-
-👉 *Join Free Today:* https://www.artistora.com/register#artist
-
-Profile listing ya setup karne me agar aapko koi bhi assistance chahiye, to aap hume yaha reply kar sakte hain — we are happy to guide you! 👍
-
-Warm regards,
-Team Artistora | Ahmedabad`
+  if (isMehndi) {
+    serviceLabel = 'Mehndi Art'
+    compliments = [
+      `Aapka Ahmedabad me bridal mehndi design work sach me bahut sundar aur impressive hai! ✨`,
+      `Aapka bridal mehndi & henna artwork Ahmedabad me kafi popular aur aesthetic hai! 🌿`,
+      `Aapke Ahmedabad wedding mehndi designs hume bahut unique aur detailed lage! ✨`,
+      `Aapka intricate mehndi portfolio aur client reviews Ahmedabad me bahut badhiya hain! 👍`,
+    ]
+  } else if (isMakeup) {
+    serviceLabel = 'Bridal Makeup & Makeover'
+    compliments = [
+      `Aapka bridal makeover aur makeup styling Ahmedabad me sach me bahut aesthetic hai! ✨`,
+      `Aapke bridal makeup looks aur styling work Ahmedabad weddings me kafi popular hain! 💄`,
+      `Aapka bridal makeover portfolio aur glam finishes sach me bahut professional hain! ✨`,
+      `Aapka makeup artistry work Ahmedabad me bahut popular aur graceful hai! 👍`,
+    ]
+  } else if (isDecor) {
+    serviceLabel = 'Event & Wedding Decor'
+    compliments = [
+      `Aapka wedding decor & mandap setup work Ahmedabad me sach me bahut grand aur aesthetic hai! ✨`,
+      `Aapke stage decor aur wedding theme concepts Ahmedabad venues par bahut impressive hain! 🎪`,
+      `Aapka event decoration and planning portfolio Ahmedabad me kafi popular hai! ✨`,
+    ]
+  } else {
+    serviceLabel = 'Wedding Photography'
+    compliments = [
+      `Aapka wedding photography aur candid cinematography work Ahmedabad me sach me bahut crisp hai! 📸`,
+      `Aapke wedding shoots aur candid frames Ahmedabad me bahut aesthetic aur creative hain! ✨`,
+      `Aapka wedding photography portfolio aur captures sach me bahut impressive hain! 📸`,
+    ]
   }
 
-  if (artist.category === 'decor') {
-    return `🙏 Namaste ${shortName} Team,
+  const intros = [
+    `Hum *Artistora* (artistora.com) se hain — Ahmedabad ka exclusive marketplace jaha clients directly verified ${serviceLabel} artists se connect karte hain.`,
+    `Hum *Artistora* — Ahmedabad-focused platform build kar rahe hain jo upcoming wedding season ke liye brides aur families ko direct verified artists se connect karta hai.`,
+    `Hum *Artistora* launch kar rahe hain — Ahmedabad ka dedicated artist platform jaha aapko direct client booking inquiries milti hain with 0% commission.`,
+  ]
 
-Aapka event decoration & wedding planning work Ahmedabad me bahut popular aur impressive hai! ✨
+  const valueProps = [
+    `Aapke liye hum ek *Free Dedicated Profile & Portfolio Page* provide kar rahe hain, jisme direct client calls & WhatsApp bookings aati hain bina kisi commission ya middleman ke.`,
+    `Upcoming wedding season ke liye hum verified local artists ko onboard kar rahe hain jisme 100% direct client contact aur zero commission rehta hai.`,
+    `Aap apna verified profile listing claim kar sakte hain jisse aapko Ahmedabad ke high-intent client leads directly WhatsApp par milenge (0% fees).`,
+  ]
 
-Hum *Artistora* (artistora.com) — Ahmedabad ka exclusive Artist & Event Marketplace launch kar rahe hain, jaha clients directly verified decor artists aur event planners se connect karte hain.
+  const callsToAction = [
+    `Kya hum aapki free profile activate karein? Agar haan, to bas yaha *'YES'* reply karein — hamari team aapki profile setup kar degi! 👍`,
+    `Agar aap apna free artist profile list karna chahte hain, to bas yaha *'YES'* reply karein — we will guide you! 👍`,
+    `Kya aap upcoming wedding season ke direct bookings ke liye interested hain? Yaha reply karein to hum details share karte hain! 👍`,
+  ]
 
-🚀 *Aapke liye Benefits:*
-• Free Dedicated Profile & Portfolio Page
-• Direct Customer Calls & WhatsApp Bookings
-• 0% Commission / No Hidden Charges
-• High-budget Wedding & Event Inquiries
+  const signoffs = [
+    `Warm regards,\nTeam Artistora | Ahmedabad\n_(Agar interested nahi hain to 'STOP' reply karein)_`,
+    `Best regards,\nTeam Artistora • Ahmedabad\n_(Not interested? Reply 'STOP' to opt out)_`,
+    `Dhanyawad,\nTeam Artistora | Ahmedabad\n_(Aage message na chahiye to 'STOP' likhein)_`,
+  ]
 
-👉 *Join Free Today:* https://www.artistora.com/register#artist
+  const greeting = pickRandom(greetings)
+  const compliment = pickRandom(compliments)
+  const intro = pickRandom(intros)
+  const valueProp = pickRandom(valueProps)
+  const cta = pickRandom(callsToAction)
+  const signoff = pickRandom(signoffs)
 
-Agar aapko profile register karne me koi bhi guidance chahiye, to aap hume yaha reply kar sakte hain — we are happy to help! 👍
+  return `${greeting}\n\n${compliment}\n\n${intro}\n\n${valueProp}\n\n👉 ${cta}\n\n${signoff}`
+}
 
-Warm regards,
-Team Artistora | Ahmedabad`
-  }
+/**
+ * Emulates human presence, online state, and realistic typing behavior before message dispatch.
+ */
+async function sendHumanWhatsAppMessage(
+  sock: any,
+  jid: string,
+  text: string,
+): Promise<{ key?: { id?: string } }> {
+  // 1. Mark presence as 'available'
+  try {
+    await sock.sendPresenceUpdate('available')
+    await sleep(1500)
+  } catch {}
 
-  if (artist.category === 'makeup') {
-    return `🙏 Namaste ${shortName} Team,
+  // 2. Mark presence as 'composing' (typing indicator)
+  try {
+    await sock.sendPresenceUpdate('composing', jid)
+  } catch {}
 
-Aapka bridal makeover aur makeup work Ahmedabad me sach me bahut aesthetic aur popular hai! ✨
+  // 3. Human typing delay based on message length (3.5s to 7.5s)
+  const typingSeconds = Math.min(7.5, Math.max(3.5, text.length / 45))
+  console.log(`   ✍️ Simulating human typing presence (${typingSeconds.toFixed(1)}s)...`)
+  await sleep(typingSeconds * 1000)
 
-Hum *Artistora* (artistora.com) — Ahmedabad ka exclusive Wedding Artist Marketplace launch kar rahe hain, jaha brides directly verified makeup artists se connect karti hain.
+  // 4. Pause typing
+  try {
+    await sock.sendPresenceUpdate('paused', jid)
+    await sleep(400)
+  } catch {}
 
-🚀 *Aapke liye Benefits:*
-• Free Dedicated Profile & Makeup Portfolio Page
-• Direct Bridal Calls & WhatsApp Inquiries
-• 0% Commission / No Hidden Fees
-• High-Intent Wedding Season Client Bookings
-
-👉 *Join Free Today:* https://www.artistora.com/register#artist
-
-Profile setup karne me agar aapko koi bhi guidance chahiye, to aap hume yaha reply kar sakte hain — we are happy to assist! 👍
-
-Warm regards,
-Team Artistora | Ahmedabad`
-  }
-
-  // Photography
-  return `🙏 Namaste ${shortName} Team,
-
-Aapka wedding photography aur candid cinematography work Ahmedabad me sach me bahut impressive hai! 📸✨
-
-Hum *Artistora* (artistora.com) — Ahmedabad ka exclusive Wedding Artist Marketplace launch kar rahe hain, jaha couples directly verified photographers aur cinematographers se connect karte hain.
-
-🚀 *Aapke liye Benefits:*
-• Free Dedicated Profile & Photography Portfolio Page
-• Direct Couple Calls & WhatsApp Inquiries
-• 0% Commission / No Intermediary Cuts
-• Pre-Wedding & Wedding Season Client Leads
-
-👉 *Join Free Today:* https://www.artistora.com/register#artist
-
-Profile setup karne me agar aapko koi guidance chahiye, to aap hume yaha reply kar sakte hain — we are happy to guide you! 👍
-
-Warm regards,
-Team Artistora | Ahmedabad`
+  // 5. Send message
+  const result = await sock.sendMessage(jid, { text })
+  return result
 }
 
 /**
@@ -695,31 +764,69 @@ async function startBatch() {
 
   const payload = await getPayloadClient()
 
-  // 1. Check Full Outreach History from Database
+  // 1. Safety Check: Verify 24-Hour WhatsApp Rate Limit Quota
+  const sentLast24h = await getWhatsAppSentCountLast24Hours(payload)
+  console.log(`📊 24-Hour WhatsApp Activity: ${sentLast24h}/${DAILY_WHATSAPP_CAP} sent`)
+
+  if (sentLast24h >= DAILY_WHATSAPP_CAP) {
+    console.log(
+      `\n🛑 SAFETY PAUSE: Daily WhatsApp limit of ${DAILY_WHATSAPP_CAP} reached in the last 24 hours.`,
+    )
+    console.log(
+      `   To permanently protect your number from WhatsApp spam bans, outreach will resume tomorrow.\n`,
+    )
+    process.exit(0)
+  }
+
+  const safeBatchLimit = Math.min(limitArg, DAILY_WHATSAPP_CAP - sentLast24h)
+  console.log(`🎯 Safe batch limit for this run: ${safeBatchLimit} messages (Anti-Ban Threshold)\n`)
+
+  // 2. Check Full Outreach History from Database
   console.log('🔍 Analyzing database for previously contacted artists & past messages...')
   const contactHistory = await getAlreadyContactedData(payload)
   console.log(
     `🛡️ Contact History Audit: ${contactHistory.phones.size} unique phone numbers & ${contactHistory.artistIds.size} artist profiles on record.\n`,
   )
 
-  // 2. Fetch strictly uncontacted artists dynamically from database by category
+  // 3. Fetch strictly uncontacted artists dynamically from database by category
   console.log('🔍 Filtering strictly uncontacted artists for this run...')
   const groups: { name: string; key: string; artists: OutreachTarget[] }[] = []
 
-  if (!categoryArg || categoryArg === 'mehndi') {
-    const mehndiList = await getUncontactedArtists(payload, 'mehndi', limitArg, contactHistory)
+  const requestedCategories = categoryArg
+    ? categoryArg.split(',').map((c) => c.trim().toLowerCase())
+    : []
+  const shouldInclude = (cat: string) =>
+    requestedCategories.length === 0 || requestedCategories.includes(cat)
+
+  if (shouldInclude('mehndi')) {
+    const mehndiList = await getUncontactedArtists(
+      payload,
+      'mehndi',
+      safeBatchLimit,
+      contactHistory,
+    )
     groups.push({ name: 'Mehndi Artists', key: 'mehndi', artists: mehndiList })
   }
-  if (!categoryArg || categoryArg === 'decor') {
-    const decorList = await getUncontactedArtists(payload, 'decor', limitArg, contactHistory)
+  if (shouldInclude('decor')) {
+    const decorList = await getUncontactedArtists(payload, 'decor', safeBatchLimit, contactHistory)
     groups.push({ name: 'Decor & Event Planners', key: 'decor', artists: decorList })
   }
-  if (!categoryArg || categoryArg === 'makeup') {
-    const makeupList = await getUncontactedArtists(payload, 'makeup', limitArg, contactHistory)
+  if (shouldInclude('makeup')) {
+    const makeupList = await getUncontactedArtists(
+      payload,
+      'makeup',
+      safeBatchLimit,
+      contactHistory,
+    )
     groups.push({ name: 'Makeup Artists', key: 'makeup', artists: makeupList })
   }
-  if (!categoryArg || categoryArg === 'photography' || categoryArg === 'photographer') {
-    const photoList = await getUncontactedArtists(payload, 'photography', limitArg, contactHistory)
+  if (shouldInclude('photography') || shouldInclude('photographer') || shouldInclude('photos')) {
+    const photoList = await getUncontactedArtists(
+      payload,
+      'photography',
+      safeBatchLimit,
+      contactHistory,
+    )
     groups.push({ name: 'Photographers', key: 'photography', artists: photoList })
   }
 
@@ -765,6 +872,7 @@ async function startBatch() {
   })
 
   let isProcessing = false
+  let isConnected = false
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update
@@ -776,18 +884,26 @@ async function startBatch() {
     }
 
     if (connection === 'close') {
+      isConnected = false
       const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
       console.log(
         `\n[WhatsApp] Connection closed (status: ${statusCode}). Reconnecting: ${shouldReconnect}`,
       )
-      if (!shouldReconnect) {
-        console.error('[WhatsApp] ❌ Logged out from WhatsApp. Please re-run auth.')
+      if (!shouldReconnect || statusCode === 401) {
+        console.error('[WhatsApp] ❌ Logged out from WhatsApp. Clearing expired session...')
+        try {
+          const { getUnifiedRedis } = await import('../src/outreach/redis-client')
+          const redis = getUnifiedRedis()
+          await redis.del('whatsapp:baileys:auth:tarball')
+          fs.rmSync(AUTH_DIR, { recursive: true, force: true })
+        } catch {}
       }
     }
 
     if (connection === 'open' && !isProcessing) {
       isProcessing = true
+      isConnected = true
       console.log(`\n✅ WhatsApp Connected successfully! (Account JID: ${sock.user?.id})\n`)
       console.log('⏳ Allowing connection to settle before dispatching...')
       await sleep(3000)
@@ -798,6 +914,10 @@ async function startBatch() {
       let overallSkipped = 0
 
       for (let gIdx = 0; gIdx < groups.length; gIdx++) {
+        if (!isConnected) {
+          console.warn('\n🛑 Disconnected from WhatsApp. Halting batch dispatch.')
+          break
+        }
         const group = groups[gIdx]
         console.log(`\n================================================================`)
         console.log(
@@ -806,6 +926,10 @@ async function startBatch() {
         console.log(`================================================================\n`)
 
         for (let i = 0; i < group.artists.length; i++) {
+          if (!isConnected) {
+            console.warn('\n🛑 Disconnected from WhatsApp. Halting batch dispatch.')
+            break
+          }
           const artist = group.artists[i]
           const cleanPhone = validateAndNormalizePhone(artist.phone)
 
@@ -837,7 +961,7 @@ async function startBatch() {
           )
 
           try {
-            const sendResult = await sock.sendMessage(jid, { text: messageText })
+            const sendResult = await sendHumanWhatsAppMessage(sock, jid, messageText)
             const messageId = sendResult?.key?.id || undefined
             overallSent++
             contactHistory.phones.add(cleanPhone)
@@ -852,7 +976,7 @@ async function startBatch() {
               await logOutreachMessage(cleanPhone, messageText, {
                 artistId: artist.id,
                 channel: 'whatsapp',
-                campaignName: `ahmedabad_${group.key}_outreach_v1`,
+                campaignName: `ahmedabad_${group.key}_outreach_v2`,
                 status: 'sent',
                 messageSid: messageId,
               })
@@ -861,13 +985,22 @@ async function startBatch() {
               console.warn(`   ⚠️ DB log notice: ${dbErr.message}`)
             }
 
-            // Human delay jitter between consecutive sends
+            // Micro-break every 3 messages (3 minutes) or standard jitter (90s - 160s)
             if (i < group.artists.length - 1) {
-              const delaySeconds = Math.floor(Math.random() * (65 - 45 + 1)) + 45
-              console.log(
-                `   ⏳ Human jitter delay: waiting ${delaySeconds}s before next message...`,
-              )
-              await sleep(delaySeconds * 1000)
+              if (overallSent % MICRO_BATCH_SIZE === 0) {
+                console.log(
+                  `\n☕ [Micro-Break] Pausing for ${(MICRO_BATCH_PAUSE_MS / 60000).toFixed(0)} minutes to maintain natural human pattern...`,
+                )
+                await sleep(MICRO_BATCH_PAUSE_MS)
+              } else {
+                const delaySeconds =
+                  Math.floor(Math.random() * (JITTER_MAX_SECONDS - JITTER_MIN_SECONDS + 1)) +
+                  JITTER_MIN_SECONDS
+                console.log(
+                  `   ⏳ Human jitter delay: waiting ${delaySeconds}s (${(delaySeconds / 60).toFixed(1)}m) before next message...`,
+                )
+                await sleep(delaySeconds * 1000)
+              }
             }
           } catch (sendErr: any) {
             console.error(`   ❌ Failed to deliver message to ${artist.name}: ${sendErr.message}`)

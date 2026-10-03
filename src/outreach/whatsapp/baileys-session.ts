@@ -33,7 +33,7 @@ export async function saveBaileysAuthToRedis(authDir: string): Promise<boolean> 
     secureTmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'baileys-auth-'))
     const tmpTar = path.join(secureTmpDir, `auth-${crypto.randomBytes(8).toString('hex')}.tar.gz`)
 
-    execFileSync('tar', ['-czf', tmpTar, '-C', authDir, '.'], { stdio: 'pipe', timeout: 5000 })
+    execFileSync('tar', ['-czf', tmpTar, '-C', authDir, '.'], { stdio: 'pipe', timeout: 20000 })
 
     const buf = fs.readFileSync(tmpTar)
     const b64 = buf.toString('base64')
@@ -72,10 +72,13 @@ export async function loadBaileysAuthFromRedis(authDir: string): Promise<boolean
 
     const buf = Buffer.from(b64, 'base64')
     secureTmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'baileys-restore-'))
-    const tmpTar = path.join(secureTmpDir, `restore-${crypto.randomBytes(8).toString('hex')}.tar.gz`)
+    const tmpTar = path.join(
+      secureTmpDir,
+      `restore-${crypto.randomBytes(8).toString('hex')}.tar.gz`,
+    )
     fs.writeFileSync(tmpTar, buf)
 
-    execFileSync('tar', ['-xzf', tmpTar, '-C', authDir], { stdio: 'pipe', timeout: 5000 })
+    execFileSync('tar', ['-xzf', tmpTar, '-C', authDir], { stdio: 'pipe', timeout: 20000 })
 
     const kbSize = (buf.length / 1024).toFixed(1)
     console.log(`[BaileysRedis] ✅ Restored auth credentials (${kbSize} KB) from Redis`)

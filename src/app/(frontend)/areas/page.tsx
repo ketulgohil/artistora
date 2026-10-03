@@ -155,9 +155,13 @@ export default async function AreasPage() {
   const areasItemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
+    '@id': 'https://www.artistora.com/areas#itemlist',
     name: 'Areas We Serve in Ahmedabad — Artistora',
     description:
       'Verified wedding and event artists available across 20+ localities in Ahmedabad with home-visit service.',
+    isPartOf: {
+      '@id': 'https://www.artistora.com/#website',
+    },
     numberOfItems: areas.length,
     itemListElement: areas.map((area, i) => ({
       '@type': 'ListItem',

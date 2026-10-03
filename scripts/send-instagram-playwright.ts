@@ -126,12 +126,71 @@ export function detectArtistCategory(
 }
 
 /**
+ * Cleans and formats an artist's name for natural greetings.
+ * Rejects stats ("53 posts", "10k followers"), strips business keywords and emojis,
+ * and extracts the real personal or studio name.
+ */
+export function cleanArtistNameForGreeting(rawName: string = '', handle: string = ''): string {
+  let name = (rawName || '').trim()
+
+  // Strict blacklist: reject stats, numbers, or UI action words
+  if (
+    !name ||
+    /\b\d+[\d,.]*\s*(posts?|followers?|following)\b/i.test(name) ||
+    /^(posts?|followers?|following|follow|following|message|contact|edit profile|share)$/i.test(
+      name,
+    ) ||
+    /^\d+[\d,.]*$/.test(name)
+  ) {
+    name = ''
+  }
+
+  // If name is empty, fall back to handle
+  if (!name) {
+    name = handle.replace(/^@/, '').replace(/[_.]/g, ' ').trim()
+  }
+
+  // Strip pipe, bullet, dash, colon, and parenthetical suffixes
+  name = name.split(/[|•\-–—:,()]/)[0].trim()
+
+  // Remove common city, role, and business keywords
+  name = name
+    .replace(
+      /\b(in\s+ahmedabad|ahmedabad|gujarat|india|artist|art|studio|salon|makeover|makeup|mehandi|mehndi|henna|photography|photographer|photos|films|filmmaker|events?|planners?|classes|academy|official|creations?)\b/gi,
+      '',
+    )
+    .trim()
+
+  // Strip emojis and non-alphanumeric special characters
+  name = name
+    .replace(/[^\w\s'&]/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  // If empty after stripping, derive from handle
+  if (!name || name.length < 2) {
+    const handleParts = handle.replace(/^@/, '').split(/[_.]/).filter(Boolean)
+    const firstWord = handleParts[0] || 'Artist'
+    name = firstWord.charAt(0).toUpperCase() + firstWord.slice(1)
+  }
+
+  // Capitalize words and take at most 2 words
+  const words = name
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .slice(0, 2)
+    .join(' ')
+
+  return words || 'Artist'
+}
+
+/**
  * Dynamic Spintax Message Generator.
  * Generates category-accurate, personalized message variations for every artist to prevent spam detection.
  */
 function generateDynamicInstagramMessage(artist: TargetArtist): string {
-  const rawName = artist.name || artist.handle.replace(/[_.]/g, ' ')
-  const cleanName = rawName.split(/[|•-]/)[0].trim()
+  const cleanName = cleanArtistNameForGreeting(artist.name, artist.handle)
 
   const detected = detectArtistCategory('', artist.name || '', artist.handle, artist.category || '')
   const cat = detected.category
@@ -177,9 +236,9 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
   }
 
   const intros = [
-    `We run Artistora (artistora.com), a verified marketplace for wedding & celebration artists in Ahmedabad.`,
-    `We're building Artistora (artistora.com) — Ahmedabad's dedicated platform connecting brides and families with top local artists.`,
-    `We're from Artistora (artistora.com), Ahmedabad's platform helping clients book verified wedding artists directly.`,
+    `We run Artistora, a verified marketplace for wedding & celebration artists in Ahmedabad.`,
+    `We're building Artistora — Ahmedabad's dedicated platform connecting brides and families with top local artists.`,
+    `We're from Artistora, Ahmedabad's platform helping clients book verified wedding artists directly.`,
   ]
 
   const valueProps = [
@@ -189,9 +248,9 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
   ]
 
   const ctas = [
-    `You can claim your verified artist profile in 2 mins here: https://www.artistora.com/register#artist`,
-    `Check it out and list your profile for free here: https://www.artistora.com/register#artist`,
-    `Would love to have you featured: https://www.artistora.com/register#artist`,
+    `✨ We'd love to list your portfolio for free (0% commission).\n👉 Reply "YES" or share your WhatsApp number, and we'll set it up for you!\n🔗 Or tap @artistoraofficial and check the link in our bio to register.`,
+    `✨ We are onboarding select verified artists for upcoming client inquiries (zero commission).\n👉 Reply here or drop your WhatsApp number to claim your free spot!\n🔗 Tap @artistoraofficial to visit our page & bio link.`,
+    `✨ We'd love to feature your work for clients looking for verified artists in Ahmedabad.\n👉 Reply "YES" and our team will create your live profile page!\n🔗 Or check the registration link in our bio @artistoraofficial.`,
   ]
 
   return `${pickRandom(greetings)} ${pickRandom(compliments)}\n\n${pickRandom(intros)} ${pickRandom(valueProps)}\n\n${pickRandom(ctas)}`
@@ -304,15 +363,38 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
 
     // 1. Extract Profile Header Name
     try {
-      const headerNames = await page
-        .locator('header section h1, header section h2, header section span[dir="auto"], header h2')
-        .allInnerTexts()
-      for (const t of headerNames) {
-        const cleaned = (t || '').trim()
-        if (cleaned && cleaned !== cleanHandle && !cleaned.includes('\n') && cleaned.length < 50) {
-          fullName = cleaned
-          break
+      const extracted = await page.evaluate((h) => {
+        const header = document.querySelector('header')
+        if (!header) return null
+
+        // Priority A: Header H1 display name
+        const h1 = header.querySelector('h1')
+        if (h1 && h1.innerText?.trim()) {
+          const t = h1.innerText.trim()
+          if (!/\b(posts?|followers?|following)\b/i.test(t)) return t
         }
+
+        // Priority B: Display name spans (excluding stats, action buttons, and pure numbers)
+        const candidateSpans = Array.from(
+          header.querySelectorAll('section span[dir="auto"], section div[dir="auto"], header h2'),
+        )
+        for (const el of candidateSpans) {
+          const t = (el as HTMLElement).innerText?.trim() || ''
+          if (!t || t.toLowerCase() === h.toLowerCase()) continue
+          if (
+            /\b(posts?|followers?|following|follow|following|message|contact|edit profile|share)\b/i.test(
+              t,
+            )
+          )
+            continue
+          if (/^\d+[\d,.]*$/.test(t)) continue
+          if (t.length >= 2 && t.length < 60) return t
+        }
+        return null
+      }, cleanHandle)
+
+      if (extracted) {
+        fullName = extracted
       }
     } catch {}
 
@@ -583,6 +665,7 @@ async function main() {
   console.log(`📁 Profile directory: ${PROFILE_DIR}\n`)
 
   const context = await chromium.launchPersistentContext(PROFILE_DIR, {
+    channel: 'chrome',
     headless: isHeadless,
     viewport: { width: 1280, height: 800 },
     userAgent:
@@ -593,10 +676,14 @@ async function main() {
       '--disable-blink-features=AutomationControlled',
       '--no-sandbox',
       '--disable-setuid-sandbox',
+      '--start-maximized',
     ],
   })
 
   const page = context.pages()[0] || (await context.newPage())
+  if (!isHeadless) {
+    await page.bringToFront().catch(() => {})
+  }
   await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(3000)
   await dismissPopups(page)

@@ -15,10 +15,14 @@ export default async function PortfolioPage() {
       ? {
           '@context': 'https://schema.org',
           '@type': 'ImageGallery',
+          '@id': 'https://www.artistora.com/portfolio#gallery',
           name: 'Artistora Portfolio Gallery',
           description:
             'Explore bridal mehndi, wedding photography, makeup looks, and event decor from verified artists in Ahmedabad.',
           url: 'https://www.artistora.com/portfolio',
+          isPartOf: {
+            '@id': 'https://www.artistora.com/#website',
+          },
           numberOfItems: items.length,
           itemListElement: items.slice(0, 30).map((item, i) => ({
             '@type': 'ImageObject',

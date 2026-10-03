@@ -24,7 +24,7 @@ const SECTION = 'py-16! md:py-24!'
 const customerFaq = [
   {
     q: 'How does Artistora work?',
-    a: 'Share your event details (date, venue, budget, artist type), compare quotes from verified local artists, and choose the one that fits. It\'s that simple — and completely free for customers.',
+    a: "Share your event details (date, venue, budget, artist type), compare quotes from verified local artists, and choose the one that fits. It's that simple — and completely free for customers.",
   },
   {
     q: 'Is it really free to use?',
@@ -40,11 +40,11 @@ const customerFaq = [
   },
   {
     q: 'Can I compare quotes from multiple artists?',
-    a: 'Absolutely. After submitting your event details, you\'ll receive quotes from multiple artists. Compare pricing, packages, portfolios, and reviews side by side before making a decision.',
+    a: "Absolutely. After submitting your event details, you'll receive quotes from multiple artists. Compare pricing, packages, portfolios, and reviews side by side before making a decision.",
   },
   {
     q: 'How do I book an artist?',
-    a: 'Submit your event details → receive quotes → select the artist you like → confirm the booking. You\'ll receive a confirmation with all event details and the artist\'s contact information.',
+    a: "Submit your event details → receive quotes → select the artist you like → confirm the booking. You'll receive a confirmation with all event details and the artist's contact information.",
   },
   {
     q: 'What if I need to cancel?',
@@ -52,7 +52,7 @@ const customerFaq = [
   },
   {
     q: 'Can I leave a review after the event?',
-    a: 'Yes. After a booking is completed, you\'ll receive a prompt to leave a review. Your honest feedback helps other customers and helps artists improve.',
+    a: "Yes. After a booking is completed, you'll receive a prompt to leave a review. Your honest feedback helps other customers and helps artists improve.",
   },
   {
     q: 'What areas in Ahmedabad do you cover?',
@@ -60,7 +60,7 @@ const customerFaq = [
   },
   {
     q: 'What types of events can I book artists for?',
-    a: 'Weddings, engagements, birthdays, corporate events, baby showers, festivals, family functions, and more. If you\'re celebrating, we have an artist for it.',
+    a: "Weddings, engagements, birthdays, corporate events, baby showers, festivals, family functions, and more. If you're celebrating, we have an artist for it.",
   },
 ]
 
@@ -87,11 +87,11 @@ const artistFaq = [
   },
   {
     q: 'How do I receive booking requests?',
-    a: 'When a customer submits event details matching your services, you\'ll receive a notification with all the information — date, venue, budget, and requirements. Respond with your best quote.',
+    a: "When a customer submits event details matching your services, you'll receive a notification with all the information — date, venue, budget, and requirements. Respond with your best quote.",
   },
   {
     q: 'What happens after a customer selects my quote?',
-    a: 'You\'ll receive a confirmation with event details. Coordinate directly with the customer. After the event, the customer leaves a review on your profile.',
+    a: "You'll receive a confirmation with event details. Coordinate directly with the customer. After the event, the customer leaves a review on your profile.",
   },
   {
     q: 'How do I update my profile or availability?',
@@ -101,19 +101,30 @@ const artistFaq = [
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [...customerFaq, ...artistFaq].map((item) => ({
-    '@type': 'Question',
-    name: item.q,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: item.a,
+  '@graph': [
+    {
+      '@type': 'FAQPage',
+      '@id': 'https://www.artistora.com/faq#faq',
+      name: 'Frequently Asked Questions — Artistora',
+      description:
+        'Answers about booking verified artists, pricing, cancellation, and artist onboarding in Ahmedabad.',
+      isPartOf: {
+        '@id': 'https://www.artistora.com/#website',
+      },
+      mainEntity: [...customerFaq, ...artistFaq].map((item) => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.a,
+        },
+      })),
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: ['h1', 'summary > span > span'],
+      },
     },
-  })),
-  speakable: {
-    '@type': 'SpeakableSpecification',
-    cssSelector: ['h1', 'h2', 'summary'],
-  },
+  ],
 }
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
@@ -130,7 +141,15 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
           <span>{question}</span>
         </span>
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
-          <svg className="h-4! w-4!" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            className="h-4! w-4!"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </span>
@@ -145,13 +164,19 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 export default function FaqPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <Breadcrumbs items={[{ label: 'FAQ' }]} />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-line/70 bg-white/60">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-light/20 blur-3xl"
+        />
         <div className={`relative ${CONTAINER} py-16! md:py-24!`}>
           <div className="mx-auto max-w-3xl! text-center">
             <p className="mb-4! flex items-center justify-center gap-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
@@ -173,8 +198,12 @@ export default function FaqPage() {
       <section className={SECTION}>
         <div className={CONTAINER}>
           <div className="mb-10! text-center">
-            <p className="mb-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">For Customers</p>
-            <h2 className="font-display text-2xl! font-semibold text-ink">Booking &amp; Event Questions</h2>
+            <p className="mb-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
+              For Customers
+            </p>
+            <h2 className="font-display text-2xl! font-semibold text-ink">
+              Booking &amp; Event Questions
+            </h2>
           </div>
           <div className="space-y-4!">
             {customerFaq.map((item, i) => (
@@ -188,8 +217,12 @@ export default function FaqPage() {
       <section className={`${SECTION} bg-cream/50`}>
         <div className={CONTAINER}>
           <div className="mb-10! text-center">
-            <p className="mb-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">For Artists</p>
-            <h2 className="font-display text-2xl! font-semibold text-ink">Registration &amp; Profile Questions</h2>
+            <p className="mb-3! text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-brand">
+              For Artists
+            </p>
+            <h2 className="font-display text-2xl! font-semibold text-ink">
+              Registration &amp; Profile Questions
+            </h2>
           </div>
           <div className="space-y-4!">
             {artistFaq.map((item, i) => (
@@ -204,7 +237,8 @@ export default function FaqPage() {
         <div className={`${CONTAINER} text-center`}>
           <h2 className="font-display text-2xl! font-semibold text-ink">Still have questions?</h2>
           <p className="mx-auto mt-3! max-w-lg! text-sm leading-relaxed text-ink-soft">
-            Can&apos;t find the answer you&apos;re looking for? Reach out to our team — we&apos;re happy to help.
+            Can&apos;t find the answer you&apos;re looking for? Reach out to our team — we&apos;re
+            happy to help.
           </p>
           <div className="mt-8! flex flex-wrap justify-center gap-4!">
             <Link

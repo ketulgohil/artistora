@@ -32,9 +32,13 @@ export default async function ArtistsPage() {
       ? {
           '@context': 'https://schema.org',
           '@type': 'ItemList',
+          '@id': 'https://www.artistora.com/artists#itemlist',
           name: 'Verified Artists in Ahmedabad',
           description:
             'Browse verified mehndi artists, photographers, makeup artists, and decor professionals in Ahmedabad on Artistora.',
+          isPartOf: {
+            '@id': 'https://www.artistora.com/#website',
+          },
           numberOfItems: (artists || []).length,
           itemListElement: (artists || []).slice(0, 20).map((artist: any, i: number) => ({
             '@type': 'ListItem',

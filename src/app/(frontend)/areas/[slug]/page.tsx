@@ -339,130 +339,137 @@ export default async function AreaPage({ params }: AreaPageProps) {
     'decor-event-planners': 'Decor & Events',
   }
 
-  const placeSchema = {
+  const areaFaqs = [
+    {
+      q: `How do I book a verified artist in ${area.name}?`,
+      a: `Submit your event details (date, time, service type) on Artistora. Verified artists in ${area.name} will send customized quotes within 24 hours. You can compare profiles, chat via WhatsApp, and confirm your booking with a small deposit.`,
+    },
+    {
+      q: `How much do artists cost in ${area.name}?`,
+      a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, photographers from ₹15,000, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.`,
+    },
+    {
+      q: `Do artists in ${area.name} offer home service?`,
+      a: `Yes. Many verified artists in ${area.name} offer home-visit services for bridal mehndi, makeup trials, and pre-event consultations. Check individual artist profiles for home-service availability.`,
+    },
+  ]
+
+  const areaJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'AdministrativeArea',
-    '@id': `https://www.artistora.com/areas/${slug}#place`,
-    name: `${area.name}, Ahmedabad`,
-    alternateName: area.name,
-    description: area.description,
-    containedInPlace: {
-      '@type': 'City',
-      name: 'Ahmedabad',
-      containedInPlace: {
+    '@graph': [
+      {
         '@type': 'AdministrativeArea',
-        name: 'Gujarat',
+        '@id': `https://www.artistora.com/areas/${slug}#place`,
+        name: `${area.name}, Ahmedabad`,
+        alternateName: area.name,
+        description: area.description,
         containedInPlace: {
-          '@type': 'Country',
-          name: 'India',
-        },
-      },
-    },
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: area.name,
-      addressRegion: 'Gujarat',
-      addressCountry: 'IN',
-    },
-  }
-
-  const serviceSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    '@id': `https://www.artistora.com/areas/${slug}#service`,
-    name: `Artists in ${area.name}, Ahmedabad`,
-    description: area.description,
-    provider: {
-      '@type': 'Organization',
-      name: 'Artistora',
-      url: 'https://www.artistora.com',
-    },
-    areaServed: {
-      '@type': 'AdministrativeArea',
-      name: `${area.name}, Ahmedabad`,
-      containedInPlace: {
-        '@type': 'City',
-        name: 'Ahmedabad',
-        containedInPlace: {
-          '@type': 'AdministrativeArea',
-          name: 'Gujarat',
-        },
-      },
-    },
-    serviceType: area.services,
-  }
-
-  const itemListSchema =
-    artists.length > 0
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
-          '@id': `https://www.artistora.com/areas/${slug}#artists`,
-          name: `Verified Artists in ${area.name}, Ahmedabad`,
-          description: `Browse verified bridal mehndi artists, wedding photographers, makeup artists, and event planners available in ${area.name}, Ahmedabad.`,
-          numberOfItems: artists.length,
-          itemListElement: artists.map((artist: any, index: number) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: artist.displayName,
-            url: `https://www.artistora.com/artists/${artist.slug}`,
-            item: {
-              '@type': 'ProfessionalService',
-              name: artist.displayName,
-              url: `https://www.artistora.com/artists/${artist.slug}`,
-              image: artist.profilePhoto?.filename
-                ? mediaFileUrl(artist.profilePhoto.filename)
-                : undefined,
-              ...(artist.artistType && typeLabels[artist.artistType]
-                ? { serviceType: typeLabels[artist.artistType] }
-                : {}),
-              address: {
-                '@type': 'PostalAddress',
-                addressLocality: artist.area ? `${area.name}, Ahmedabad` : 'Ahmedabad',
-                addressRegion: 'Gujarat',
-                addressCountry: 'IN',
-              },
-              areaServed: {
-                '@type': 'AdministrativeArea',
-                name: `${area.name}, Ahmedabad`,
-              },
-              ...(typeof artist.rating === 'number' && artist.rating > 0
-                ? {
-                    aggregateRating: {
-                      '@type': 'AggregateRating',
-                      ratingValue: artist.rating.toFixed(1),
-                      reviewCount: String(Math.max(1, artist.reviewCount || 1)),
-                      bestRating: '5',
-                      worstRating: '1',
-                    },
-                  }
-                : {}),
-              ...(typeof artist.startingPrice === 'number' && artist.startingPrice > 0
-                ? {
-                    priceRange: `₹${artist.startingPrice.toLocaleString('en-IN')}+`,
-                  }
-                : {}),
+          '@type': 'City',
+          name: 'Ahmedabad',
+          containedInPlace: {
+            '@type': 'AdministrativeArea',
+            name: 'Gujarat',
+            containedInPlace: {
+              '@type': 'Country',
+              name: 'India',
             },
-          })),
-        }
-      : null
+          },
+        },
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: area.name,
+          addressRegion: 'Gujarat',
+          addressCountry: 'IN',
+        },
+      },
+      {
+        '@type': 'Service',
+        '@id': `https://www.artistora.com/areas/${slug}#service`,
+        name: `Artists in ${area.name}, Ahmedabad`,
+        description: area.description,
+        provider: {
+          '@id': 'https://www.artistora.com/#organization',
+        },
+        areaServed: {
+          '@id': `https://www.artistora.com/areas/${slug}#place`,
+        },
+        serviceType: area.services,
+      },
+      ...(artists.length > 0
+        ? [
+            {
+              '@type': 'ItemList',
+              '@id': `https://www.artistora.com/areas/${slug}#artists`,
+              name: `Verified Artists in ${area.name}, Ahmedabad`,
+              description: `Browse verified bridal mehndi artists, wedding photographers, makeup artists, and event planners available in ${area.name}, Ahmedabad.`,
+              numberOfItems: artists.length,
+              itemListElement: artists.map((artist: any, index: number) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                name: artist.displayName,
+                url: `https://www.artistora.com/artists/${artist.slug}`,
+                item: {
+                  '@type': 'ProfessionalService',
+                  name: artist.displayName,
+                  url: `https://www.artistora.com/artists/${artist.slug}`,
+                  image: artist.profilePhoto?.filename
+                    ? mediaFileUrl(artist.profilePhoto.filename)
+                    : undefined,
+                  ...(artist.artistType && typeLabels[artist.artistType]
+                    ? { serviceType: typeLabels[artist.artistType] }
+                    : {}),
+                  address: {
+                    '@type': 'PostalAddress',
+                    addressLocality: artist.area ? `${area.name}, Ahmedabad` : 'Ahmedabad',
+                    addressRegion: 'Gujarat',
+                    addressCountry: 'IN',
+                  },
+                  areaServed: {
+                    '@id': `https://www.artistora.com/areas/${slug}#place`,
+                  },
+                  ...(typeof artist.rating === 'number' && artist.rating > 0
+                    ? {
+                        aggregateRating: {
+                          '@type': 'AggregateRating',
+                          ratingValue: artist.rating.toFixed(1),
+                          reviewCount: String(Math.max(1, artist.reviewCount || 1)),
+                          bestRating: '5',
+                          worstRating: '1',
+                        },
+                      }
+                    : {}),
+                  ...(typeof artist.startingPrice === 'number' && artist.startingPrice > 0
+                    ? {
+                        priceRange: `₹${artist.startingPrice.toLocaleString('en-IN')}+`,
+                      }
+                    : {}),
+                },
+              })),
+            },
+          ]
+        : []),
+      {
+        '@type': 'FAQPage',
+        '@id': `https://www.artistora.com/areas/${slug}#faq`,
+        isPartOf: {
+          '@id': 'https://www.artistora.com/#website',
+        },
+        mainEntity: areaFaqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.q,
+          acceptedAnswer: { '@type': 'Answer', text: faq.a },
+        })),
+      },
+    ],
+  }
 
   return (
     <>
+      {/* ── JSON-LD Structured Data (Unified Graph) ── */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(areaJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
-      {itemListSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
-        />
-      )}
 
       <Breadcrumbs items={[{ label: 'Areas', href: '/areas' }, { label: area.name }]} />
 
@@ -662,63 +669,47 @@ export default async function AreaPage({ params }: AreaPageProps) {
           },
         ]
         return (
-          <>
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  '@context': 'https://schema.org',
-                  '@type': 'FAQPage',
-                  mainEntity: areaFaqs.map((faq) => ({
-                    '@type': 'Question',
-                    name: faq.q,
-                    acceptedAnswer: { '@type': 'Answer', text: faq.a },
-                  })),
-                }),
-              }}
-            />
-            <section className={`${SECTION} bg-cream/50`}>
-              <div className={CONTAINER}>
-                <SectionHeading title={`Frequently Asked Questions`} subtitle={`${area.name}`} />
-                <div className="mx-auto mt-10! max-w-3xl! space-y-3.5!">
-                  {areaFaqs.map((faq) => (
-                    <details
-                      key={faq.q}
-                      className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
-                    >
-                      <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
-                        <span className="flex items-center gap-3.5!">
-                          <span
-                            aria-hidden="true"
-                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
-                          >
-                            ?
-                          </span>
-                          <span>{faq.q}</span>
+          <section className={`${SECTION} bg-cream/50`}>
+            <div className={CONTAINER}>
+              <SectionHeading title={`Frequently Asked Questions`} subtitle={`${area.name}`} />
+              <div className="mx-auto mt-10! max-w-3xl! space-y-3.5!">
+                {areaFaqs.map((faq) => (
+                  <details
+                    key={faq.q}
+                    className="group rounded-2xl border border-line bg-white shadow-soft transition-all duration-200 hover:border-brand/30 open:border-brand/40 open:shadow-lift"
+                  >
+                    <summary className="flex cursor-pointer items-center justify-between gap-4! p-5! font-display text-[0.98rem]! font-semibold text-ink select-none list-none [&::-webkit-details-marker]:hidden md:text-base!">
+                      <span className="flex items-center gap-3.5!">
+                        <span
+                          aria-hidden="true"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand transition-colors group-open:bg-brand group-open:text-white"
+                        >
+                          ?
                         </span>
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
-                          <svg
-                            className="h-4! w-4!"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </span>
-                      </summary>
-                      <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
-                        <p className="text-sm leading-relaxed text-ink-soft">{faq.a}</p>
-                      </div>
-                    </details>
-                  ))}
-                </div>
+                        <span>{faq.q}</span>
+                      </span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream text-ink-muted transition-transform duration-300 group-open:rotate-180 group-open:bg-brand/10 group-open:text-brand">
+                        <svg
+                          className="h-4! w-4!"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </span>
+                    </summary>
+                    <div className="border-t border-line/60 px-5! pb-5! pt-3! md:px-6! md:pb-6!">
+                      <p className="text-sm leading-relaxed text-ink-soft">{faq.a}</p>
+                    </div>
+                  </details>
+                ))}
               </div>
-            </section>
-          </>
+            </div>
+          </section>
         )
       })()}
 

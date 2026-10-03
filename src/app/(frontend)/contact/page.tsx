@@ -4,7 +4,7 @@ import { withDefaultSeo } from '@/lib/seo'
 import { getSiteSettings } from '@/lib/payload'
 
 export const metadata = withDefaultSeo({
-  title: 'Contact Us — Book Verified Artists in Ahmedabad | Artistora',
+  title: 'Contact Us — Book Verified Artists in Ahmedabad',
   description:
     'Get in touch with Artistora to book verified mehndi artists, photographers, makeup artists, and event decor in Ahmedabad. Call or WhatsApp +91 7405387720.',
   alternates: {
@@ -125,15 +125,26 @@ export default async function ContactPage() {
   const contactPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
+    '@id': 'https://www.artistora.com/contact#page',
     name: 'Contact Artistora',
     description:
       'Get in touch with Artistora for bookings, artist inquiries, or partnership opportunities in Ahmedabad.',
     url: 'https://www.artistora.com/contact',
+    isPartOf: {
+      '@id': 'https://www.artistora.com/#website',
+    },
     mainEntity: {
       '@type': 'Organization',
+      '@id': 'https://www.artistora.com/#organization',
       name: businessName,
       telephone: phone,
       email: email,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: phone,
+        contactType: 'customer support',
+        availableLanguage: ['English', 'Hindi', 'Gujarati'],
+      },
     },
   }
 

@@ -31,9 +31,7 @@ export async function generateMetadata({
   const location = artist.city || 'Ahmedabad'
   const title =
     (artist as any).metaTitle ||
-    (service
-      ? `${name} — ${service} in ${location} | Artistora`
-      : `${name} — Verified Artist in ${location} | Artistora`)
+    (service ? `${name} — ${service} in ${location}` : `${name} — Verified Artist in ${location}`)
   const description =
     (artist as any).metaDescription ||
     artist.bio?.slice(0, 160) ||

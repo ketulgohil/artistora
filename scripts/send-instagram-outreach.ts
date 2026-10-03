@@ -99,36 +99,30 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
           ]
 
   const intros = [
-    `We’re building Artistora (artistora.com) — an Ahmedabad-focused marketplace connecting verified artists directly with wedding clients with 0% commission.`,
-    `We run Artistora (artistora.com) — a dedicated platform in Ahmedabad that sends direct wedding & event booking inquiries to verified local artists (zero commission).`,
-    `We’ve launched Artistora (artistora.com) to help Ahmedabad couples find and book verified artists directly, with no hidden fees or commissions.`,
+    `We’re building Artistora — an Ahmedabad-focused marketplace connecting verified artists directly with wedding clients with 0% commission.`,
+    `We run Artistora — a dedicated platform in Ahmedabad that sends direct wedding & event booking inquiries to verified local artists (zero commission).`,
+    `We’ve launched Artistora to help Ahmedabad couples find and book verified artists directly, with no hidden fees or commissions.`,
   ]
 
   const invitations = [
-    `We’d love to feature your portfolio for upcoming wedding season inquiries. You can claim your free Founding Artist profile here in 1 minute:`,
-    `We are curating top verified artists in Ahmedabad and would love to list your portfolio. You can activate your profile free here:`,
-    `We’d love to feature your work for clients looking for verified artists in your area. Grab your free Founding Artist spot here:`,
+    `We’d love to feature your portfolio for upcoming wedding season inquiries with 0% commission.`,
+    `We are curating top verified artists in Ahmedabad and would love to list your portfolio for free.`,
+    `We’d love to feature your work for clients looking for verified artists in Ahmedabad.`,
   ]
 
-  const ctaLinks = [
-    `👉 https://www.artistora.com/register#artist`,
-    `👉 Claim free: https://www.artistora.com/register#artist`,
-  ]
-
-  const signoffs = [
-    `(Or if you're busy, just reply here and our team will set it up for you!)`,
-    `(Feel free to reply here if you'd like us to create and activate it for you!)`,
-    `(Or drop your WhatsApp number here and we will send your live profile link!)`,
+  const ctas = [
+    `✨ Reply "YES" or drop your WhatsApp number and our team will create your profile for you!\n🔗 Or tap @artistoraofficial and visit the link in bio to register.`,
+    `✨ Reply here with your WhatsApp number to claim your free Founding Artist spot!\n🔗 Or tap @artistoraofficial to check our profile and link in bio.`,
+    `✨ Reply "YES" here and we will set up your verified portfolio listing!\n🔗 Or check the registration link in our bio @artistoraofficial.`,
   ]
 
   const greeting = pickRandom(greetings)
   const compliment = pickRandom(compliments)
   const intro = pickRandom(intros)
   const invite = pickRandom(invitations)
-  const cta = pickRandom(ctaLinks)
-  const signoff = pickRandom(signoffs)
+  const cta = pickRandom(ctas)
 
-  return `${greeting} ${compliment}\n\n${intro}\n\n${invite}\n${cta}\n\n${signoff}`
+  return `${greeting} ${compliment}\n\n${intro} ${invite}\n\n${cta}`
 }
 
 async function getSentCountLast24Hours(payload: any): Promise<number> {

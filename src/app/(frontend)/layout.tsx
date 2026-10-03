@@ -59,22 +59,29 @@ export const metadata = {
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': 'https://www.artistora.com/#organization',
   name: 'Artistora',
   url: 'https://www.artistora.com',
-  logo: 'https://www.artistora.com/artistora/logo-full-white.png',
+  logo: {
+    '@type': 'ImageObject',
+    '@id': 'https://www.artistora.com/#logo',
+    url: 'https://www.artistora.com/artistora/logo-full-white.png',
+    caption: 'Artistora',
+  },
   description:
-    'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+    'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and event planning.',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Ahmedabad',
     addressRegion: 'Gujarat',
+    postalCode: '380015',
     addressCountry: 'IN',
   },
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: '+917405387720',
     contactType: 'customer service',
-    availableLanguage: 'English',
+    availableLanguage: ['English', 'Hindi', 'Gujarati'],
   },
   sameAs: ['https://www.instagram.com/artistoraofficial'],
 }
