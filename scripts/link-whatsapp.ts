@@ -19,6 +19,7 @@ import * as fs from 'fs'
 import { exec } from 'child_process'
 import dotenv from 'dotenv'
 import { saveBaileysAuthToRedis, loadBaileysAuthFromRedis } from '../src/outreach/whatsapp/baileys-session'
+import { getUnifiedRedis } from '../src/outreach/redis-client'
 
 dotenv.config()
 
@@ -277,10 +278,11 @@ async function startBaileysSocket() {
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
-    browser: Browsers.macOS('Desktop'),
+    browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 25000,
   })
 
   socketInstance.ev.on('creds.update', async () => {
@@ -336,6 +338,8 @@ async function startBaileysSocket() {
 // Initial fresh setup on manual server start
 try {
   fs.rmSync(AUTH_DIR, { recursive: true, force: true })
+  const redis = getUnifiedRedis()
+  redis.del('whatsapp:baileys:auth:tarball').catch(() => {})
 } catch {}
 
 server.listen(PORT, () => {

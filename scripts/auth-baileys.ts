@@ -21,7 +21,8 @@ import * as fs from 'fs'
 import { exec } from 'child_process'
 import readline from 'readline'
 import dotenv from 'dotenv'
-import { saveBaileysAuthToRedis, loadBaileysAuthFromRedis } from '../src/outreach/whatsapp/baileys-session'
+import { saveBaileysAuthToRedis } from '../src/outreach/whatsapp/baileys-session'
+import { getUnifiedRedis } from '../src/outreach/redis-client'
 
 dotenv.config()
 
@@ -97,10 +98,14 @@ async function main() {
   // Clear previous session for fresh auth
   try {
     fs.rmSync(AUTH_DIR, { recursive: true, force: true })
+    const redis = getUnifiedRedis()
+    await redis.del('whatsapp:baileys:auth:tarball')
+    console.log('🧹 Cleared prior session state from disk and Redis.')
   } catch {}
 
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
-  const { version } = await fetchLatestBaileysVersion()
+  const { version, isLatest } = await fetchLatestBaileysVersion()
+  console.log(`[Baileys] Connecting with WhatsApp Web version ${version.join('.')}${isLatest ? ' (latest)' : ''}...`)
 
   const usePairingCode = choice === '1'
 
@@ -109,8 +114,11 @@ async function main() {
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: choice === '3',
-    browser: Browsers.macOS('Desktop'),
+    browser: Browsers.macOS('Chrome'),
     syncFullHistory: false,
+    connectTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 25000,
   })
 
   sock.ev.on('creds.update', async () => {
