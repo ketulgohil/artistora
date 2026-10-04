@@ -18,6 +18,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { exec } from 'child_process'
 import dotenv from 'dotenv'
+import QRCode from 'qrcode'
 import {
   saveBaileysAuthToRedis,
   loadBaileysAuthFromRedis,
@@ -30,6 +31,7 @@ const AUTH_DIR = path.resolve(process.env.WHATSAPP_SESSION_DIR || '/tmp/baileys_
 const PORT = 3333
 
 let latestQr: string | null = null
+let latestQrDataUrl: string | null = null
 let currentPairingCode: string | null = null
 let connectionState: 'connecting' | 'qr_ready' | 'open' | 'closed' = 'connecting'
 let sseClients: http.ServerResponse[] = []
@@ -56,7 +58,12 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Origin': '*',
     })
     res.write(
-      `data: ${JSON.stringify({ state: connectionState, qr: latestQr, code: currentPairingCode })}\n\n`,
+      `data: ${JSON.stringify({
+        state: connectionState,
+        qr: latestQr,
+        qrDataUrl: latestQrDataUrl,
+        code: currentPairingCode,
+      })}\n\n`,
     )
     sseClients.push(res)
     req.on('close', () => {
@@ -85,7 +92,12 @@ const server = http.createServer(async (req, res) => {
           console.log(`[Baileys] Requesting fresh Pairing Code for +${clean}...`)
           currentPairingCode = await socketInstance.requestPairingCode(clean)
           console.log(`[Baileys] 👉 Pairing Code: ${currentPairingCode}`)
-          broadcastSse({ state: connectionState, qr: latestQr, code: currentPairingCode })
+          broadcastSse({
+            state: connectionState,
+            qr: latestQr,
+            qrDataUrl: latestQrDataUrl,
+            code: currentPairingCode,
+          })
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ success: true, code: currentPairingCode }))
         } else {
@@ -113,7 +125,6 @@ const server = http.createServer(async (req, res) => {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Artistora WhatsApp Linker</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
     :root { --brand: #ec6783; --navy: #04224B; --bg: #f8fafc; }
     * { box-sizing: border-box; }
@@ -126,7 +137,7 @@ const server = http.createServer(async (req, res) => {
     .tab-btn.active { background: white; color: var(--navy); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    canvas#qr-canvas { margin: 16px auto; display: block; border-radius: 14px; border: 1px solid #e2e8f0; background: white; padding: 8px; }
+    img#qr-img { margin: 16px auto; display: block; border-radius: 14px; border: 1px solid #e2e8f0; background: white; padding: 8px; }
     .steps { text-align: left; background: #f8fafc; border-radius: 12px; padding: 16px 20px; font-size: 13px; color: #475569; line-height: 1.6; margin-top: 20px; border: 1px solid #edf2f7; }
     .steps ol { margin: 0; padding-left: 20px; }
     .steps li { margin-bottom: 6px; }
@@ -161,8 +172,14 @@ const server = http.createServer(async (req, res) => {
 
       <!-- TAB 1: QR Code -->
       <div id="tab-qr" class="tab-content active">
-        <canvas id="qr-canvas" width="250" height="250"></canvas>
-        <div id="qr-status-msg" style="font-size: 13px; color: #64748b; margin-top: 8px;">Waiting for QR code stream...</div>
+        <div id="qr-container" style="min-height: 260px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+          <img id="qr-img" width="250" height="250" style="display: none;" alt="WhatsApp QR Code" />
+          <div id="qr-loading" style="padding: 40px 0; color: #64748b; font-size: 14px;">
+            <span class="loading-spinner" style="width: 24px; height: 24px; border-width: 3px;"></span>
+            <div style="margin-top: 12px;">Generating fresh QR code...</div>
+          </div>
+        </div>
+        <div id="qr-status-msg" style="font-size: 13px; color: #64748b; margin-top: 8px;">Scan with WhatsApp on your phone</div>
         <div class="steps">
           <ol>
             <li>Open <b>WhatsApp</b> on your phone.</li>
@@ -201,7 +218,7 @@ const server = http.createServer(async (req, res) => {
     <div id="success-screen" class="success-screen">
       <div class="success-icon">🎉</div>
       <h2 style="color: #15803d; margin: 0 0 8px;">WhatsApp Connected!</h2>
-      <p style="color: #475569; font-size: 14px; line-height: 1.5;">Session securely saved to Local Redis. You can now close this tab and send messages seamlessly.</p>
+      <p style="color: #475569; font-size: 14px; line-height: 1.5;">Session securely saved to Redis. You can now close this tab and send messages seamlessly.</p>
     </div>
   </div>
 
@@ -252,20 +269,24 @@ const server = http.createServer(async (req, res) => {
     evt.onmessage = (e) => {
       const data = JSON.parse(e.data);
       const statusBadge = document.getElementById('status');
+      const qrImg = document.getElementById('qr-img');
+      const qrLoading = document.getElementById('qr-loading');
 
       if (data.state === 'open') {
         statusBadge.className = 'status-badge connected';
         statusBadge.innerHTML = '✅ Connected Successfully';
         document.getElementById('main-content').style.display = 'none';
         document.getElementById('success-screen').style.display = 'block';
-      } else if (data.state === 'connecting') {
-        statusBadge.className = 'status-badge reconnecting';
-        statusBadge.innerHTML = '<span class="loading-spinner"></span> Finalizing WhatsApp Link...';
-      } else if (data.qr) {
+      } else if (data.qrDataUrl) {
         statusBadge.className = 'status-badge';
         statusBadge.innerHTML = '⚡ Ready to Scan';
-        document.getElementById('qr-status-msg').innerText = 'Live QR stream active. Scan with WhatsApp.';
-        QRCode.toCanvas(document.getElementById('qr-canvas'), data.qr, { width: 250, margin: 1 });
+        qrImg.src = data.qrDataUrl;
+        qrImg.style.display = 'block';
+        qrLoading.style.display = 'none';
+        document.getElementById('qr-status-msg').innerText = 'Live QR code ready. Scan with WhatsApp on your phone.';
+      } else if (data.state === 'connecting') {
+        statusBadge.className = 'status-badge reconnecting';
+        statusBadge.innerHTML = '<span class="loading-spinner"></span> Connecting to WhatsApp...';
       }
 
       if (data.code) {
@@ -310,9 +331,23 @@ async function startBaileysSocket() {
 
     if (qr) {
       latestQr = qr
+      try {
+        latestQrDataUrl = await QRCode.toDataURL(qr, {
+          margin: 1,
+          width: 280,
+          color: { dark: '#04224B', light: '#FFFFFF' },
+        })
+      } catch (err: any) {
+        console.error('[Baileys] QR DataURL error:', err.message)
+      }
       connectionState = 'qr_ready'
       console.log('[Baileys] Fresh QR code ready.')
-      broadcastSse({ state: connectionState, qr: latestQr, code: currentPairingCode })
+      broadcastSse({
+        state: connectionState,
+        qr: latestQr,
+        qrDataUrl: latestQrDataUrl,
+        code: currentPairingCode,
+      })
     }
 
     if (connection === 'close') {
@@ -326,6 +361,8 @@ async function startBaileysSocket() {
         console.log('[Baileys] Logged out - clearing auth state.')
         try {
           fs.rmSync(AUTH_DIR, { recursive: true, force: true })
+          const redis = getUnifiedRedis()
+          redis.del('whatsapp:baileys:auth:tarball').catch(() => {})
         } catch {}
       }
 
@@ -345,7 +382,7 @@ async function startBaileysSocket() {
 
       await saveCreds()
       await saveBaileysAuthToRedis(AUTH_DIR)
-      console.log('✅ Auth saved to Local Redis.')
+      console.log('✅ Auth saved to Redis.')
     }
   })
 }
