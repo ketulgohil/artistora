@@ -471,28 +471,30 @@ describe('API', () => {
         'base64',
       )
 
-      const media1 = await payload.create({
-        collection: 'media',
-        data: { alt: 'Bulk Sample 1', uploadedBy: artistUserId },
-        file: {
-          data: gifBuffer1,
-          mimetype: 'image/gif',
-          name: 'bulk1.gif',
-          size: gifBuffer1.length,
-        },
-        overrideAccess: true,
-      })
-      const media2 = await payload.create({
-        collection: 'media',
-        data: { alt: 'Bulk Sample 2', uploadedBy: artistUserId },
-        file: {
-          data: gifBuffer2,
-          mimetype: 'image/gif',
-          name: 'bulk2.gif',
-          size: gifBuffer2.length,
-        },
-        overrideAccess: true,
-      })
+      const [media1, media2] = await Promise.all([
+        payload.create({
+          collection: 'media',
+          data: { alt: 'Bulk Sample 1', uploadedBy: artistUserId },
+          file: {
+            data: gifBuffer1,
+            mimetype: 'image/gif',
+            name: 'bulk1.gif',
+            size: gifBuffer1.length,
+          },
+          overrideAccess: true,
+        }),
+        payload.create({
+          collection: 'media',
+          data: { alt: 'Bulk Sample 2', uploadedBy: artistUserId },
+          file: {
+            data: gifBuffer2,
+            mimetype: 'image/gif',
+            name: 'bulk2.gif',
+            size: gifBuffer2.length,
+          },
+          overrideAccess: true,
+        }),
+      ])
 
       expect(media1.id).toBeDefined()
       expect(media2.id).toBeDefined()
@@ -637,7 +639,7 @@ describe('API', () => {
     it('correctly maps artist types to service categories', async () => {
       const { mapArtistTypeToServiceCategory } = await import('../../src/lib/payload')
       expect(mapArtistTypeToServiceCategory('makeup-artists')).toBe('makeup')
-      expect(mapArtistTypeToServiceCategory('photographers')).toBe('photography')
+      expect(mapArtistTypeToServiceCategory('nail-artists')).toBe('nail-art')
       expect(mapArtistTypeToServiceCategory('mehndi-artists')).toBe('mehndi')
       expect(mapArtistTypeToServiceCategory('decor-event-planners')).toBe('decor')
       expect(mapArtistTypeToServiceCategory('unknown-type')).toBe('other')
