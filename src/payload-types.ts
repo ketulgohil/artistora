@@ -404,7 +404,7 @@ export interface Artist {
   /**
    * Primary service category selected during registration
    */
-  artistType: 'mehndi-artists' | 'photographers' | 'makeup-artists' | 'nail-artists' | 'decor-event-planners';
+  artistType: 'mehndi-artists' | 'makeup-artists' | 'nail-artists' | 'decor-event-planners';
   services?: (number | Service)[] | null;
   styles?:
     | {

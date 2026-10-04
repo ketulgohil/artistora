@@ -93,7 +93,7 @@ export async function getServices() {
   return docs
 }
 
-export type ServiceCategory = 'mehndi' | 'photography' | 'makeup' | 'nail-art' | 'decor' | 'other'
+export type ServiceCategory = 'mehndi' | 'makeup' | 'nail-art' | 'decor' | 'other'
 
 export function mapArtistTypeToServiceCategory(artistType?: string | null): ServiceCategory {
   if (!artistType) return 'other'
@@ -101,19 +101,51 @@ export function mapArtistTypeToServiceCategory(artistType?: string | null): Serv
   if (norm.includes('nail')) return 'nail-art'
   if (norm.includes('makeup') || norm.includes('make-up') || norm.includes('beauty'))
     return 'makeup'
-  if (norm.includes('photo') || norm.includes('shoot') || norm.includes('camera'))
-    return 'photography'
   if (norm.includes('mehndi') || norm.includes('mehendi') || norm.includes('henna')) return 'mehndi'
   if (norm.includes('decor') || norm.includes('planner') || norm.includes('event')) return 'decor'
   return 'other'
+}
+
+export function normalizeCategory(category: string): ServiceCategory {
+  const lower = category.toLowerCase().trim()
+  if (lower.includes('mehndi') || lower.includes('henna')) {
+    return 'mehndi'
+  }
+  if (lower.includes('nail')) {
+    return 'nail-art'
+  }
+  if (lower.includes('makeup') || lower.includes('bridal') || lower.includes('makeover')) {
+    return 'makeup'
+  }
+  if (lower.includes('decor') || lower.includes('event') || lower.includes('mandap')) {
+    return 'decor'
+  }
+  return 'other'
+}
+
+export function categoryToSlug(category: ServiceCategory): string {
+  switch (category) {
+    case 'mehndi':
+      return 'mehndi-artists'
+    case 'nail-art':
+      return 'nail-artists'
+    case 'makeup':
+      return 'makeup-artists'
+    case 'decor':
+      return 'decor-planners'
+    default:
+      return 'all'
+  }
+}
+
+export function getArtistCategorySlugs(): string[] {
+  return ['mehndi-artists', 'makeup-artists', 'nail-artists', 'decor-event-planners']
 }
 
 export function formatServiceCategoryLabel(category?: string | null): string {
   switch (category) {
     case 'mehndi':
       return 'Mehndi'
-    case 'photography':
-      return 'Photography'
     case 'makeup':
       return 'Makeup'
     case 'nail-art':
@@ -177,12 +209,11 @@ export async function getPortfolioItems(
 
   if (typeof optionsOrSlug === 'string') {
     const normalized = optionsOrSlug.toLowerCase()
-    if (['mehndi', 'photography', 'makeup', 'nail-art', 'decor', 'other'].includes(normalized)) {
+    if (['mehndi', 'makeup', 'nail-art', 'decor', 'other'].includes(normalized)) {
       targetServiceCategory = normalized
     } else if (
       [
         'mehndi-artists',
-        'photographers',
         'makeup-artists',
         'nail-artists',
         'decor-event-planners',
