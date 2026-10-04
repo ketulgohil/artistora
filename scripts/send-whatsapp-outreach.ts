@@ -806,12 +806,7 @@ async function startBatch() {
     groups.push({ name: 'Mehndi Artists', key: 'mehndi', artists: mehndiList })
   }
   if (shouldInclude('nail') || shouldInclude('nail-artists') || shouldInclude('nails')) {
-    const nailList = await getUncontactedArtists(
-      payload,
-      'nail',
-      safeBatchLimit,
-      contactHistory,
-    )
+    const nailList = await getUncontactedArtists(payload, 'nail', safeBatchLimit, contactHistory)
     groups.push({ name: 'Nail Artists', key: 'nail', artists: nailList })
   }
   if (shouldInclude('decor')) {

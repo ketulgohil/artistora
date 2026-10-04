@@ -283,7 +283,8 @@ export interface Lead {
   eventLocation: string;
   guestCount?: number | null;
   budgetRange?:
-    ('under-2000' | '2000-5000' | '5000-10000' | '10000-20000' | '20000-50000' | 'above-50000' | 'unsure') | null;
+    | ('under-2000' | '2000-5000' | '5000-10000' | '10000-20000' | '20000-50000' | 'above-50000' | 'unsure')
+    | null;
   serviceType?: (number | null) | Service;
   designStyle?: string | null;
   additionalNotes?: string | null;
@@ -661,7 +662,8 @@ export interface Booking {
    */
   userId?: (number | null) | User;
   status?:
-    ('requested' | 'artist_pending' | 'confirmed' | 'in_progress' | 'completed' | 'declined' | 'cancelled') | null;
+    | ('requested' | 'artist_pending' | 'confirmed' | 'in_progress' | 'completed' | 'declined' | 'cancelled')
+    | null;
   declineReason?: string | null;
   cancelledBy?: ('customer' | 'artist' | 'admin' | 'system') | null;
   cancellationReason?: string | null;
