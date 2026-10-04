@@ -10,6 +10,7 @@ import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
   Browsers,
+  makeCacheableSignalKeyStore,
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
 import { Boom } from '@hapi/boom'
@@ -29,6 +30,7 @@ dotenv.config()
 
 const AUTH_DIR = path.resolve(process.env.WHATSAPP_SESSION_DIR || '/tmp/baileys_auth')
 const PORT = 3333
+const logger = pino({ level: 'silent' })
 
 let latestQr: string | null = null
 let latestQrDataUrl: string | null = null
@@ -311,11 +313,16 @@ async function startBaileysSocket() {
 
   socketInstance = makeWASocket({
     version,
-    auth: state,
-    logger: pino({ level: 'silent' }),
+    auth: {
+      creds: state.creds,
+      keys: makeCacheableSignalKeyStore(state.keys, logger),
+    },
+    logger,
     printQRInTerminal: false,
     browser: Browsers.macOS('Desktop'),
     syncFullHistory: false,
+    generateHighQualityLinkPreview: false,
+    markOnlineOnConnect: true,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
     keepAliveIntervalMs: 25000,

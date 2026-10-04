@@ -13,6 +13,7 @@ import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
   Browsers,
+  makeCacheableSignalKeyStore,
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
 import qrcode from 'qrcode-terminal'
@@ -29,6 +30,8 @@ import { getUnifiedRedis } from '../src/outreach/redis-client'
 dotenv.config()
 
 const AUTH_DIR = path.resolve(process.env.WHATSAPP_SESSION_DIR || '/tmp/baileys_auth')
+
+const logger = pino({ level: 'silent' })
 
 function askQuestion(query: string): Promise<string> {
   const rl = readline.createInterface({
@@ -102,92 +105,113 @@ async function main() {
     console.log('🧹 Cleared prior session state from disk and Redis.')
   } catch {}
 
-  const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
-  const { version, isLatest } = await fetchLatestBaileysVersion()
-  console.log(
-    `[Baileys] Connecting with WhatsApp Web version ${version.join('.')}${isLatest ? ' (latest)' : ''}...`,
-  )
-
   const usePairingCode = choice === '1'
+  let pairingCodeRequested = false
 
-  const sock = makeWASocket({
-    version,
-    auth: state,
-    logger: pino({ level: 'silent' }),
-    printQRInTerminal: false,
-    browser: Browsers.macOS('Desktop'),
-    syncFullHistory: false,
-    connectTimeoutMs: 60000,
-    defaultQueryTimeoutMs: 60000,
-    keepAliveIntervalMs: 25000,
-  })
+  async function connectToWhatsApp() {
+    const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
+    const { version, isLatest } = await fetchLatestBaileysVersion()
 
-  sock.ev.on('creds.update', async () => {
-    await saveCreds()
-    await saveBaileysAuthToRedis(AUTH_DIR)
-  })
+    console.log(
+      `[Baileys] Connecting with WhatsApp Web v${version.join('.')}${isLatest ? ' (latest)' : ''}...`,
+    )
 
-  if (usePairingCode && !sock.authState.creds.registered) {
-    setTimeout(async () => {
-      try {
-        console.log(`\nRequesting 8-digit Pairing Code for +${phoneNumber}...`)
-        const code = await sock.requestPairingCode(phoneNumber)
-        console.log('\n=========================================')
-        console.log(`👉 YOUR WHATSAPP PAIRING CODE:  ${code}`)
-        console.log('=========================================')
-        console.log('\nInstructions on your phone:')
-        console.log('1. Open WhatsApp → Settings (or 3 dots) → Linked Devices')
-        console.log('2. Tap "Link a Device"')
-        console.log('3. Tap "Link with phone number instead" at the bottom')
-        console.log(`4. Enter the code above: ${code}\n`)
-      } catch (err: any) {
-        console.error('Failed to request pairing code:', err.message)
-      }
-    }, 2000)
-  }
+    const sock = makeWASocket({
+      version,
+      auth: {
+        creds: state.creds,
+        keys: makeCacheableSignalKeyStore(state.keys, logger),
+      },
+      logger,
+      printQRInTerminal: false,
+      browser: Browsers.macOS('Desktop'),
+      syncFullHistory: false,
+      generateHighQualityLinkPreview: false,
+      markOnlineOnConnect: true,
+      connectTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 60000,
+      keepAliveIntervalMs: 25000,
+    })
 
-  sock.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect, qr } = update
-
-    if (qr) {
-      if (choice === '2') {
-        console.log('\nOpening QR code image in your default browser...')
-        try {
-          const dataUrl = await QRCode.toDataURL(qr, { margin: 1, width: 280 })
-          openHtmlQr(dataUrl)
-        } catch (e: any) {
-          console.error('QR Error:', e.message)
-        }
-      } else if (choice === '3' || !usePairingCode) {
-        console.log('\n📲 Scan this QR code with WhatsApp on your phone:\n')
-        qrcode.generate(qr, { small: true })
-      }
-    }
-
-    if (connection === 'close') {
-      const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut
-
-      if (shouldReconnect) {
-        console.log('[Baileys] Reconnecting...')
-      } else {
-        console.log('[Baileys] Disconnected/Logged out.')
-        process.exit(1)
-      }
-    } else if (connection === 'open') {
-      console.log('\n=========================================')
-      console.log('🎉 SUCCESS! WhatsApp Authenticated & Connected!')
-      console.log('=========================================\n')
-
+    sock.ev.on('creds.update', async () => {
       await saveCreds()
       await saveBaileysAuthToRedis(AUTH_DIR)
-      console.log('✅ Auth credentials saved to Local Redis.')
-      console.log('You can now run any outreach message script without scanning again!\n')
+    })
 
-      await new Promise((r) => setTimeout(r, 2000))
-      process.exit(0)
+    if (usePairingCode && !sock.authState.creds.registered && !pairingCodeRequested) {
+      pairingCodeRequested = true
+      setTimeout(async () => {
+        try {
+          console.log(`\nRequesting 8-digit Pairing Code for +${phoneNumber}...`)
+          const code = await sock.requestPairingCode(phoneNumber)
+          console.log('\n=========================================')
+          console.log(`👉 YOUR WHATSAPP PAIRING CODE:  ${code}`)
+          console.log('=========================================')
+          console.log('\nInstructions on your phone:')
+          console.log('1. Open WhatsApp → Settings (or 3 dots) → Linked Devices')
+          console.log('2. Tap "Link a Device"')
+          console.log('3. Tap "Link with phone number instead" at the bottom')
+          console.log(`4. Enter the code above: ${code}\n`)
+        } catch (err: any) {
+          pairingCodeRequested = false
+          console.error('Failed to request pairing code:', err.message)
+        }
+      }, 3000)
     }
-  })
+
+    sock.ev.on('connection.update', async (update) => {
+      const { connection, lastDisconnect, qr } = update
+
+      if (qr) {
+        if (choice === '2') {
+          console.log('\nOpening QR code image in your default browser...')
+          try {
+            const dataUrl = await QRCode.toDataURL(qr, { margin: 1, width: 280 })
+            openHtmlQr(dataUrl)
+          } catch (e: any) {
+            console.error('QR Error:', e.message)
+          }
+        } else if (choice === '3' || !usePairingCode) {
+          console.log('\n📲 Scan this QR code with WhatsApp on your phone:\n')
+          qrcode.generate(qr, { small: true })
+        }
+      }
+
+      if (connection === 'close') {
+        const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode
+        const isLoggedOut = statusCode === DisconnectReason.loggedOut
+
+        console.log(`[Baileys] Connection closed (code: ${statusCode}). Reconnecting...`)
+
+        if (isLoggedOut) {
+          console.log('[Baileys] Logged out / Unauthorized.')
+          try {
+            fs.rmSync(AUTH_DIR, { recursive: true, force: true })
+            const redis = getUnifiedRedis()
+            await redis.del('whatsapp:baileys:auth:tarball')
+          } catch {}
+          process.exit(1)
+        } else {
+          // Handshake restart required (code 515 / network blip) — reconnect to finalize handshake!
+          setTimeout(connectToWhatsApp, 1500)
+        }
+      } else if (connection === 'open') {
+        console.log('\n=========================================')
+        console.log('🎉 SUCCESS! WhatsApp Authenticated & Connected!')
+        console.log('=========================================\n')
+
+        await saveCreds()
+        await saveBaileysAuthToRedis(AUTH_DIR)
+        console.log('✅ Auth credentials saved to Redis.')
+        console.log('You can now run any outreach message script without scanning again!\n')
+
+        await new Promise((r) => setTimeout(r, 2000))
+        process.exit(0)
+      }
+    })
+  }
+
+  await connectToWhatsApp()
 }
 
 main().catch((err) => {
