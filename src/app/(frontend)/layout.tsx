@@ -28,7 +28,7 @@ export const metadata = {
     template: '%s | Artistora',
   },
   description:
-    'Artistora connects you with verified artists in Ahmedabad — mehndi, photography, makeup, decor, and more. Compare quotes and book in minutes.',
+    'Artistora connects you with verified artists in Ahmedabad — mehndi, makeup, nail art, decor, and more. Compare quotes and book in minutes.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -40,7 +40,7 @@ export const metadata = {
   openGraph: {
     title: 'Artistora — Book Verified Artists in Ahmedabad',
     description:
-      'Compare quotes from verified mehndi, photography, makeup, and decor artists in Ahmedabad.',
+      'Compare quotes from verified mehndi, makeup, nail art, and decor artists in Ahmedabad.',
     url: 'https://www.artistora.com',
     siteName: 'Artistora',
     images: [{ url: '/artistora/social-profile-1000x1000.png', width: 1000, height: 1000 }],
@@ -51,7 +51,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Artistora — Book Verified Artists in Ahmedabad',
     description:
-      'Compare quotes from verified artists in Ahmedabad — mehndi, photography, makeup, decor, and more.',
+      'Compare quotes from verified artists in Ahmedabad — mehndi, makeup, nail art, decor, and more.',
     images: ['/artistora/social-profile-1000x1000.png'],
   },
 }
@@ -69,7 +69,7 @@ const organizationSchema = {
     caption: 'Artistora',
   },
   description:
-    'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and event planning.',
+    'Verified artist marketplace in Ahmedabad — mehndi, makeup, nail art, decor, and event planning.',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Ahmedabad',

@@ -128,7 +128,7 @@ export default function Footer() {
                 Make your celebration unforgettable.
               </h2>
               <p className="mt-2! text-sm leading-relaxed text-cream/80">
-                Discover, compare quotes, and book verified mehndi, makeup, photography &amp; decor artists across Ahmedabad.
+                Discover, compare quotes, and book verified mehndi, makeup, nail art &amp; decor artists across Ahmedabad.
               </p>
             </div>
 
@@ -210,7 +210,7 @@ export default function Footer() {
               />
             </Link>
             <p className="max-w-sm text-sm leading-relaxed text-cream/65">
-              India&apos;s curated artist marketplace — discover, compare, and book verified photography, mehndi, makeup, decor, and event artists for every celebration.
+              India&apos;s curated artist marketplace — discover, compare, and book verified mehndi, makeup, nail art, decor, and event artists for every celebration.
             </p>
 
             {/* Quick Contact Action Chips (Mobile-friendly direct touch targets) */}

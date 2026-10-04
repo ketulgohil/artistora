@@ -32,7 +32,7 @@ const customerFaq = [
   },
   {
     q: 'How quickly will I receive quotes?',
-    a: 'Most customers receive 3-5 quotes within a few hours. Popular services like photographers and makeup artists may respond even faster.',
+    a: 'Most customers receive 3-5 quotes within a few hours. Popular services like mehndi and makeup artists may respond even faster.',
   },
   {
     q: 'Are the artists verified?',

@@ -8,14 +8,14 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 export const metadata = withDefaultSeo({
   title: 'Verified Artists in Ahmedabad — Find & Book Top Professionals',
   description:
-    'Discover verified mehndi artists, photographers, makeup artists, and decor professionals in Ahmedabad. Read reviews, compare quotes, and book instantly.',
+    'Discover verified mehndi artists, makeup artists, nail artists, and decor professionals in Ahmedabad. Read reviews, compare quotes, and book instantly.',
   alternates: {
     canonical: 'https://www.artistora.com/artists',
   },
   openGraph: {
     title: 'Verified Artists in Ahmedabad — Artistora',
     description:
-      'Discover verified mehndi, photography, makeup, and decor artists in Ahmedabad. Compare quotes and book.',
+      'Discover verified mehndi, makeup, nail art, and decor artists in Ahmedabad. Compare quotes and book.',
     url: 'https://www.artistora.com/artists',
     type: 'website',
   },
@@ -35,7 +35,7 @@ export default async function ArtistsPage() {
           '@id': 'https://www.artistora.com/artists#itemlist',
           name: 'Verified Artists in Ahmedabad',
           description:
-            'Browse verified mehndi artists, photographers, makeup artists, and decor professionals in Ahmedabad on Artistora.',
+            'Browse verified mehndi artists, makeup artists, nail artists, and decor professionals in Ahmedabad on Artistora.',
           isPartOf: {
             '@id': 'https://www.artistora.com/#website',
           },

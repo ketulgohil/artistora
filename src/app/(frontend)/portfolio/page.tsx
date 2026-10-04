@@ -18,7 +18,7 @@ export default async function PortfolioPage() {
           '@id': 'https://www.artistora.com/portfolio#gallery',
           name: 'Artistora Portfolio Gallery',
           description:
-            'Explore bridal mehndi, wedding photography, makeup looks, and event decor from verified artists in Ahmedabad.',
+            'Explore bridal mehndi, makeup looks, nail art, and event decor from verified artists in Ahmedabad.',
           url: 'https://www.artistora.com/portfolio',
           isPartOf: {
             '@id': 'https://www.artistora.com/#website',
@@ -68,7 +68,7 @@ export default async function PortfolioPage() {
 
           <p className="mx-auto mb-10! max-w-2xl! text-center text-sm leading-relaxed text-ink-soft">
             Explore authentic work from verified Artistora professionals across Ahmedabad — from
-            Mehndi and Wedding Photography to Bridal Makeup Looks and Event Decor.
+            Mehndi and Bridal Makeup Looks to Nail Art and Event Decor.
           </p>
 
           <PortfolioGrid initialItems={items} />

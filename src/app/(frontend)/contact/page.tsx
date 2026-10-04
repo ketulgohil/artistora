@@ -6,7 +6,7 @@ import { getSiteSettings } from '@/lib/payload'
 export const metadata = withDefaultSeo({
   title: 'Contact Us — Book Verified Artists in Ahmedabad',
   description:
-    'Get in touch with Artistora to book verified mehndi artists, photographers, makeup artists, and event decor in Ahmedabad. Call or WhatsApp +91 7405387720.',
+    'Get in touch with Artistora to book verified mehndi artists, makeup artists, nail artists, and event decor in Ahmedabad. Call or WhatsApp +91 7405387720.',
   alternates: {
     canonical: 'https://www.artistora.com/contact',
   },

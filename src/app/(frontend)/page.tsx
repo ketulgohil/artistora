@@ -14,16 +14,16 @@ import {
 import type { SiteSetting, Service, Testimonial, Faq } from '@/payload-types'
 
 export const metadata = withDefaultSeo({
-  title: 'Book Verified Artists in Ahmedabad — Mehndi, Makeup, Photo',
+  title: 'Book Verified Artists in Ahmedabad — Mehndi, Makeup, Nails, Decor',
   description:
-    'Artistora connects you with verified artists in Ahmedabad for weddings, events, and celebrations. Compare quotes from mehndi, photography, makeup, and decor professionals.',
+    'Artistora connects you with verified artists in Ahmedabad for weddings, events, and celebrations. Compare quotes from mehndi, makeup, nail art, and decor professionals.',
   alternates: {
     canonical: 'https://www.artistora.com',
   },
   openGraph: {
     title: 'Artistora — Book Verified Artists in Ahmedabad',
     description:
-      'Compare quotes from verified mehndi, photography, makeup, and decor artists in Ahmedabad.',
+      'Compare quotes from verified mehndi, makeup, nail art, and decor artists in Ahmedabad.',
     url: 'https://www.artistora.com',
   },
 })
@@ -115,27 +115,7 @@ function Star({ filled = true, label }: { filled?: boolean; label?: string }) {
   )
 }
 
-function ServiceIcon({ type }: { type: 'camera' | 'makeup' | 'decor' | 'mehndi' | 'nail' }) {
-  if (type === 'camera') {
-    return (
-      <svg
-        width="21"
-        height="21"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M4 7h3l1.4-2h7.2L17 7h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
-        <circle cx="12" cy="13" r="3.5" />
-        <path d="M18 10h.01" />
-      </svg>
-    )
-  }
-
+function ServiceIcon({ type }: { type: 'makeup' | 'decor' | 'mehndi' | 'nail' }) {
   if (type === 'makeup') {
     return (
       <svg
@@ -230,11 +210,6 @@ export default async function HomePage() {
 
   const signatureServices = [
     {
-      title: 'Photographers',
-      type: 'camera' as const,
-      text: 'Compare wedding, event, and portrait photographers with portfolios you can browse before you book.',
-    },
-    {
       title: 'Makeup Artists',
       type: 'makeup' as const,
       text: 'Find bridal, reception, and occasion makeup artists — trial-ready, hygiene-first, and camera-friendly.',
@@ -271,7 +246,7 @@ export default async function HomePage() {
         url: 'https://www.artistora.com',
         name: 'Artistora',
         description:
-          'Verified artist marketplace in Ahmedabad — mehndi, photography, makeup, decor, and event planning.',
+          'Verified artist marketplace in Ahmedabad — mehndi, makeup, nail art, decor, and event planning.',
         publisher: {
           '@id': 'https://www.artistora.com/#organization',
         },
@@ -361,8 +336,8 @@ export default async function HomePage() {
                 Book a verified artist in Ahmedabad in minutes.
               </h1>
               <p className="mt-6! max-w-xl! text-[1.02rem] leading-relaxed text-ink-soft">
-                Artistora connects you with vetted artists across Ahmedabad — mehndi, photography,
-                makeup, and decor. Compare free quotes, browse portfolios, and book the artist who
+                Artistora connects you with vetted artists across Ahmedabad — mehndi, makeup,
+                nail art, and decor. Compare free quotes, browse portfolios, and book the artist who
                 fits your event and budget.
               </p>
               <div className="mt-8! flex flex-wrap items-center gap-4!">
@@ -558,7 +533,6 @@ export default async function HomePage() {
               {featuredArtists.map((artist: any) => {
                 const typeLabels: Record<string, string> = {
                   'mehndi-artists': 'Mehndi Artist',
-                  photographers: 'Photographer',
                   'makeup-artists': 'Makeup Artist',
                   'nail-artists': 'Nail Artist',
                   'decor-event-planners': 'Decor & Events',

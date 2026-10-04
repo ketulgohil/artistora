@@ -18,11 +18,11 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 export const metadata = withDefaultSeo({
   title: 'Wedding & Event Artist Services in Ahmedabad',
   description:
-    'Browse verified artist services in Ahmedabad — bridal mehndi, wedding photography, makeup artists, and event decor. Compare free quotes and book online.',
+    'Browse verified artist services in Ahmedabad — bridal mehndi, makeup artists, nail artists, and event decor. Compare free quotes and book online.',
   keywords: [
     'wedding artist services ahmedabad',
     'bridal mehndi artist ahmedabad',
-    'wedding photographer ahmedabad',
+    'nail artist ahmedabad',
     'bridal makeup artist ahmedabad',
     'event decor planner ahmedabad',
     'artist booking ahmedabad',
@@ -33,7 +33,7 @@ export const metadata = withDefaultSeo({
   openGraph: {
     title: 'Wedding & Event Artist Services in Ahmedabad — Artistora',
     description:
-      'Photography, bridal mehndi, makeup, decor, and more — book verified artist services in Ahmedabad with home-visit availability.',
+      'Bridal mehndi, makeup, nail art, decor, and more — book verified artist services in Ahmedabad with home-visit availability.',
     url: 'https://www.artistora.com/services',
     type: 'website',
   },
@@ -143,14 +143,13 @@ function PinIcon() {
 }
 
 const serviceTags = [
-  'Mehndi, photography, makeup, and decor artists',
+  'Mehndi, makeup, nail art, and decor artists',
   'Wedding, event, and occasion bookings',
   'Home service across Ahmedabad',
   'Portfolio showcases',
 ]
 
 const serviceImages: Record<string, string> = {
-  Photographers: '/services/photographers.jpg',
   'Makeup Artists': '/services/makeup.jpg',
   'Nail Artists': '/services/nail-art.jpg',
   'Decor & Event Planners': '/services/decor.jpg',
@@ -159,11 +158,10 @@ const serviceImages: Record<string, string> = {
 
 // Filter to show only main service categories
 const MAIN_SERVICES = [
-  'Photographers',
+  'Mehndi Artists',
   'Makeup Artists',
   'Nail Artists',
   'Decor & Event Planners',
-  'Mehndi Artists',
 ]
 
 const promisePoints = [
@@ -184,7 +182,7 @@ const promisePoints = [
 const addOns = [
   {
     title: 'Multi-Service Packages',
-    text: 'Bundle mehndi, makeup, photography, and decor services for a seamless event experience with coordinated scheduling.',
+    text: 'Bundle mehndi, makeup, nail art, and decor services for a seamless event experience with coordinated scheduling.',
   },
   {
     title: 'Multi-Artist Bookings',
@@ -235,7 +233,7 @@ const fallbackFaqs = [
   {
     question: 'What artist services can be booked from this page?',
     answer:
-      'You can inquire about mehndi artists, photographers, makeup artists, decorators, and event planners through this page.',
+      'You can inquire about mehndi artists, makeup artists, nail artists, decorators, and event planners through this page.',
   },
   {
     question: 'Do you provide service outside one specific area?',
@@ -272,7 +270,7 @@ export default async function ServicesPage() {
         '@id': 'https://www.artistora.com/services#itemlist',
         name: 'Artistora Services in Ahmedabad',
         description:
-          'Professional wedding and event artist services in Ahmedabad — photography, makeup, decor, mehndi, and more.',
+          'Professional wedding and event artist services in Ahmedabad — mehndi, makeup, nail art, decor, and more.',
         numberOfItems: (services as any[]).length,
         itemListElement: (services as any[]).map((service: any, i: number) => ({
           '@type': 'ListItem',
@@ -348,11 +346,11 @@ export default async function ServicesPage() {
             <div>
               <Eyebrow>Artist Services In Ahmedabad</Eyebrow>
               <h1 className="font-display text-[2.05rem]! leading-[1.18] font-semibold text-ink md:text-[2.7rem]!">
-                Mehndi, photography, makeup, decor, and more — for every celebration.
+                Mehndi, makeup, nail art, decor, and more — for every celebration.
               </h1>
               <p className="mt-5! text-[0.95rem] leading-relaxed text-ink-soft">
                 Artistora connects you with verified artists across Ahmedabad — mehndi specialists,
-                photographers, makeup artists, decorators, and event planners. Compare free quotes,
+                makeup artists, nail artists, decorators, and event planners. Compare free quotes,
                 browse portfolios, and book the right artist for your event.
               </p>
               <div className="mt-5! flex flex-wrap items-center gap-x-2.5! gap-y-2! text-sm">
