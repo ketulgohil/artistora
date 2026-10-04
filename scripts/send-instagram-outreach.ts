@@ -51,7 +51,7 @@ interface TargetArtist {
   handle: string
   name?: string
   sourceId?: string
-  category?: 'mehndi' | 'makeup' | 'photography' | 'decor' | string
+  category?: 'mehndi' | 'makeup' | 'decor' | string
 }
 
 /**
@@ -65,7 +65,7 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
   const cat = (artist.category || '').toLowerCase()
   const isMehndi = cat.includes('mehndi') || cat.includes('henna')
   const isMakeup = cat.includes('makeup') || cat.includes('mua') || cat.includes('makeover')
-  const isPhoto = cat.includes('photo') || cat.includes('film') || cat.includes('cinematography')
+  const isNail = cat.includes('nail') || cat.includes('extension')
 
   const greetings = [
     `Hey ${cleanName}! 👋`,
@@ -86,11 +86,11 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
           `Your bridal makeup portfolio and finishes look amazing!`,
           `Was admiring your bridal makeup work across Ahmedabad weddings — stunning look!`,
         ]
-      : isPhoto
+      : isNail
         ? [
-            `Loved your wedding photography captures and candid frames.`,
-            `Your wedding shoots and cinematography work look fantastic!`,
-            `Was browsing your wedding portfolio in Ahmedabad — really crisp work!`,
+            `Loved your creative nail art and extension designs on your feed.`,
+            `Your bridal nail art styling and extension finishes look amazing!`,
+            `Was checking out your nail art work across Ahmedabad — really stunning designs!`,
           ]
         : [
             `Loved your recent wedding & event work on your profile.`,

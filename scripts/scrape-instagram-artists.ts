@@ -25,14 +25,17 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const DEFAULT_QUERIES = [
+  'ahmedabad nail artist',
+  'nail artist ahmedabad',
+  'ahmedabad nail studio',
+  'nail extensions ahmedabad',
+  'bridal nail art ahmedabad',
   'ahmedabad makeup artist',
   'ahmedabad bridal mehndi',
-  'ahmedabad wedding photographer',
   'ahmedabad event planner',
   'mehndi artist ahmedabad',
   'makeup artist ahmedabad',
   'bridal makeup ahmedabad',
-  'wedding photographer ahmedabad',
   'mehndi artist satellite ahmedabad',
   'makeup artist bopal ahmedabad',
   'wedding planner vastrapur ahmedabad',
@@ -69,7 +72,19 @@ function inferCategory(
 ): { service: string; type: string } {
   const combined = `${bio} ${fullName} ${username} ${query}`.toLowerCase()
 
-  // 1. Mehndi / Henna (highest specificity)
+  // 1. Nail Artists & Studios
+  if (
+    combined.includes('nail') ||
+    combined.includes('acrylic') ||
+    combined.includes('gel extension') ||
+    combined.includes('press on') ||
+    combined.includes('manicure') ||
+    combined.includes('pedicure')
+  ) {
+    return { service: 'Nail Artists', type: 'nail-artists' }
+  }
+
+  // 2. Mehndi / Henna (highest specificity)
   if (
     combined.includes('mehndi') ||
     combined.includes('mehendi') ||
@@ -77,22 +92,6 @@ function inferCategory(
     combined.includes('heena')
   ) {
     return { service: 'Mehndi Artists', type: 'mehndi' }
-  }
-
-  // 2. Photographers & Cinematographers (must precede makeup to avoid "bridal photography" mismatch)
-  if (
-    combined.includes('photograph') ||
-    combined.includes('photo') ||
-    combined.includes('cinematograph') ||
-    combined.includes('film') ||
-    combined.includes('click') ||
-    combined.includes('studio') ||
-    combined.includes('camera') ||
-    combined.includes('prewedding') ||
-    combined.includes('shoot') ||
-    combined.includes('lens')
-  ) {
-    return { service: 'Photographers', type: 'photography' }
   }
 
   // 3. Decor & Event Planners (must precede makeup to avoid "bridal decor" mismatch)
@@ -134,11 +133,12 @@ async function main() {
   const queriesIndex = args.indexOf('--queries')
   const targetQueries = queriesIndex !== -1 ? args[queriesIndex + 1].split(',') : DEFAULT_QUERIES
 
-  // 1. Load session credentials from Redis or env
+  // 1. Load session credentials from Redis, browser profile, or env
   const redis = getUnifiedRedis()
   const rawSession = await redis.get<string>('artistora:instagram:session:state')
   let sessionId = ''
   let dsUserId = ''
+  let cookieHeader = ''
 
   if (rawSession) {
     try {
@@ -151,11 +151,40 @@ async function main() {
     } catch {}
   }
 
+  const profileDir = path.resolve(process.cwd(), '.instagram-browser-profile')
+  if ((!sessionId || sessionId.startsWith('30608007458')) && fs.existsSync(profileDir)) {
+    try {
+      const { chromium } = await import('@playwright/test')
+      const context = await chromium.launchPersistentContext(profileDir, {
+        headless: true,
+        channel: 'chrome',
+        args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
+      })
+      const cookies = await context.cookies('https://www.instagram.com')
+      const sessionCookie = cookies.find((c) => c.name === 'sessionid')
+      const dsUserCookie = cookies.find((c) => c.name === 'ds_user_id')
+      if (sessionCookie?.value) {
+        sessionId = sessionCookie.value
+      }
+      if (dsUserCookie?.value) {
+        dsUserId = dsUserCookie.value
+      }
+      cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join('; ')
+      await context.close()
+    } catch (err: any) {
+      console.warn(`   ⚠️ Could not load browser profile cookies: ${err.message}`)
+    }
+  }
+
   if (!sessionId) {
     sessionId =
       process.env.INSTAGRAM_SESSION_ID ||
       '30608007458%3AjFtVmMj8LmG2nH%3A5%3AAYkkU6ul0EqeySmCkNmQB4VCyHsnQPUoueU2Q6801Q'
     dsUserId = '30608007458'
+  }
+
+  if (!cookieHeader) {
+    cookieHeader = `sessionid=${sessionId}; ds_user_id=${dsUserId};`
   }
 
   console.log(`✅ Using active authenticated session (Account ID: ${dsUserId || 'Linked'})\n`)
@@ -177,9 +206,9 @@ async function main() {
       const searchUrl = `https://www.instagram.com/web/search/topsearch/?context=blended&query=${encodeURIComponent(query)}&include_reel=false`
       const res = await fetch(searchUrl, {
         headers: {
-          Cookie: `sessionid=${sessionId}; ds_user_id=${dsUserId};`,
+          Cookie: cookieHeader,
           'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
           'X-IG-App-ID': '936619743392459',
           'X-Requested-With': 'XMLHttpRequest',
           Referer: 'https://www.instagram.com/',
@@ -210,30 +239,37 @@ async function main() {
         let primaryPhone: string | undefined
 
         try {
-          const profileRes = await fetch(`https://www.instagram.com/${username}/`, {
+          const profileApiUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`
+          const profileRes = await fetch(profileApiUrl, {
             headers: {
-              Cookie: `sessionid=${sessionId}; ds_user_id=${dsUserId};`,
+              Cookie: cookieHeader,
               'User-Agent':
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+              'X-IG-App-ID': '936619743392459',
+              'X-Requested-With': 'XMLHttpRequest',
+              Referer: `https://www.instagram.com/${username}/`,
             },
           })
 
           if (profileRes.ok) {
-            const html = await profileRes.text()
-            const bioMatch = html.match(/"biography":"([^"]+)"/)
-            if (bioMatch) {
-              try {
-                bio = JSON.parse(`"${bioMatch[1]}"`)
-              } catch {
-                bio = bioMatch[1]
+            const data = await profileRes.json()
+            const targetUser = data.data?.user
+            if (targetUser) {
+              bio = targetUser.biography || ''
+              const busPhone = targetUser.business_phone_number || targetUser.contact_phone_number
+              if (busPhone) {
+                const cand = extractIndianPhoneNumbers(busPhone)
+                if (cand.length > 0) primaryPhone = cand[0]
               }
             }
           }
         } catch {}
 
-        const phoneCandidates = extractIndianPhoneNumbers(`${bio} ${fullName}`)
-        if (phoneCandidates.length > 0) {
-          primaryPhone = phoneCandidates[0]
+        if (!primaryPhone) {
+          const phoneCandidates = extractIndianPhoneNumbers(`${bio} ${fullName}`)
+          if (phoneCandidates.length > 0) {
+            primaryPhone = phoneCandidates[0]
+          }
         }
 
         const { service, type } = inferCategory(bio, fullName, username, query)

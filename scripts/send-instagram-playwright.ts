@@ -49,7 +49,7 @@ interface TargetArtist {
   handle: string
   name?: string
   sourceId?: string
-  category?: 'mehndi' | 'makeup' | 'photography' | 'decor' | 'general' | string
+  category?: 'mehndi' | 'makeup' | 'decor' | 'general' | string
 }
 
 /**
@@ -61,7 +61,7 @@ export function detectArtistCategory(
   fullName = '',
   handle = '',
   badge = '',
-): { category: 'mehndi' | 'photography' | 'decor' | 'makeup' | 'general'; label: string } {
+): { category: 'mehndi' | 'decor' | 'makeup' | 'nail' | 'general'; label: string } {
   const combined = `${badge} ${bio} ${fullName} ${handle}`.toLowerCase()
 
   // 1. Mehndi / Henna (highest specificity)
@@ -74,25 +74,7 @@ export function detectArtistCategory(
     return { category: 'mehndi', label: 'Mehndi Artists' }
   }
 
-  // 2. Photography & Cinematography (must be checked BEFORE makeup to avoid "bridal photography" mismatch)
-  if (
-    combined.includes('photograph') ||
-    combined.includes('photo') ||
-    combined.includes('cinematograph') ||
-    combined.includes('films') ||
-    combined.includes('filmmaker') ||
-    combined.includes('prewedding') ||
-    combined.includes('shoot') ||
-    combined.includes('camera') ||
-    combined.includes('studio') ||
-    combined.includes('clicks') ||
-    combined.includes('lens') ||
-    combined.includes('candid')
-  ) {
-    return { category: 'photography', label: 'Photographers' }
-  }
-
-  // 3. Decor & Event Planners (must be checked BEFORE makeup to avoid "bridal decor" mismatch)
+  // 2. Decor & Event Planners (must be checked BEFORE makeup to avoid "bridal decor" mismatch)
   if (
     combined.includes('decor') ||
     combined.includes('planner') ||
@@ -105,6 +87,17 @@ export function detectArtistCategory(
     combined.includes('management')
   ) {
     return { category: 'decor', label: 'Decor & Event Planners' }
+  }
+
+  // 3. Nail Artists & Studios
+  if (
+    combined.includes('nail') ||
+    combined.includes('acrylic') ||
+    combined.includes('gel extension') ||
+    combined.includes('press on') ||
+    combined.includes('manicure')
+  ) {
+    return { category: 'nail', label: 'Nail Artists' }
   }
 
   // 4. Makeup & Hair Artists
@@ -156,7 +149,7 @@ export function cleanArtistNameForGreeting(rawName: string = '', handle: string 
   // Remove common city, role, and business keywords
   name = name
     .replace(
-      /\b(in\s+ahmedabad|ahmedabad|gujarat|india|artist|art|studio|salon|makeover|makeup|mehandi|mehndi|henna|photography|photographer|photos|films|filmmaker|events?|planners?|classes|academy|official|creations?)\b/gi,
+      /\b(in\s+ahmedabad|ahmedabad|gujarat|india|artist|art|studio|salon|makeover|makeup|mehandi|mehndi|henna|events?|planners?|classes|academy|official|creations?)\b/gi,
       '',
     )
     .trim()
@@ -210,12 +203,6 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
       `Your mehndi designs and bridal patterns in Ahmedabad are really stunning!`,
       `Was checking out your recent bridal mehndi work in Ahmedabad — beautiful craftsmanship!`,
     ]
-  } else if (cat === 'photography') {
-    compliments = [
-      `Loved your wedding photography captures, candid frames, and cinematography!`,
-      `Your photography and wedding film work in Ahmedabad are really aesthetic!`,
-      `Checked out your photography portfolio and wedding shoots — fantastic compositions!`,
-    ]
   } else if (cat === 'decor') {
     compliments = [
       `Loved your wedding decor setups, mandap concepts, and event management work in Ahmedabad!`,
@@ -227,6 +214,12 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
       `Loved your recent bridal makeover and styling looks in Ahmedabad!`,
       `Your bridal makeup portfolio and finishes look absolutely amazing!`,
       `Was admiring your bridal makeup work across Ahmedabad weddings — stunning styling!`,
+    ]
+  } else if (cat === 'nail') {
+    compliments = [
+      `Loved your creative nail art designs and bridal extensions on your feed!`,
+      `Your nail styling, gel extensions, and art finishes in Ahmedabad look stunning!`,
+      `Was checking out your nail art and extension portfolio in Ahmedabad — gorgeous work!`,
     ]
   } else {
     compliments = [
@@ -337,7 +330,7 @@ async function findMessageBox(page: Page, timeoutMs = 15000) {
 interface ProfileInspection {
   fullName: string
   bio: string
-  category: 'mehndi' | 'photography' | 'decor' | 'makeup' | 'general'
+  category: 'mehndi' | 'decor' | 'makeup' | 'nail' | 'general'
   categoryLabel: string
   isFollowing: boolean
 }
@@ -412,7 +405,7 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
     try {
       const badgeEl = page
         .locator(
-          'header div[class*="x1fhsubz"], header section div:has-text("Photographer"), header section div:has-text("Planner"), header section div:has-text("Artist")',
+          'header div[class*="x1fhsubz"], header section div:has-text("Planner"), header section div:has-text("Artist")',
         )
         .first()
       if (await badgeEl.isVisible({ timeout: 1000 }).catch(() => false)) {

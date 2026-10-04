@@ -320,12 +320,11 @@ export class GoogleMapsScraper implements Scraper {
       } catch {}
 
       const catLower = (specializations || params.query || '').toLowerCase()
-      let serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
+      let serviceCategory: 'mehndi' | 'makeup' | 'decor' | 'other' = 'other'
       if (catLower.includes('mehndi') || catLower.includes('henna')) serviceCategory = 'mehndi'
-      else if (catLower.includes('photo')) serviceCategory = 'photography'
       else if (catLower.includes('makeup') || catLower.includes('beauty') || catLower.includes('parlour')) serviceCategory = 'makeup'
       else if (catLower.includes('decor') || catLower.includes('decoration')) serviceCategory = 'decor'
-      else if (params.category && ['mehndi', 'photography', 'makeup', 'decor'].includes(params.category)) {
+      else if (params.category && ['mehndi', 'makeup', 'decor'].includes(params.category)) {
         serviceCategory = params.category as any
       }
 

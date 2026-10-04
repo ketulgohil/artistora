@@ -4,7 +4,7 @@
  * Usage:
  *   npx tsx src/run-scrapers.ts                                      # Run all scrapers
  *   npx tsx src/run-scrapers.ts --service mehndi                     # Run only mehndi scrapers
- *   npx tsx src/run-scrapers.ts --service mehndi,photography,makeup  # Run multiple categories
+ *   npx tsx src/run-scrapers.ts --service mehndi,makeup              # Run multiple categories
  *   npx tsx src/run-scrapers.ts --source google_maps --concurrency 4 # Run Google Maps in parallel
  *   npx tsx src/run-scrapers.ts --dry-run                            # Show what would be scraped
  */
@@ -17,7 +17,6 @@ loadDotenv({ path: path.resolve(process.cwd(), '.env.local') })
 import {
   allQueries,
   mehndiQueries,
-  photographyQueries,
   makeupQueries,
   decorQueries,
   type ScrapeQuery,
@@ -29,7 +28,6 @@ import config from './payload.config'
 
 const SERVICE_MAP: Record<string, ScrapeQuery[]> = {
   mehndi: mehndiQueries,
-  photography: photographyQueries,
   makeup: makeupQueries,
   decor: decorQueries,
 }
@@ -62,7 +60,7 @@ async function main() {
   console.log('╚══════════════════════════════════════════╝')
   console.log(`\n📋 ${queries.length} scrape queries to run`)
   console.log(`🏙️  City: Ahmedabad`)
-  console.log(`🔍 Services: ${serviceFlag || 'All (mehndi, photography, makeup, decor)'}`)
+  console.log(`🔍 Services: ${serviceFlag || 'All (mehndi, makeup, decor)'}`)
   console.log(`📡 Sources: ${sourceFlag || 'All (google_maps, instagram, justdial, sulekha, wedmegood, weddingwire)'}`)
   console.log(`⚡ Concurrency: ${concurrency} parallel worker(s)`)
   console.log('')

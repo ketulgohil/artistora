@@ -2,7 +2,7 @@
  * Pre-built scrape configurations for all Artistora service categories.
  * Each config defines search queries optimized for each scraping source.
  *
- * Services: Mehndi, Photography, Makeup, Decor
+ * Services: Mehndi, Makeup, Decor
  * City: Ahmedabad, Gujarat
  */
 
@@ -42,33 +42,6 @@ export const mehndiQueries: ScrapeQuery[] = [
   { source: 'wedmegood', query: 'mehndi', city: 'Ahmedabad', maxResults: 50, category: 'mehndi' },
   // WeddingWire
   { source: 'weddingwire', query: 'mehndi', city: 'Ahmedabad', maxResults: 50, category: 'mehndi' },
-]
-
-// ─── Photography ────────────────────────────────────────────────
-export const photographyQueries: ScrapeQuery[] = [
-  // Google Maps (Core + Locality-specific)
-  { source: 'google_maps', query: 'wedding photographer', city: 'Ahmedabad', maxResults: 50, category: 'photography' },
-  { source: 'google_maps', query: 'photography studio', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'pre wedding photographer', city: 'Ahmedabad', maxResults: 20, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer Satellite', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer Bopal', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer Vastrapur', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer Prahlad Nagar', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer SG Highway', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer Maninagar', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  { source: 'google_maps', query: 'wedding photographer Chandkheda', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  // Instagram
-  { source: 'instagram', query: 'wedding photographer ahmedabad', city: 'Ahmedabad', maxResults: 40, category: 'photography' },
-  { source: 'instagram', query: 'candid photographer ahmedabad', city: 'Ahmedabad', maxResults: 20, category: 'photography' },
-  // Justdial
-  { source: 'justdial', query: 'wedding photographer', city: 'Ahmedabad', maxResults: 50, category: 'photography' },
-  { source: 'justdial', query: 'photography studio', city: 'Ahmedabad', maxResults: 30, category: 'photography' },
-  // Sulekha
-  { source: 'sulekha', query: 'wedding photographer', city: 'Ahmedabad', maxResults: 40, category: 'photography' },
-  // WedMeGood
-  { source: 'wedmegood', query: 'photographers', city: 'Ahmedabad', maxResults: 50, category: 'photography' },
-  // WeddingWire
-  { source: 'weddingwire', query: 'photographers', city: 'Ahmedabad', maxResults: 50, category: 'photography' },
 ]
 
 // ─── Makeup Artists ─────────────────────────────────────────────
@@ -128,14 +101,13 @@ export const decorQueries: ScrapeQuery[] = [
 // ─── All Queries Combined ───────────────────────────────────────
 export const allQueries: ScrapeQuery[] = [
   ...mehndiQueries,
-  ...photographyQueries,
   ...makeupQueries,
   ...decorQueries,
 ]
 
 // ─── Summary ────────────────────────────────────────────────────
 export const scrapeSummary = {
-  services: ['Mehndi', 'Photography', 'Makeup', 'Decor'],
+  services: ['Mehndi', 'Makeup', 'Decor'],
   sources: ['google_maps', 'instagram', 'justdial', 'sulekha', 'wedmegood', 'weddingwire'],
   city: 'Ahmedabad',
   totalQueries: allQueries.length,

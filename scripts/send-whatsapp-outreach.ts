@@ -1,7 +1,7 @@
 /**
  * Multi-Category Automated WhatsApp Outreach Runner (Baileys + Redis).
  * Dispatches personalized WhatsApp outreach messages to 10 Mehndi Artists, 10 Decorators & Planners,
- * 10 Makeup Artists, and 10 Photographers (total 40 artists) in Ahmedabad with Redis session persistence.
+ * and 10 Makeup Artists (total 30 artists) in Ahmedabad with Redis session persistence.
  *
  * Safety & Rate Limits:
  *   - Human Delay Jitter: 45s - 65s between consecutive messages
@@ -14,7 +14,6 @@
  *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-whatsapp-outreach.ts --category mehndi
  *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-whatsapp-outreach.ts --category decor
  *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-whatsapp-outreach.ts --category makeup
- *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-whatsapp-outreach.ts --category photography
  *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-whatsapp-outreach.ts --limit 5
  *
  * Importers/Callers: Executed standalone via CLI by admin.
@@ -94,7 +93,7 @@ interface OutreachTarget {
   id: number | string
   name: string
   phone: string
-  category: 'mehndi' | 'decor' | 'makeup' | 'photography'
+  category: 'mehndi' | 'decor' | 'makeup'
   cleanName?: string
 }
 
@@ -105,7 +104,7 @@ interface ContactedHistory {
 }
 
 // Curated verified lists of Ahmedabad artists per category
-const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup' | 'photography', OutreachTarget[]> = {
+const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup', OutreachTarget[]> = {
   mehndi: [
     {
       id: 331,
@@ -322,85 +321,13 @@ const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup' | 'photography', Out
       cleanName: "RR's Makeovers",
     },
   ],
-  photography: [
-    {
-      id: 373,
-      name: 'STUDIO FILMICA by Basant Joshi',
-      phone: '+919426372606',
-      category: 'photography',
-      cleanName: 'Studio Filmica',
-    },
-    {
-      id: 316,
-      name: 'Nakshi Photography',
-      phone: '+919879184501',
-      category: 'photography',
-      cleanName: 'Nakshi Photography',
-    },
-    {
-      id: 333,
-      name: 'Milan Bhaskar Photography',
-      phone: '+918460293805',
-      category: 'photography',
-      cleanName: 'Milan Bhaskar Photography',
-    },
-    {
-      id: 336,
-      name: 'The Knot Films',
-      phone: '+918160417353',
-      category: 'photography',
-      cleanName: 'The Knot Films',
-    },
-    {
-      id: 362,
-      name: 'Ammar Shoots - Wedding and Event Photographer in Ahmedabad',
-      phone: '+919727259010',
-      category: 'photography',
-      cleanName: 'Ammar Shoots',
-    },
-    {
-      id: 337,
-      name: 'HC Photography(Himanshu Chauhan)Wedding Photographer in Ahmedabad',
-      phone: '+918866122411',
-      category: 'photography',
-      cleanName: 'HC Photography',
-    },
-    {
-      id: 379,
-      name: 'Emotion Clicks',
-      phone: '+919904460014',
-      category: 'photography',
-      cleanName: 'Emotion Clicks',
-    },
-    {
-      id: 393,
-      name: 'Little Wonders Studio',
-      phone: '+919601109396',
-      category: 'photography',
-      cleanName: 'Little Wonders Studio',
-    },
-    {
-      id: 342,
-      name: 'Kushal Vadera Photography',
-      phone: '+919998483191',
-      category: 'photography',
-      cleanName: 'Kushal Vadera Photography',
-    },
-    {
-      id: 330,
-      name: 'The Concept Studio by Amit Barot',
-      phone: '+918401083811',
-      category: 'photography',
-      cleanName: 'The Concept Studio',
-    },
-  ],
 }
 
 function cleanArtistName(name: string): string {
   return (
     name
       .replace(
-        /\b(in\s+ahmedabad|ahmedabad|artist|art|classes|class|designer|mehandi|mehndi|henna|makeup|makeover|studio|photography|films|event|events|planner|decorator|decoration)\b/gi,
+        /\b(in\s+ahmedabad|ahmedabad|artist|art|classes|class|designer|mehandi|mehndi|henna|makeup|makeover|studio|event|events|planner|decorator|decoration)\b/gi,
         '',
       )
       .replace(/[()&|\-•]/g, '')
@@ -484,7 +411,7 @@ async function getAlreadyContactedData(payload: any): Promise<ContactedHistory> 
  */
 async function getUncontactedArtists(
   payload: any,
-  category: 'mehndi' | 'decor' | 'makeup' | 'photography',
+  category: 'mehndi' | 'decor' | 'makeup',
   limit: number,
   contacted: ContactedHistory,
 ): Promise<OutreachTarget[]> {
@@ -522,15 +449,6 @@ async function getUncontactedArtists(
           combined.includes('mua') ||
           combined.includes('makeover') ||
           combined.includes('beauty')
-        )
-      }
-      if (category === 'photography') {
-        return (
-          combined.includes('photo') ||
-          combined.includes('cinematograph') ||
-          combined.includes('film') ||
-          combined.includes('studio') ||
-          combined.includes('camera')
         )
       }
       return false
@@ -661,19 +579,12 @@ function buildMessage(artist: OutreachTarget): string {
       `Aapka bridal makeover portfolio aur glam finishes sach me bahut professional hain! ✨`,
       `Aapka makeup artistry work Ahmedabad me bahut popular aur graceful hai! 👍`,
     ]
-  } else if (isDecor) {
+  } else {
     serviceLabel = 'Event & Wedding Decor'
     compliments = [
       `Aapka wedding decor & mandap setup work Ahmedabad me sach me bahut grand aur aesthetic hai! ✨`,
       `Aapke stage decor aur wedding theme concepts Ahmedabad venues par bahut impressive hain! 🎪`,
       `Aapka event decoration and planning portfolio Ahmedabad me kafi popular hai! ✨`,
-    ]
-  } else {
-    serviceLabel = 'Wedding Photography'
-    compliments = [
-      `Aapka wedding photography aur candid cinematography work Ahmedabad me sach me bahut crisp hai! 📸`,
-      `Aapke wedding shoots aur candid frames Ahmedabad me bahut aesthetic aur creative hain! ✨`,
-      `Aapka wedding photography portfolio aur captures sach me bahut impressive hain! 📸`,
     ]
   }
 
@@ -819,15 +730,6 @@ async function startBatch() {
       contactHistory,
     )
     groups.push({ name: 'Makeup Artists', key: 'makeup', artists: makeupList })
-  }
-  if (shouldInclude('photography') || shouldInclude('photographer') || shouldInclude('photos')) {
-    const photoList = await getUncontactedArtists(
-      payload,
-      'photography',
-      safeBatchLimit,
-      contactHistory,
-    )
-    groups.push({ name: 'Photographers', key: 'photography', artists: photoList })
   }
 
   const totalArtists = groups.reduce((acc, g) => acc + g.artists.length, 0)

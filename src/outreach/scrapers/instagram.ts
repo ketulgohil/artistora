@@ -86,7 +86,6 @@ export class InstagramScraper implements Scraper {
     const cityLower = city.toLowerCase()
     const categoryMap: Record<string, string[]> = {
       mehndi: ['mehndiartist', 'mehndidesigner', 'bridalmehndi', 'mehndiart', 'hennaartist'],
-      photography: ['weddingphotographer', 'weddingphotography', 'eventphotographer'],
       makeup: ['bridalmakeup', 'makeupartist', 'weddingmakeup'],
       decor: ['weddingdecor', 'weddingdecoration', 'eventdecor'],
     }
@@ -187,13 +186,9 @@ export class InstagramScraper implements Scraper {
       const serviceKeywords = [
         'mehndi',
         'henna',
-        'photography',
-        'photo',
         'makeup',
         'decor',
         'decoration',
-        'videography',
-        'video',
       ]
       const bioLower = bio?.toLowerCase() || ''
       const detectedServices = serviceKeywords.filter((kw) => bioLower.includes(kw))

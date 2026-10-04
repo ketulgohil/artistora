@@ -20,10 +20,8 @@ export class WedMeGoodScraper implements Scraper {
       const citySlug = city.toLowerCase().replace(/\s+/g, '-')
       const categoryMap: Record<string, string> = {
         mehndi: 'mehndi-artists',
-        photography: 'photographers',
         makeup: 'makeup-artists',
         decor: 'wedding-decorators',
-        videography: 'videographers',
         anchoring: 'anchors',
       }
 
