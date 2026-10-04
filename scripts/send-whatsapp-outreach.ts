@@ -26,6 +26,8 @@ import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
+  Browsers,
+  makeCacheableSignalKeyStore,
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
 import qrcode from 'qrcode-terminal'
@@ -46,6 +48,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 
 const AUTH_DIR = path.resolve(process.env.WHATSAPP_SESSION_DIR || '/tmp/baileys-auth-session')
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const logger = pino({ level: 'silent' })
 
 // Silence noisy low-level libsignal ratchet/session dumps to keep terminal clean
 const isLibsignalNoise = (str: string) =>
@@ -93,7 +96,7 @@ interface OutreachTarget {
   id: number | string
   name: string
   phone: string
-  category: 'mehndi' | 'decor' | 'makeup'
+  category: 'mehndi' | 'decor' | 'makeup' | 'nail' | 'nail-artists'
   cleanName?: string
 }
 
@@ -104,7 +107,79 @@ interface ContactedHistory {
 }
 
 // Curated verified lists of Ahmedabad artists per category
-const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup', OutreachTarget[]> = {
+const CURATED_TARGETS: Record<'mehndi' | 'decor' | 'makeup' | 'nail', OutreachTarget[]> = {
+  nail: [
+    {
+      id: 1082,
+      name: 'kalindi beauty studio(salon)& nails academy',
+      phone: '+918200051770',
+      category: 'nail',
+      cleanName: 'Kalindi Beauty & Nails',
+    },
+    {
+      id: 1083,
+      name: 'Salonishrivastava_makeup_nails',
+      phone: '+917874028552',
+      category: 'nail',
+      cleanName: 'Salonishrivastava Nails',
+    },
+    {
+      id: 1084,
+      name: 'MAHENDI & NAILS BY RIYA',
+      phone: '+919265397895',
+      category: 'nail',
+      cleanName: 'Riya Nails & Mehndi',
+    },
+    {
+      id: 1085,
+      name: 'Vaishali Nail and mehndi classes',
+      phone: '+918780853194',
+      category: 'nail',
+      cleanName: 'Vaishali Nail Art',
+    },
+    {
+      id: 1086,
+      name: 'Anita_Mehndi_&_Nail_ classes',
+      phone: '+919725730602',
+      category: 'nail',
+      cleanName: 'Anita Nail Art Studio',
+    },
+    {
+      id: 1087,
+      name: 'Komal Mehandi And Nail Art',
+      phone: '+918866764694',
+      category: 'nail',
+      cleanName: 'Komal Nail Art',
+    },
+    {
+      id: 1088,
+      name: 'Mehndi & Nails by Pooja',
+      phone: '+918799034634',
+      category: 'nail',
+      cleanName: 'Pooja Nail Art',
+    },
+    {
+      id: 1089,
+      name: 'Disha Mehndi & nails studio & Academy',
+      phone: '+919824130928',
+      category: 'nail',
+      cleanName: 'Disha Nails Studio',
+    },
+    {
+      id: 1090,
+      name: 'Swati’s Mehndi & Nails',
+      phone: '+919978551255',
+      category: 'nail',
+      cleanName: 'Swati Nails Studio',
+    },
+    {
+      id: 1091,
+      name: 'AR Nail Studio & Academy',
+      phone: '+919773416612',
+      category: 'nail',
+      cleanName: 'AR Nail Studio',
+    },
+  ],
   mehndi: [
     {
       id: 331,
@@ -411,7 +486,7 @@ async function getAlreadyContactedData(payload: any): Promise<ContactedHistory> 
  */
 async function getUncontactedArtists(
   payload: any,
-  category: 'mehndi' | 'decor' | 'makeup',
+  category: 'mehndi' | 'decor' | 'makeup' | 'nail',
   limit: number,
   contacted: ContactedHistory,
 ): Promise<OutreachTarget[]> {
@@ -434,6 +509,9 @@ async function getUncontactedArtists(
         return (
           combined.includes('mehndi') || combined.includes('mehendi') || combined.includes('henna')
         )
+      }
+      if (category === 'nail') {
+        return combined.includes('nail')
       }
       if (category === 'decor') {
         return (
@@ -549,6 +627,7 @@ function buildMessage(artist: OutreachTarget): string {
 
   const cat = artist.category
   const isMehndi = cat === 'mehndi'
+  const isNail = cat === 'nail' || cat === 'nail-artists'
   const isMakeup = cat === 'makeup'
   const isDecor = cat === 'decor'
 
@@ -570,6 +649,14 @@ function buildMessage(artist: OutreachTarget): string {
       `Aapka bridal mehndi & henna artwork Ahmedabad me kafi popular aur aesthetic hai! 🌿`,
       `Aapke Ahmedabad wedding mehndi designs hume bahut unique aur detailed lage! ✨`,
       `Aapka intricate mehndi portfolio aur client reviews Ahmedabad me bahut badhiya hain! 👍`,
+    ]
+  } else if (isNail) {
+    serviceLabel = 'Nail Art & Extensions'
+    compliments = [
+      `Aapka bridal nail art, extensions aur creative nail styling Ahmedabad me sach me bahut aesthetic aur clean hai! 💅✨`,
+      `Aapka nail studio work aur bridal nail extension portfolio Ahmedabad me kafi stylish aur trendy hai! 💅`,
+      `Aapke bridal nail designs aur gel art finishes sach me bahut professional aur elegant hain! ✨`,
+      `Aapka nail artistry work Ahmedabad me bahut creative aur graceful hai! 👍`,
     ]
   } else if (isMakeup) {
     serviceLabel = 'Bridal Makeup & Makeover'
@@ -718,6 +805,15 @@ async function startBatch() {
     )
     groups.push({ name: 'Mehndi Artists', key: 'mehndi', artists: mehndiList })
   }
+  if (shouldInclude('nail') || shouldInclude('nail-artists') || shouldInclude('nails')) {
+    const nailList = await getUncontactedArtists(
+      payload,
+      'nail',
+      safeBatchLimit,
+      contactHistory,
+    )
+    groups.push({ name: 'Nail Artists', key: 'nail', artists: nailList })
+  }
   if (shouldInclude('decor')) {
     const decorList = await getUncontactedArtists(payload, 'decor', safeBatchLimit, contactHistory)
     groups.push({ name: 'Decor & Event Planners', key: 'decor', artists: decorList })
@@ -760,12 +856,19 @@ async function startBatch() {
 
   const sock = makeWASocket({
     version,
-    auth: state,
-    logger: pino({ level: 'silent' }),
+    auth: {
+      creds: state.creds,
+      keys: makeCacheableSignalKeyStore(state.keys, logger),
+    },
+    logger,
     printQRInTerminal: false,
+    browser: Browsers.macOS('Desktop'),
+    syncFullHistory: false,
+    generateHighQualityLinkPreview: false,
+    markOnlineOnConnect: true,
     defaultQueryTimeoutMs: 60000,
     connectTimeoutMs: 60000,
-    keepAliveIntervalMs: 15000,
+    keepAliveIntervalMs: 25000,
   })
 
   sock.ev.on('creds.update', async () => {
