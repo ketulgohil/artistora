@@ -39,18 +39,6 @@ const CONTAINER = 'mx-auto max-w-5xl! px-3.5! sm:px-4! md:px-6!'
 const SECTION = 'py-4! sm:py-8! md:py-14!'
 
 const STYLE_OPTIONS: Record<string, string[]> = {
-  photographers: [
-    'Wedding',
-    'Portrait',
-    'Candid',
-    'Traditional',
-    'Pre-Wedding',
-    'Event',
-    'Product',
-    'Fashion',
-    'Documentary',
-    'Drone/Aerial',
-  ],
   'makeup-artists': [
     'Bridal',
     'Party',
@@ -102,7 +90,6 @@ const STYLE_OPTIONS: Record<string, string[]> = {
 }
 
 const SERVICE_OPTIONS = [
-  { slug: 'photographers', label: 'Photographers' },
   { slug: 'makeup-artists', label: 'Makeup Artists' },
   { slug: 'nail-artists', label: 'Nail Artists' },
   { slug: 'decor-event-planners', label: 'Decor & Event Planners' },

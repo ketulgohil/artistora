@@ -17,7 +17,6 @@ function normalizeArtistType(type: string | null | undefined): string {
   if (!type) return ''
   const t = type.toLowerCase().trim()
   if (['mehndi-artists', 'mehndi-artist', 'mehndi', 'mehendi'].includes(t)) return 'mehndi-artists'
-  if (['photographers', 'photographer', 'photography', 'photo'].includes(t)) return 'photographers'
   if (['makeup-artists', 'makeup-artist', 'makeup', 'makeover'].includes(t)) return 'makeup-artists'
   if (['nail-artists', 'nail-artist', 'nail-art', 'nails', 'nail'].includes(t))
     return 'nail-artists'
@@ -454,7 +453,6 @@ function RegisterForm() {
                 >
                   <option value="">Select your primary service type</option>
                   <option value="mehndi-artists">Mehndi Artists</option>
-                  <option value="photographers">Photographers</option>
                   <option value="makeup-artists">Makeup Artists</option>
                   <option value="nail-artists">Nail Artists</option>
                   <option value="decor-event-planners">Decor &amp; Event Planners</option>

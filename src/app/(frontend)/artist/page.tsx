@@ -79,7 +79,7 @@ export default async function ArtistPage() {
       name: 'Artistora',
       url: 'https://www.artistora.com',
       description:
-        "Ahmedabad's trusted artist marketplace — verified mehndi, photography, makeup, and decor professionals.",
+        "Ahmedabad's trusted artist marketplace — verified mehndi, makeup, nail, and decor professionals.",
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Ahmedabad',
@@ -156,7 +156,7 @@ export default async function ArtistPage() {
               </h1>
               <p className="mt-4! text-[0.97rem] leading-relaxed text-ink-soft md:text-base">
                 Artistora is a curated marketplace that connects you with verified artists in
-                Ahmedabad &mdash; mehndi specialists, photographers, makeup artists, decorators, and
+                Ahmedabad &mdash; mehndi specialists, makeup artists, nail artists, decorators, and
                 event planners. Every artist is selected and reviewed for skill, reliability, and
                 professionalism.
               </p>
