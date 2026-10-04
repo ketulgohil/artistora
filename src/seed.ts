@@ -36,32 +36,72 @@ const CATEGORY_IMAGES: Record<string, string[]> = {
   babyshower: ['IMG_6462.webp', 'IMG_6464.webp', 'IMG_7225.webp'],
   bridal: [
     'FE26DFFD-33C9-4124-B73E-EAE71ECB1E84(1).webp',
-    'IMG_9995.webp', 'IMG_E0009.webp', 'IMG_E0012.webp',
-    'IMG_E0064.webp', 'IMG_E0074.webp', 'IMG_E0077.webp',
-    'IMG_E8057.webp', 'IMG_E9516.webp', 'IMG_E9603.webp',
-    'IMG_E9644.webp', 'IMG_E9764.webp', 'IMG_E9767.webp',
-    'IMG_E9937.webp', 'IMG_E9946.webp', 'IMG_E9951.webp',
-    'IMG_E9964.webp', 'IMG_E9965.webp', 'IMG_E9972.webp', 'IMG_E9995.webp',
+    'IMG_9995.webp',
+    'IMG_E0009.webp',
+    'IMG_E0012.webp',
+    'IMG_E0064.webp',
+    'IMG_E0074.webp',
+    'IMG_E0077.webp',
+    'IMG_E8057.webp',
+    'IMG_E9516.webp',
+    'IMG_E9603.webp',
+    'IMG_E9644.webp',
+    'IMG_E9764.webp',
+    'IMG_E9767.webp',
+    'IMG_E9937.webp',
+    'IMG_E9946.webp',
+    'IMG_E9951.webp',
+    'IMG_E9964.webp',
+    'IMG_E9965.webp',
+    'IMG_E9972.webp',
+    'IMG_E9995.webp',
   ],
   'designer-bengle-length': [
     'c96fc915-162b-44c3-875c-cf04d98fdcdd.webp',
-    'IMG_6142.webp', 'IMG_6146.webp', 'IMG_7206.webp',
-    'IMG_7790.webp', 'IMG_9980.webp', 'IMG_E0054.webp',
-    'IMG_E7909.webp', 'IMG_E9695.webp', 'IMG_E9980.webp',
+    'IMG_6142.webp',
+    'IMG_6146.webp',
+    'IMG_7206.webp',
+    'IMG_7790.webp',
+    'IMG_9980.webp',
+    'IMG_E0054.webp',
+    'IMG_E7909.webp',
+    'IMG_E9695.webp',
+    'IMG_E9980.webp',
   ],
   engagement: [
     '6A5567EE-A357-4D91-935D-8BC4CE5B664B.webp',
-    'IMG_5615.webp', 'IMG_9524.webp', 'IMG_9987.webp', 'IMG_E9989.webp',
+    'IMG_5615.webp',
+    'IMG_9524.webp',
+    'IMG_9987.webp',
+    'IMG_E9989.webp',
   ],
   'heavy-sider': [
-    'IMG_5766.webp', 'IMG_5815.webp', 'IMG_6238.webp', 'IMG_6263.webp',
-    'IMG_7727.webp', 'IMG_E0086.webp', 'IMG_E8019.webp', 'IMG_E8657.webp',
-    'IMG_E8660.webp', 'IMG_E9563.webp', 'IMG_E9608.webp', 'IMG_E9623.webp',
-    'IMG_E9673.webp', 'IMG_E9691.webp', 'IMG_E9722.webp', 'IMG_E9730.webp',
+    'IMG_5766.webp',
+    'IMG_5815.webp',
+    'IMG_6238.webp',
+    'IMG_6263.webp',
+    'IMG_7727.webp',
+    'IMG_E0086.webp',
+    'IMG_E8019.webp',
+    'IMG_E8657.webp',
+    'IMG_E8660.webp',
+    'IMG_E9563.webp',
+    'IMG_E9608.webp',
+    'IMG_E9623.webp',
+    'IMG_E9673.webp',
+    'IMG_E9691.webp',
+    'IMG_E9722.webp',
+    'IMG_E9730.webp',
   ],
   'indo-arabic': ['IMG_E9744.webp'],
   legs: ['IMG_E0011.webp', 'IMG_E0070.webp', 'IMG_E9627.webp', 'IMG_E9714.webp', 'IMG_E9969.webp'],
-  minimal: ['IMG_E0032.webp', 'IMG_E0034.webp', 'IMG_E0035.webp', 'IMG_E0037.webp', 'IMG_E8270.webp'],
+  minimal: [
+    'IMG_E0032.webp',
+    'IMG_E0034.webp',
+    'IMG_E0035.webp',
+    'IMG_E0037.webp',
+    'IMG_E8270.webp',
+  ],
 }
 
 const FEATURED_IMAGES = [
@@ -174,7 +214,9 @@ async function main() {
     }
 
     if (unassignedPortfolio.docs.length > 0) {
-      console.log(`  ✅ Assigned ${unassignedPortfolio.docs.length} existing portfolio items to Bhumi Chanpura`)
+      console.log(
+        `  ✅ Assigned ${unassignedPortfolio.docs.length} existing portfolio items to Bhumi Chanpura`,
+      )
     }
   }
 
@@ -262,7 +304,7 @@ async function main() {
   console.log('\n🏪 Uploading business images...')
   const imgDir = path.join(OLD_SITE_PUBLIC, 'img')
   const newImgDir = path.join(process.cwd(), 'public')
-  
+
   for (const { file: filename, alt: altText } of BUSINESS_IMAGES) {
     // Try old site first, then new public folder
     let filePath = path.join(imgDir, filename)

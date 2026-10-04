@@ -1,6 +1,13 @@
 import type { Browser } from 'playwright'
 import type { Scraper, ScrapeParams, ScrapedArtist } from '../types'
-import { launchBrowser, BROWSER_CONTEXT_OPTIONS, jitteredSleep, retryWithBackoff, normalizePhone, parsePriceRange } from './utils'
+import {
+  launchBrowser,
+  BROWSER_CONTEXT_OPTIONS,
+  jitteredSleep,
+  retryWithBackoff,
+  normalizePhone,
+  parsePriceRange,
+} from './utils'
 
 export class WeddingWireScraper implements Scraper {
   source = 'weddingwire' as const
@@ -37,7 +44,7 @@ export class WeddingWireScraper implements Scraper {
       console.log(`[WeddingWire] Navigating to: ${url}`)
 
       await retryWithBackoff(() =>
-        page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
+        page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 }),
       )
       await jitteredSleep(3000)
 
@@ -122,10 +129,7 @@ export class WeddingWireScraper implements Scraper {
 
           let phone: string | undefined
           try {
-            const telHref = await listing
-              .locator('a[href^="tel:"]')
-              .first()
-              .getAttribute('href')
+            const telHref = await listing.locator('a[href^="tel:"]').first().getAttribute('href')
             if (telHref) phone = normalizePhone(telHref.replace('tel:', ''))
           } catch {}
 

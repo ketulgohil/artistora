@@ -33,8 +33,7 @@ const areas = [
     name: 'Vastrapur',
     slug: 'vastrapur',
     highlight: 'Wedding Favorite',
-    description:
-      'Trusted bridal mehndi, makeup, and nail artists serving the heart of Ahmedabad.',
+    description: 'Trusted bridal mehndi, makeup, and nail artists serving the heart of Ahmedabad.',
   },
   {
     name: 'Bopal',

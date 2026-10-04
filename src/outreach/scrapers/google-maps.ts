@@ -1,6 +1,12 @@
 import type { Browser, Page } from 'playwright'
 import type { Scraper, ScrapeParams, ScrapedArtist } from '../types'
-import { launchBrowser, BROWSER_CONTEXT_OPTIONS, jitteredSleep, retryWithBackoff, normalizePhone } from './utils'
+import {
+  launchBrowser,
+  BROWSER_CONTEXT_OPTIONS,
+  jitteredSleep,
+  retryWithBackoff,
+  normalizePhone,
+} from './utils'
 
 export class GoogleMapsScraper implements Scraper {
   source = 'google_maps' as const
@@ -23,13 +29,17 @@ export class GoogleMapsScraper implements Scraper {
         page.goto(`https://www.google.com/maps/search/${searchQuery}`, {
           waitUntil: 'domcontentloaded',
           timeout: 30000,
-        })
+        }),
       )
       await jitteredSleep(3000)
 
       // Dismiss cookie/consent banner if shown
       try {
-        const consentBtn = page.locator('button:has-text("Accept all"), button:has-text("Reject all"), button:has-text("I agree"), form[action*="consent"] button').first()
+        const consentBtn = page
+          .locator(
+            'button:has-text("Accept all"), button:has-text("Reject all"), button:has-text("I agree"), form[action*="consent"] button',
+          )
+          .first()
         if (await consentBtn.isVisible({ timeout: 2000 })) {
           await consentBtn.click()
           await jitteredSleep(1000)
@@ -50,11 +60,13 @@ export class GoogleMapsScraper implements Scraper {
       const maxScrolls = 10
 
       while (placeUrls.length < maxResults && scrollAttempts < maxScrolls) {
-        const resultLinks = await page.locator(
-          'a[href*="/maps/place"], div.Nv2PK a, div.tH5CWc a, div.THOPZb a, a.hfpxzc'
-        ).all()
+        const resultLinks = await page
+          .locator('a[href*="/maps/place"], div.Nv2PK a, div.tH5CWc a, div.THOPZb a, a.hfpxzc')
+          .all()
 
-        console.log(`[GoogleMaps] Found ${resultLinks.length} result links on scroll ${scrollAttempts}`)
+        console.log(
+          `[GoogleMaps] Found ${resultLinks.length} result links on scroll ${scrollAttempts}`,
+        )
 
         for (const link of resultLinks) {
           if (placeUrls.length >= maxResults) break
@@ -63,9 +75,9 @@ export class GoogleMapsScraper implements Scraper {
             const href = await link.getAttribute('href')
             if (!href || !href.includes('/maps/place/') || seenUrls.has(href)) continue
 
-            let name = await link.getAttribute('aria-label') || ''
+            let name = (await link.getAttribute('aria-label')) || ''
             if (!name) {
-              name = await link.locator('div[aria-hidden="true"]').first().textContent() || ''
+              name = (await link.locator('div[aria-hidden="true"]').first().textContent()) || ''
             }
             if (!name.trim()) continue
 
@@ -78,7 +90,9 @@ export class GoogleMapsScraper implements Scraper {
 
         try {
           const feed = page.locator(feedSelector).first()
-          await feed.evaluate((el) => { el.scrollTop = el.scrollHeight })
+          await feed.evaluate((el) => {
+            el.scrollTop = el.scrollHeight
+          })
           await jitteredSleep(2500)
           scrollAttempts++
         } catch {
@@ -92,7 +106,9 @@ export class GoogleMapsScraper implements Scraper {
         placeUrls.push({ name: singleName.trim(), href: page.url() })
       }
 
-      console.log(`[GoogleMaps] Collected ${placeUrls.length} place URLs, visiting in parallel batches...`)
+      console.log(
+        `[GoogleMaps] Collected ${placeUrls.length} place URLs, visiting in parallel batches...`,
+      )
 
       // === PHASE 2: Visit place URLs in parallel batches of 4 ===
       const BATCH_SIZE = 4
@@ -103,7 +119,7 @@ export class GoogleMapsScraper implements Scraper {
             const tabPage = await context.newPage()
             try {
               await retryWithBackoff(() =>
-                tabPage.goto(href, { waitUntil: 'domcontentloaded', timeout: 15000 })
+                tabPage.goto(href, { waitUntil: 'domcontentloaded', timeout: 15000 }),
               )
               await jitteredSleep(2000)
 
@@ -120,10 +136,12 @@ export class GoogleMapsScraper implements Scraper {
             } finally {
               await tabPage.close()
             }
-          })
+          }),
         )
         results.push(...batchResults.filter((a): a is ScrapedArtist => a !== null))
-        console.log(`[GoogleMaps] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${results.length} total so far`)
+        console.log(
+          `[GoogleMaps] Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${results.length} total so far`,
+        )
       }
     } catch (error) {
       console.error('[GoogleMaps] Scrape error:', error)
@@ -140,11 +158,13 @@ export class GoogleMapsScraper implements Scraper {
   private async extractPlaceDetails(
     page: Page,
     name: string,
-    params: ScrapeParams
+    params: ScrapeParams,
   ): Promise<ScrapedArtist | null> {
     try {
       try {
-        await page.waitForSelector('h1.DUwDvf, div.Io6YTe, div.rogA2c, [data-item-id]', { timeout: 4000 })
+        await page.waitForSelector('h1.DUwDvf, div.Io6YTe, div.rogA2c, [data-item-id]', {
+          timeout: 4000,
+        })
       } catch {}
       await jitteredSleep(500)
 
@@ -153,9 +173,12 @@ export class GoogleMapsScraper implements Scraper {
         const bizNameSelectors = ['h1.DUwDvf', 'h1[class*="header"]', '[data-attrid="title"]', 'h1']
         for (const sel of bizNameSelectors) {
           const el = page.locator(sel).first()
-          if (await el.count() > 0) {
+          if ((await el.count()) > 0) {
             const text = (await el.textContent())?.trim()
-            if (text && text !== name) { businessName = text; break }
+            if (text && text !== name) {
+              businessName = text
+              break
+            }
           }
         }
       } catch {}
@@ -173,7 +196,9 @@ export class GoogleMapsScraper implements Scraper {
             phone = normalized
             break
           }
-          const match = text.match(/(?:\+?91[\s-]?)?0?[6-9]\d{4}[\s-]?\d{5}|(?:\+?91[\s-]?)?0?[6-9]\d{9}/)
+          const match = text.match(
+            /(?:\+?91[\s-]?)?0?[6-9]\d{4}[\s-]?\d{5}|(?:\+?91[\s-]?)?0?[6-9]\d{9}/,
+          )
           if (match) {
             const num = normalizePhone(match[0])
             if (num) {
@@ -190,14 +215,19 @@ export class GoogleMapsScraper implements Scraper {
             const href = await link.getAttribute('href')
             if (href?.startsWith('tel:')) {
               const num = normalizePhone(href.replace('tel:', ''))
-              if (num) { phone = num; break }
+              if (num) {
+                phone = num
+                break
+              }
             }
           }
         }
 
         // 3. data-item-id with phone:
         if (!phone) {
-          const phoneBtns = await page.locator('[data-item-id*="phone"], [data-item-id^="phone:"]').all()
+          const phoneBtns = await page
+            .locator('[data-item-id*="phone"], [data-item-id^="phone:"]')
+            .all()
           for (const btn of phoneBtns) {
             const itemId = await btn.getAttribute('data-item-id')
             const ariaLabel = await btn.getAttribute('aria-label')
@@ -206,20 +236,28 @@ export class GoogleMapsScraper implements Scraper {
               normalizePhone(itemId?.replace(/^phone:tel:/, '')?.replace(/^phone:/, '')) ||
               normalizePhone(ariaLabel || undefined) ||
               normalizePhone(text || undefined)
-            if (num) { phone = num; break }
+            if (num) {
+              phone = num
+              break
+            }
           }
         }
 
         // 4. aria-label or tooltip containing phone
         if (!phone) {
           const phoneElements = await page
-            .locator('[aria-label*="Phone" i], [aria-label*="phone" i], button[data-tooltip*="phone" i]')
+            .locator(
+              '[aria-label*="Phone" i], [aria-label*="phone" i], button[data-tooltip*="phone" i]',
+            )
             .all()
           for (const el of phoneElements) {
             const label = await el.getAttribute('aria-label')
             const text = await el.textContent()
             const num = normalizePhone(label || undefined) || normalizePhone(text || undefined)
-            if (num) { phone = num; break }
+            if (num) {
+              phone = num
+              break
+            }
           }
         }
       } catch {}
@@ -234,8 +272,8 @@ export class GoogleMapsScraper implements Scraper {
         ]
         for (const sel of websiteSelectors) {
           const el = page.locator(sel).first()
-          if (await el.count() > 0) {
-            website = await el.getAttribute('href') || undefined
+          if ((await el.count()) > 0) {
+            website = (await el.getAttribute('href')) || undefined
             if (website) break
           }
         }
@@ -251,10 +289,13 @@ export class GoogleMapsScraper implements Scraper {
         ]
         for (const sel of ratingSelectors) {
           const el = page.locator(sel).first()
-          if (await el.count() > 0) {
-            const label = await el.getAttribute('aria-label') || ''
+          if ((await el.count()) > 0) {
+            const label = (await el.getAttribute('aria-label')) || ''
             const match = label.match(/([\d.]+)/)
-            if (match) { rating = Math.min(5, parseFloat(match[1])); break }
+            if (match) {
+              rating = Math.min(5, parseFloat(match[1]))
+              break
+            }
           }
         }
 
@@ -265,11 +306,14 @@ export class GoogleMapsScraper implements Scraper {
         ]
         for (const sel of reviewSelectors) {
           const el = page.locator(sel).first()
-          if (await el.count() > 0) {
+          if ((await el.count()) > 0) {
             const text = await el.textContent()
             if (text) {
               const match = text.match(/(\d[\d,]*)/)
-              if (match) { reviewCount = parseInt(match[1].replace(/,/g, '')); break }
+              if (match) {
+                reviewCount = parseInt(match[1].replace(/,/g, ''))
+                break
+              }
             }
           }
         }
@@ -285,7 +329,7 @@ export class GoogleMapsScraper implements Scraper {
         ]
         for (const sel of addrSelectors) {
           const el = page.locator(sel).first()
-          if (await el.count() > 0) {
+          if ((await el.count()) > 0) {
             area = (await el.textContent())?.trim() || undefined
             if (area) break
           }
@@ -294,10 +338,14 @@ export class GoogleMapsScraper implements Scraper {
 
       let specializations: string | undefined
       try {
-        const catSelectors = ['button[jsaction*="category"]', 'span.DkEaL', '[data-item-id="category"]']
+        const catSelectors = [
+          'button[jsaction*="category"]',
+          'span.DkEaL',
+          '[data-item-id="category"]',
+        ]
         for (const sel of catSelectors) {
           const el = page.locator(sel).first()
-          if (await el.count() > 0) {
+          if ((await el.count()) > 0) {
             specializations = (await el.textContent())?.trim() || undefined
             if (specializations) break
           }
@@ -322,8 +370,14 @@ export class GoogleMapsScraper implements Scraper {
       const catLower = (specializations || params.query || '').toLowerCase()
       let serviceCategory: 'mehndi' | 'makeup' | 'decor' | 'other' = 'other'
       if (catLower.includes('mehndi') || catLower.includes('henna')) serviceCategory = 'mehndi'
-      else if (catLower.includes('makeup') || catLower.includes('beauty') || catLower.includes('parlour')) serviceCategory = 'makeup'
-      else if (catLower.includes('decor') || catLower.includes('decoration')) serviceCategory = 'decor'
+      else if (
+        catLower.includes('makeup') ||
+        catLower.includes('beauty') ||
+        catLower.includes('parlour')
+      )
+        serviceCategory = 'makeup'
+      else if (catLower.includes('decor') || catLower.includes('decoration'))
+        serviceCategory = 'decor'
       else if (params.category && ['mehndi', 'makeup', 'decor'].includes(params.category)) {
         serviceCategory = params.category as any
       }
@@ -340,11 +394,15 @@ export class GoogleMapsScraper implements Scraper {
         whatsappNumber,
         website,
         instagramHandle,
-        instagramProfileUrl: instagramHandle ? `https://instagram.com/${instagramHandle}` : undefined,
+        instagramProfileUrl: instagramHandle
+          ? `https://instagram.com/${instagramHandle}`
+          : undefined,
         city: params.city || 'Ahmedabad',
         area,
         state: 'Gujarat',
-        services: specializations ? [{ name: specializations, category: serviceCategory }] : undefined,
+        services: specializations
+          ? [{ name: specializations, category: serviceCategory }]
+          : undefined,
         specializations,
         rating,
         reviewCount,

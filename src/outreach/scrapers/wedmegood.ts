@@ -1,6 +1,12 @@
 import type { Browser } from 'playwright'
 import type { Scraper, ScrapeParams, ScrapedArtist } from '../types'
-import { launchBrowser, BROWSER_CONTEXT_OPTIONS, jitteredSleep, retryWithBackoff, parsePriceRange } from './utils'
+import {
+  launchBrowser,
+  BROWSER_CONTEXT_OPTIONS,
+  jitteredSleep,
+  retryWithBackoff,
+  parsePriceRange,
+} from './utils'
 
 export class WedMeGoodScraper implements Scraper {
   source = 'wedmegood' as const
@@ -38,7 +44,7 @@ export class WedMeGoodScraper implements Scraper {
       console.log(`[WedMeGood] Navigating to: ${url}`)
 
       await retryWithBackoff(() =>
-        page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
+        page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 }),
       )
       await jitteredSleep(3000)
 

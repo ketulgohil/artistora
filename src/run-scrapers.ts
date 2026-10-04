@@ -38,7 +38,10 @@ async function main() {
   const serviceFlag = args.find((_, i, a) => a[i - 1] === '--service')
   const sourceFlag = args.find((_, i, a) => a[i - 1] === '--source')
   const concurrencyFlag = args.find((_, i, a) => a[i - 1] === '--concurrency' || a[i - 1] === '-c')
-  const concurrency = Math.max(1, Math.min(10, concurrencyFlag ? parseInt(concurrencyFlag, 10) || 1 : 1))
+  const concurrency = Math.max(
+    1,
+    Math.min(10, concurrencyFlag ? parseInt(concurrencyFlag, 10) || 1 : 1),
+  )
 
   let queries = allQueries
 
@@ -46,7 +49,9 @@ async function main() {
     const services = serviceFlag.split(',').map((s) => s.trim().toLowerCase())
     queries = services.flatMap((s) => SERVICE_MAP[s] || [])
     if (queries.length === 0) {
-      console.error(`Unknown service(s): ${serviceFlag}. Available: ${Object.keys(SERVICE_MAP).join(', ')}`)
+      console.error(
+        `Unknown service(s): ${serviceFlag}. Available: ${Object.keys(SERVICE_MAP).join(', ')}`,
+      )
       process.exit(1)
     }
   }
@@ -61,16 +66,22 @@ async function main() {
   console.log(`\n📋 ${queries.length} scrape queries to run`)
   console.log(`🏙️  City: Ahmedabad`)
   console.log(`🔍 Services: ${serviceFlag || 'All (mehndi, makeup, decor)'}`)
-  console.log(`📡 Sources: ${sourceFlag || 'All (google_maps, instagram, justdial, sulekha, wedmegood, weddingwire)'}`)
+  console.log(
+    `📡 Sources: ${sourceFlag || 'All (google_maps, instagram, justdial, sulekha, wedmegood, weddingwire)'}`,
+  )
   console.log(`⚡ Concurrency: ${concurrency} parallel worker(s)`)
   console.log('')
 
   if (dryRun) {
     console.log('🔍 DRY RUN — Queries that would be executed:\n')
     for (const q of queries) {
-      console.log(`  [${q.source}] [${q.category || 'general'}] "${q.query}" → max ${q.maxResults} results`)
+      console.log(
+        `  [${q.source}] [${q.category || 'general'}] "${q.query}" → max ${q.maxResults} results`,
+      )
     }
-    console.log(`\nTotal: ${queries.length} queries, ~${queries.reduce((s, q) => s + q.maxResults, 0)} estimated results`)
+    console.log(
+      `\nTotal: ${queries.length} queries, ~${queries.reduce((s, q) => s + q.maxResults, 0)} estimated results`,
+    )
     return
   }
 
@@ -113,7 +124,11 @@ async function main() {
         await payload.update({
           collection: 'scrape-jobs',
           id: job.id,
-          data: { status: 'failed', errorMessage: result.error, completedAt: new Date().toISOString() },
+          data: {
+            status: 'failed',
+            errorMessage: result.error,
+            completedAt: new Date().toISOString(),
+          },
         })
         totalErrors++
         return
@@ -156,10 +171,7 @@ async function main() {
               const res = await payload.find({
                 collection: 'discovered-artists',
                 where: {
-                  and: [
-                    { name: { equals: artist.name } },
-                    { city: { equals: artist.city } },
-                  ],
+                  and: [{ name: { equals: artist.name } }, { city: { equals: artist.city } }],
                 },
                 limit: 1,
               })
@@ -170,12 +182,17 @@ async function main() {
               // Merge: enrich existing record with any new data from this scrape
               const updates: Record<string, any> = {}
               if (!existingDoc.phone && artist.phone) updates.phone = artist.phone
-              if (!existingDoc.whatsappNumber && artist.whatsappNumber) updates.whatsappNumber = artist.whatsappNumber
+              if (!existingDoc.whatsappNumber && artist.whatsappNumber)
+                updates.whatsappNumber = artist.whatsappNumber
               if (!existingDoc.email && artist.email) updates.email = artist.email
-              if (!existingDoc.instagramHandle && artist.instagramHandle) updates.instagramHandle = artist.instagramHandle
+              if (!existingDoc.instagramHandle && artist.instagramHandle)
+                updates.instagramHandle = artist.instagramHandle
               if (!existingDoc.website && artist.website) updates.website = artist.website
               if (!existingDoc.rating && artist.rating) updates.rating = artist.rating
-              if ((!existingDoc.reviewCount || existingDoc.reviewCount < (artist.reviewCount || 0)) && artist.reviewCount) {
+              if (
+                (!existingDoc.reviewCount || existingDoc.reviewCount < (artist.reviewCount || 0)) &&
+                artist.reviewCount
+              ) {
                 updates.reviewCount = artist.reviewCount
               }
               // Update lead score if the new one is higher
@@ -196,7 +213,10 @@ async function main() {
               return
             }
 
-            const slug = artist.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+            const slug = artist.name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '')
 
             await payload.create({
               collection: 'discovered-artists',
@@ -230,7 +250,7 @@ async function main() {
               },
             })
             newCount++
-          })
+          }),
         )
       }
 
@@ -251,7 +271,9 @@ async function main() {
       totalNew += newCount
       totalDupes += dupeCount
 
-      console.log(`  ✅ [${label}] Found: ${result.artists.length} | New: ${newCount} | Dupes: ${dupeCount}`)
+      console.log(
+        `  ✅ [${label}] Found: ${result.artists.length} | New: ${newCount} | Dupes: ${dupeCount}`,
+      )
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error'
       console.log(`  ❌ [${label}] Failed: ${msg}`)

@@ -157,12 +157,7 @@ const serviceImages: Record<string, string> = {
 }
 
 // Filter to show only main service categories
-const MAIN_SERVICES = [
-  'Mehndi Artists',
-  'Makeup Artists',
-  'Nail Artists',
-  'Decor & Event Planners',
-]
+const MAIN_SERVICES = ['Mehndi Artists', 'Makeup Artists', 'Nail Artists', 'Decor & Event Planners']
 
 const promisePoints = [
   {

@@ -18,7 +18,9 @@ export class InstagramScraper implements Scraper {
 
     const sessionPath = path.join(process.cwd(), 'instagram-session', 'state.json')
     if (!fs.existsSync(sessionPath)) {
-      throw new Error('[Instagram] No saved session found. Run: npx tsx src/save-instagram-session.ts')
+      throw new Error(
+        '[Instagram] No saved session found. Run: npx tsx src/save-instagram-session.ts',
+      )
     }
 
     try {
@@ -41,7 +43,10 @@ export class InstagramScraper implements Scraper {
           })
           await jitteredSleep(3000)
 
-          const postLinks = await this.collectPostLinks(page, Math.min(maxResults - results.length, 20))
+          const postLinks = await this.collectPostLinks(
+            page,
+            Math.min(maxResults - results.length, 20),
+          )
 
           for (const postUrl of postLinks) {
             if (results.length >= maxResults) break
@@ -159,10 +164,7 @@ export class InstagramScraper implements Scraper {
 
       let followerCount: number | undefined
       try {
-        const statsText = await page
-          .locator('header section ul li span span')
-          .first()
-          .textContent()
+        const statsText = await page.locator('header section ul li span span').first().textContent()
         if (statsText) {
           const num = statsText.replace(/,/g, '').replace(/\./g, '')
           if (num.includes('M')) followerCount = Math.round(parseFloat(num) * 1000000)
@@ -183,13 +185,7 @@ export class InstagramScraper implements Scraper {
       const emailMatch = bio?.match(/[\w.+-]+@[\w-]+\.[\w.]+/)
       const email = emailMatch ? emailMatch[0] : undefined
 
-      const serviceKeywords = [
-        'mehndi',
-        'henna',
-        'makeup',
-        'decor',
-        'decoration',
-      ]
+      const serviceKeywords = ['mehndi', 'henna', 'makeup', 'decor', 'decoration']
       const bioLower = bio?.toLowerCase() || ''
       const detectedServices = serviceKeywords.filter((kw) => bioLower.includes(kw))
 

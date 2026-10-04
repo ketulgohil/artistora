@@ -212,12 +212,9 @@ export async function getPortfolioItems(
     if (['mehndi', 'makeup', 'nail-art', 'decor', 'other'].includes(normalized)) {
       targetServiceCategory = normalized
     } else if (
-      [
-        'mehndi-artists',
-        'makeup-artists',
-        'nail-artists',
-        'decor-event-planners',
-      ].includes(normalized)
+      ['mehndi-artists', 'makeup-artists', 'nail-artists', 'decor-event-planners'].includes(
+        normalized,
+      )
     ) {
       targetServiceCategory = mapArtistTypeToServiceCategory(normalized)
     } else {

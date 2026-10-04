@@ -19,7 +19,11 @@ config({ path: path.resolve(process.cwd(), '.env.local') })
 export interface UnifiedRedis {
   clientType: 'ioredis' | 'upstash'
   get<T = string>(key: string): Promise<T | null>
-  set(key: string, value: string | number | Buffer, options?: { ex?: number; px?: number }): Promise<any>
+  set(
+    key: string,
+    value: string | number | Buffer,
+    options?: { ex?: number; px?: number },
+  ): Promise<any>
   del(...keys: string[]): Promise<number>
   incr(key: string): Promise<number>
   expire(key: string, seconds: number): Promise<number | boolean>
@@ -37,6 +41,52 @@ export function getUnifiedRedis(): UnifiedRedis {
   const redisUrl = process.env.REDIS_URL
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN
+
+  if (upstashUrl && upstashToken && !process.env.FORCE_LOCAL_REDIS) {
+    const upstash = new UpstashRedis({ url: upstashUrl, token: upstashToken })
+
+    const client: UnifiedRedis = {
+      clientType: 'upstash',
+      isLocal: () => false,
+      async get<T = string>(key: string): Promise<T | null> {
+        return upstash.get<T>(key)
+      },
+      async set(
+        key: string,
+        value: string | number | Buffer,
+        options?: { ex?: number; px?: number },
+      ): Promise<any> {
+        if (Buffer.isBuffer(value)) {
+          value = value.toString('base64')
+        }
+        return upstash.set(key, value, options as any)
+      },
+      async del(...keys: string[]): Promise<number> {
+        if (keys.length === 0) return 0
+        return upstash.del(...keys)
+      },
+      async incr(key: string): Promise<number> {
+        return upstash.incr(key)
+      },
+      async expire(key: string, seconds: number): Promise<number | boolean> {
+        return upstash.expire(key, seconds)
+      },
+      async getBuffer(key: string): Promise<Buffer | null> {
+        const b64 = await upstash.get<string>(key)
+        if (!b64) return null
+        return Buffer.from(b64, 'base64')
+      },
+      async setBuffer(key: string, buffer: Buffer, options?: { ex?: number }): Promise<void> {
+        await upstash.set(key, buffer.toString('base64'), options as any)
+      },
+      async quit(): Promise<void> {
+        cachedClient = null
+      },
+    }
+
+    cachedClient = client
+    return client
+  }
 
   if (redisUrl) {
     try {
@@ -62,8 +112,13 @@ export function getUnifiedRedis(): UnifiedRedis {
             return val as unknown as T
           }
         },
-        async set(key: string, value: string | number | Buffer, options?: { ex?: number; px?: number }): Promise<any> {
-          const strVal = typeof value === 'object' && !Buffer.isBuffer(value) ? JSON.stringify(value) : value
+        async set(
+          key: string,
+          value: string | number | Buffer,
+          options?: { ex?: number; px?: number },
+        ): Promise<any> {
+          const strVal =
+            typeof value === 'object' && !Buffer.isBuffer(value) ? JSON.stringify(value) : value
           if (options?.ex) {
             return io.set(key, strVal as any, 'EX', options.ex)
           }
@@ -103,50 +158,8 @@ export function getUnifiedRedis(): UnifiedRedis {
       cachedClient = client
       return client
     } catch (err: any) {
-      console.warn('[Redis] Failed to initialize ioredis, falling back to Upstash:', err.message)
+      console.warn('[Redis] Failed to initialize ioredis:', err.message)
     }
-  }
-
-  if (upstashUrl && upstashToken) {
-    const upstash = new UpstashRedis({ url: upstashUrl, token: upstashToken })
-
-    const client: UnifiedRedis = {
-      clientType: 'upstash',
-      isLocal: () => false,
-      async get<T = string>(key: string): Promise<T | null> {
-        return upstash.get<T>(key)
-      },
-      async set(key: string, value: string | number | Buffer, options?: { ex?: number; px?: number }): Promise<any> {
-        if (Buffer.isBuffer(value)) {
-          value = value.toString('base64')
-        }
-        return upstash.set(key, value, options as any)
-      },
-      async del(...keys: string[]): Promise<number> {
-        if (keys.length === 0) return 0
-        return upstash.del(...keys)
-      },
-      async incr(key: string): Promise<number> {
-        return upstash.incr(key)
-      },
-      async expire(key: string, seconds: number): Promise<number | boolean> {
-        return upstash.expire(key, seconds)
-      },
-      async getBuffer(key: string): Promise<Buffer | null> {
-        const b64 = await upstash.get<string>(key)
-        if (!b64) return null
-        return Buffer.from(b64, 'base64')
-      },
-      async setBuffer(key: string, buffer: Buffer, options?: { ex?: number }): Promise<void> {
-        await upstash.set(key, buffer.toString('base64'), options as any)
-      },
-      async quit(): Promise<void> {
-        cachedClient = null
-      },
-    }
-
-    cachedClient = client
-    return client
   }
 
   throw new Error('No Redis configuration found. Set REDIS_URL or UPSTASH_REDIS_REST_URL in .env')

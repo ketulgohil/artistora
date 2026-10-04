@@ -336,9 +336,9 @@ export default async function HomePage() {
                 Book a verified artist in Ahmedabad in minutes.
               </h1>
               <p className="mt-6! max-w-xl! text-[1.02rem] leading-relaxed text-ink-soft">
-                Artistora connects you with vetted artists across Ahmedabad — mehndi, makeup,
-                nail art, and decor. Compare free quotes, browse portfolios, and book the artist who
-                fits your event and budget.
+                Artistora connects you with vetted artists across Ahmedabad — mehndi, makeup, nail
+                art, and decor. Compare free quotes, browse portfolios, and book the artist who fits
+                your event and budget.
               </p>
               <div className="mt-8! flex flex-wrap items-center gap-4!">
                 <a className={BTN_PRIMARY} href={bookingUrl} rel="noreferrer">
