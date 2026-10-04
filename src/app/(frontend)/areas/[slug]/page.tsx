@@ -28,11 +28,11 @@ const areasData: Record<
   satellite: {
     name: 'Satellite',
     description:
-      "Satellite is Ahmedabad's premium event hub, home to some of the city's finest banquet halls and open-air venues. Find verified photographers, makeup artists, and mehndi artists for weddings, receptions, and corporate events.",
+      "Satellite is Ahmedabad's premium event hub, home to some of the city's finest banquet halls and open-air venues. Find verified nail artists, makeup artists, and mehndi artists for weddings, receptions, and corporate events.",
     landmarks: ['Iscon Mall', 'Satellite Cross Roads', 'Jodhpur Village', 'Husain Dargah'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -41,7 +41,7 @@ const areasData: Record<
   vastrapur: {
     name: 'Vastrapur',
     description:
-      'Vastrapur is a wedding favourite in central Ahmedabad, known for its lakeside venues and cultural celebrations. Discover trusted bridal mehndi, makeup, and photography artists with years of experience.',
+      'Vastrapur is a wedding favourite in central Ahmedabad, known for its lakeside venues and cultural celebrations. Discover trusted bridal mehndi, makeup, and nail artists with years of experience.',
     landmarks: [
       'Vastrapur Lake',
       'Vastrapur Lake Garden',
@@ -50,7 +50,7 @@ const areasData: Record<
     ],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Catering Consultants',
@@ -63,7 +63,7 @@ const areasData: Record<
     landmarks: ['Bopal Bridge', 'Science City Road', 'Bopal Gymkhana', 'Shreyas Railway Crossing'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -72,7 +72,7 @@ const areasData: Record<
   'prahlad-nagar': {
     name: 'Prahlad Nagar',
     description:
-      'Prahlad Nagar is known for its upscale banquet halls and corporate event venues. Find professional event planners, photographers, and makeup artists who specialise in grand celebrations.',
+      'Prahlad Nagar is known for its upscale banquet halls and corporate event venues. Find professional event planners, decor specialists, and makeup artists who specialise in grand celebrations.',
     landmarks: [
       'Prahlad Nagar Garden',
       'One World West',
@@ -81,7 +81,7 @@ const areasData: Record<
     ],
     services: [
       'Corporate Event Planners',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Bridal Mehndi Artists',
       'Decor Designers',
@@ -95,7 +95,7 @@ const areasData: Record<
     services: [
       'Bridal Mehndi Artists',
       'Makeup Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Mehndi Artists',
       'Event Planners',
     ],
@@ -107,7 +107,7 @@ const areasData: Record<
     landmarks: ['Gota Cross Roads', 'SP Ring Road', 'Gota Bridge', 'Sattva Golf Homes'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -120,7 +120,7 @@ const areasData: Record<
     landmarks: ['South Bopal Road', 'Shilaj Circle', 'Ghuma Santej', 'Ambli Bopal Road'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -133,7 +133,7 @@ const areasData: Record<
     landmarks: ['Science City', 'Gujarat Science City', 'Science City Road', 'Sola Bridge'],
     services: [
       'Event Planners',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Bridal Mehndi Artists',
       'Decor Designers',
@@ -146,7 +146,7 @@ const areasData: Record<
     landmarks: ['Shela Village', 'Shela Cross Roads', 'Bopal Shela Road', 'Shela Lake'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -159,7 +159,7 @@ const areasData: Record<
     landmarks: ['Nikol Cross Roads', 'Naroda Road', 'Nikol Fire Station', 'Vatva GIDC'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -172,7 +172,7 @@ const areasData: Record<
     landmarks: ['Vastral Road', 'Vastral Gam', 'Ramol Cross Roads', 'Vastral Lake'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -186,7 +186,7 @@ const areasData: Record<
     services: [
       'Bridal Mehndi Artists',
       'Makeup Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Event Planners',
       'Mehndi Artists',
     ],
@@ -194,10 +194,10 @@ const areasData: Record<
   naroda: {
     name: 'Naroda',
     description:
-      'Naroda offers complete event service providers who handle photography, decor, makeup, and mehndi all in one package.',
+      'Naroda offers complete event service providers who handle nail art, decor, makeup, and mehndi all in one package.',
     landmarks: ['Naroda GIDC', 'Naroda Patiya', 'Naroda Road', 'Isanpur Junction'],
     services: [
-      'Wedding Photographers',
+      'Nail Artists',
       'Event Planners',
       'Makeup Artists',
       'Bridal Mehndi Artists',
@@ -212,7 +212,7 @@ const areasData: Record<
     services: [
       'Mehndi Artists',
       'Festival Makeup Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Event Planners',
       'Decor Designers',
     ],
@@ -220,7 +220,7 @@ const areasData: Record<
   motera: {
     name: 'Motera',
     description:
-      "Motera is home to the world's largest cricket stadium. Find professional photographers and event planners for grand celebrations in the area.",
+      "Motera is home to the world's largest cricket stadium. Find professional decor specialists and event planners for grand celebrations in the area.",
     landmarks: [
       'Narendra Modi Stadium',
       'Motera Cross Roads',
@@ -228,7 +228,7 @@ const areasData: Record<
       'Motera Village',
     ],
     services: [
-      'Wedding Photographers',
+      'Nail Artists',
       'Event Planners',
       'Makeup Artists',
       'Bridal Mehndi Artists',
@@ -242,7 +242,7 @@ const areasData: Record<
     landmarks: ['Sola Bridge', 'Sola Civil Hospital', 'SG Highway', 'Science City Road'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -255,7 +255,7 @@ const areasData: Record<
     landmarks: ['Ghodasar Cross Roads', 'Ghodasar Gam', 'Vastral Road', 'Ramol'],
     services: [
       'Bridal Mehndi Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Event Planners',
       'Decor Designers',
@@ -269,7 +269,7 @@ const areasData: Record<
     services: [
       'Mehndi Artists',
       'Makeup Artists',
-      'Wedding Photographers',
+      'Nail Artists',
       'Event Planners',
       'Decor Designers',
     ],
@@ -281,7 +281,7 @@ const areasData: Record<
     landmarks: ['Memco Cross Roads', 'Vatva GIDC', 'Nikol', 'Memco Gam'],
     services: [
       'Event Planners',
-      'Wedding Photographers',
+      'Nail Artists',
       'Makeup Artists',
       'Bridal Mehndi Artists',
       'Decor Designers',
@@ -293,7 +293,7 @@ const areasData: Record<
       'Daskroi offers a peaceful suburban setting for destination-style weddings. Find artists who bring elegance to venue celebrations.',
     landmarks: ['Daskroi Village', 'Dholera Road', 'Daskroi Taluka', 'Ahmedabad Border'],
     services: [
-      'Wedding Photographers',
+      'Nail Artists',
       'Event Planners',
       'Makeup Artists',
       'Bridal Mehndi Artists',
@@ -311,7 +311,7 @@ export async function generateMetadata({ params }: AreaPageProps): Promise<Metad
 
   return withDefaultSeo({
     title: `${area.name} Artists — Book Verified Professionals`,
-    description: `Find verified photographers, makeup artists, mehndi artists, and event planners in ${area.name}, Ahmedabad. Home-visit services available.`,
+    description: `Find verified mehndi artists, nail artists, makeup artists, and event planners in ${area.name}, Ahmedabad. Home-visit services available.`,
     alternates: {
       canonical: `https://www.artistora.com/areas/${slug}`,
     },
@@ -334,7 +334,6 @@ export default async function AreaPage({ params }: AreaPageProps) {
 
   const typeLabels: Record<string, string> = {
     'mehndi-artists': 'Mehndi Artist',
-    photographers: 'Photographer',
     'makeup-artists': 'Makeup Artist',
     'nail-artists': 'Nail Artist',
     'decor-event-planners': 'Decor & Events',
@@ -347,7 +346,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
     },
     {
       q: `How much do artists cost in ${area.name}?`,
-      a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, photographers from ₹15,000, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.`,
+      a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, nail artists from ₹1,500, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.`,
     },
     {
       q: `Do artists in ${area.name} offer home service?`,
@@ -402,7 +401,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
               '@type': 'ItemList',
               '@id': `https://www.artistora.com/areas/${slug}#artists`,
               name: `Verified Artists in ${area.name}, Ahmedabad`,
-              description: `Browse verified bridal mehndi artists, wedding photographers, makeup artists, and event planners available in ${area.name}, Ahmedabad.`,
+              description: `Browse verified bridal mehndi artists, nail artists, makeup artists, and event planners available in ${area.name}, Ahmedabad.`,
               numberOfItems: artists.length,
               itemListElement: artists.map((artist: any, index: number) => ({
                 '@type': 'ListItem',
@@ -658,11 +657,11 @@ export default async function AreaPage({ params }: AreaPageProps) {
           },
           {
             q: `What types of artists are available in ${area.name}?`,
-            a: `${area.name} has verified mehndi artists, wedding photographers, makeup artists, event planners, and decor designers. All artists go through Artistora's verification process.`,
+            a: `${area.name} has verified mehndi artists, nail artists, makeup artists, event planners, and decor designers. All artists go through Artistora's verification process.`,
           },
           {
             q: `How much do artists cost in ${area.name}?`,
-            a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, photographers from ₹15,000, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.`,
+            a: `Pricing varies by service type, experience, and event scale. Mehndi artists start from ₹2,000, nail artists from ₹1,500, and makeup artists from ₹5,000. Get exact quotes by submitting your event details.`,
           },
           {
             q: `Do artists in ${area.name} offer home service?`,

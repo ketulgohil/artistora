@@ -6,7 +6,7 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 export const metadata = withDefaultSeo({
   title: 'Areas We Serve — Book Artists Across Ahmedabad',
   description:
-    'Find verified photographers, makeup artists, mehndi artists, and event planners in your area across Ahmedabad — Satellite, Vastrapur, Bopal, Prahlad Nagar, and more.',
+    'Find verified nail artists, makeup artists, mehndi artists, and event planners in your area across Ahmedabad — Satellite, Vastrapur, Bopal, Prahlad Nagar, and more.',
   alternates: {
     canonical: 'https://www.artistora.com/areas',
   },
@@ -34,7 +34,7 @@ const areas = [
     slug: 'vastrapur',
     highlight: 'Wedding Favorite',
     description:
-      'Trusted bridal mehndi, makeup, and photography artists serving the heart of Ahmedabad.',
+      'Trusted bridal mehndi, makeup, and nail artists serving the heart of Ahmedabad.',
   },
   {
     name: 'Bopal',
@@ -47,7 +47,7 @@ const areas = [
     slug: 'prahlad-nagar',
     highlight: 'Corporate & Social',
     description:
-      'Professional event planners and photographers for corporate functions and social gatherings.',
+      'Professional event planners and decor specialists for corporate functions and social gatherings.',
   },
   {
     name: 'Thaltej',
@@ -104,7 +104,7 @@ const areas = [
     name: 'Naroda',
     slug: 'naroda',
     highlight: 'Full Service',
-    description: 'Complete event service providers — photography, decor, makeup, and mehndi.',
+    description: 'Complete event service providers — decor, nail art, makeup, and mehndi.',
   },
   {
     name: 'Chandkheda',
@@ -117,7 +117,7 @@ const areas = [
     slug: 'motera',
     highlight: 'Stadium Area',
     description:
-      "Professional photographers and event planners near the world's largest cricket stadium.",
+      "Professional decor specialists and event planners near the world's largest cricket stadium.",
   },
   {
     name: 'Sola',
@@ -197,8 +197,8 @@ export default async function AreasPage() {
               Artists in Every Neighbourhood of Ahmedabad
             </h1>
             <p className="mt-5! text-[1.05rem] leading-relaxed text-ink-soft">
-              Find verified mehndi artists, photographers, makeup artists, nail artists, and event
-              planners in your area. All artists offer home-visit services across Ahmedabad.
+              Find verified mehndi artists, nail artists, makeup artists, and event planners in your
+              area. All artists offer home-visit services across Ahmedabad.
             </p>
           </div>
         </div>
