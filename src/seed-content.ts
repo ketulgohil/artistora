@@ -47,22 +47,13 @@ function lexicalText(text: string) {
 // lookups stay correct even when filenames get dedupe suffixes like -1/-2.
 const SERVICES = [
   {
-    title: 'Photographers',
-    slug: 'photographers',
-    imageAlt: 'Photography Service',
-    description:
-      'Professional photographers for weddings, events, portraits, and commercial shoots — browse portfolios and compare packages before you book.',
-    points: ['Wedding & event coverage', 'Portfolio available', 'Flexible packages'],
-    order: 1,
-  },
-  {
     title: 'Makeup Artists',
     slug: 'makeup-artists',
     imageAlt: 'Makeup Service',
     description:
       'Bridal, reception, and occasion makeup artists with trial options, hygiene-first practices, and camera-friendly finishes.',
     points: ['Bridal & occasion makeup', 'Trial available', 'Premium products'],
-    order: 2,
+    order: 1,
   },
   {
     title: 'Decor & Event Planners',
@@ -71,7 +62,7 @@ const SERVICES = [
     description:
       'Stage, mandap, floral, and themed decor — matched to your event style and budget with professional event planning services.',
     points: ['Wedding & event decor', 'Custom themes', 'Full event setup'],
-    order: 3,
+    order: 2,
   },
   {
     title: 'Mehndi Artists',
@@ -80,7 +71,7 @@ const SERVICES = [
     description:
       'Bridal, engagement, and festive mehndi specialists with premium portfolios and home service availability across Ahmedabad.',
     points: ['Bridal & event specialists', 'Custom patterns', 'Home service available'],
-    order: 4,
+    order: 3,
   },
   {
     title: 'Nail Artists',
@@ -89,7 +80,7 @@ const SERVICES = [
     description:
       'Bridal, acrylic, gel extensions, french tips, and custom 3D nail art for weddings, engagements, and special occasions across Ahmedabad.',
     points: ['Gel & acrylic extensions', 'Bridal & 3D nail art', 'Home service & studio visits'],
-    order: 5,
+    order: 4,
   },
 ]
 
@@ -121,7 +112,7 @@ const TESTIMONIALS = [
   },
   {
     name: 'Devsha Rathod',
-    text: 'The quality of artists on Artistora is outstanding. From mehndi to photography, everything was handled professionally.',
+    text: 'The quality of artists on Artistora is outstanding. From mehndi to makeup and decor, everything was handled professionally.',
     rating: 5,
     order: 3,
   },
@@ -132,13 +123,13 @@ const FAQS = [
   {
     question: 'What artist services can I book on Artistora?',
     answer:
-      'You can book mehndi artists, photographers, makeup artists, decorators, event planners, and other event professionals across Ahmedabad.',
+      'You can book mehndi artists, makeup artists, nail artists, decorators, event planners, and other event professionals across Ahmedabad.',
     order: 1,
   },
   {
     question: 'How do classes and workshops work?',
     answer:
-      'Artistora offers classes and workshops in various art forms — photography, makeup, and more. Browse available sessions and register online.',
+      'Artistora offers classes and workshops in various art forms — mehndi, makeup, and more. Browse available sessions and register online.',
     order: 2,
   },
   {
@@ -150,7 +141,7 @@ const FAQS = [
   {
     question: 'What services can be booked on Artistora?',
     answer:
-      'You can book mehndi artists, photographers, makeup artists, decorators, event planners, and other creative professionals through the platform.',
+      'You can book mehndi artists, makeup artists, nail artists, decorators, event planners, and other creative professionals through the platform.',
     order: 4,
   },
   {

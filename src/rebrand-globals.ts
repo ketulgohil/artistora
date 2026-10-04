@@ -50,7 +50,7 @@ async function run() {
       slug: 'header-footer',
       data: {
         footerTagline:
-          'Artistora connects you with verified artists across Ahmedabad — mehndi, photography, makeup, decor, and more.',
+          'Artistora connects you with verified artists across Ahmedabad — mehndi, makeup, nail art, decor, and more.',
         copyrightText: '© Artistora. All rights reserved.',
       },
     })

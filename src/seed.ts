@@ -88,7 +88,6 @@ const BUSINESS_IMAGES: { file: string; alt: string }[] = [
   { file: 'deveshaa-avatar.webp', alt: 'Deveshaa avatar' },
   { file: 'rutva-avatar.webp', alt: 'Rutva avatar' },
   { file: 'urvi-avatar.webp', alt: 'Urvi avatar' },
-  { file: '../public/services/photographers.jpg', alt: 'Photography Service' },
   { file: '../public/services/makeup.jpg', alt: 'Makeup Service' },
   { file: '../public/services/decor.jpg', alt: 'Decor Service' },
   { file: '../public/services/mehndi.jpg', alt: 'Mehndi Service' },
