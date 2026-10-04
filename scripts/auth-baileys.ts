@@ -37,7 +37,7 @@ function askQuestion(query: string): Promise<string> {
     rl.question(query, (ans) => {
       rl.close()
       resolve(ans.trim())
-    })
+    }),
   )
 }
 
@@ -79,15 +79,19 @@ async function main() {
   console.log('=== WhatsApp Fast Link Setup ===\n')
 
   console.log('Choose your preferred login method:')
-  console.log('1. 🔢 Pairing Code (Enter your phone number & type 8-letter code on phone — Recommended, No QR scan!)')
+  console.log(
+    '1. 🔢 Pairing Code (Enter your phone number & type 8-letter code on phone — Recommended, No QR scan!)',
+  )
   console.log('2. 🌐 Web Browser QR Code (Opens a crisp, high-res QR code in Safari/Chrome)')
   console.log('3. 📟 Terminal QR Code\n')
 
-  const choice = await askQuestion('Select method (1, 2, or 3) [default: 1]: ') || '1'
+  const choice = (await askQuestion('Select method (1, 2, or 3) [default: 1]: ')) || '1'
 
   let phoneNumber = ''
   if (choice === '1') {
-    const rawPhone = await askQuestion('\nEnter your WhatsApp Phone Number (with country code, e.g. 917405387720): ')
+    const rawPhone = await askQuestion(
+      '\nEnter your WhatsApp Phone Number (with country code, e.g. 917405387720): ',
+    )
     phoneNumber = rawPhone.replace(/\D/g, '')
     if (!phoneNumber || phoneNumber.length < 10) {
       console.error('❌ Invalid phone number entered.')
@@ -105,7 +109,9 @@ async function main() {
 
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
   const { version, isLatest } = await fetchLatestBaileysVersion()
-  console.log(`[Baileys] Connecting with WhatsApp Web version ${version.join('.')}${isLatest ? ' (latest)' : ''}...`)
+  console.log(
+    `[Baileys] Connecting with WhatsApp Web version ${version.join('.')}${isLatest ? ' (latest)' : ''}...`,
+  )
 
   const usePairingCode = choice === '1'
 
@@ -114,7 +120,7 @@ async function main() {
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: choice === '3',
-    browser: Browsers.macOS('Chrome'),
+    browser: Browsers.macOS('Desktop'),
     syncFullHistory: false,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,

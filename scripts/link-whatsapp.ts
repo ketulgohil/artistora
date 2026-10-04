@@ -18,7 +18,10 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { exec } from 'child_process'
 import dotenv from 'dotenv'
-import { saveBaileysAuthToRedis, loadBaileysAuthFromRedis } from '../src/outreach/whatsapp/baileys-session'
+import {
+  saveBaileysAuthToRedis,
+  loadBaileysAuthFromRedis,
+} from '../src/outreach/whatsapp/baileys-session'
 import { getUnifiedRedis } from '../src/outreach/redis-client'
 
 dotenv.config()
@@ -52,7 +55,9 @@ const server = http.createServer(async (req, res) => {
       Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
     })
-    res.write(`data: ${JSON.stringify({ state: connectionState, qr: latestQr, code: currentPairingCode })}\n\n`)
+    res.write(
+      `data: ${JSON.stringify({ state: connectionState, qr: latestQr, code: currentPairingCode })}\n\n`,
+    )
     sseClients.push(res)
     req.on('close', () => {
       sseClients = sseClients.filter((c) => c !== res)
@@ -69,7 +74,11 @@ const server = http.createServer(async (req, res) => {
         const clean = phone.replace(/\D/g, '')
         if (!clean || clean.length < 10) {
           res.writeHead(400, { 'Content-Type': 'application/json' })
-          return res.end(JSON.stringify({ error: 'Please enter a valid phone number with country code (e.g. 917405387720)' }))
+          return res.end(
+            JSON.stringify({
+              error: 'Please enter a valid phone number with country code (e.g. 917405387720)',
+            }),
+          )
         }
 
         if (socketInstance && !socketInstance.authState?.creds?.registered) {
@@ -81,7 +90,11 @@ const server = http.createServer(async (req, res) => {
           res.end(JSON.stringify({ success: true, code: currentPairingCode }))
         } else {
           res.writeHead(400, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify({ error: 'WhatsApp socket not ready yet or already registered. Please wait a moment.' }))
+          res.end(
+            JSON.stringify({
+              error: 'WhatsApp socket not ready yet or already registered. Please wait a moment.',
+            }),
+          )
         }
       } catch (err: any) {
         console.error('[Baileys] Pairing Code Error:', err.message)
@@ -271,14 +284,16 @@ async function startBaileysSocket() {
 
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
   const { version, isLatest } = await fetchLatestBaileysVersion()
-  console.log(`[Baileys] Initializing socket (v${version.join('.')}${isLatest ? ' latest' : ''})...`)
+  console.log(
+    `[Baileys] Initializing socket (v${version.join('.')}${isLatest ? ' latest' : ''})...`,
+  )
 
   socketInstance = makeWASocket({
     version,
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
-    browser: Browsers.macOS('Chrome'),
+    browser: Browsers.macOS('Desktop'),
     syncFullHistory: false,
     connectTimeoutMs: 60000,
     defaultQueryTimeoutMs: 60000,
