@@ -105,7 +105,6 @@ export async function POST(request: NextRequest) {
           const type = targetArtist.artistType || ''
           const mapping: Record<string, string> = {
             'mehndi-artists': 'bridal-mehndi',
-            photographers: 'wedding-photography',
             'makeup-artists': 'bridal-makeup',
             'nail-artists': 'nail-art',
             'decor-event-planners': 'event-decor',
@@ -176,11 +175,11 @@ export async function POST(request: NextRequest) {
         // Create portfolio-items entry if artist is known
         if (targetArtist) {
           const type = targetArtist.artistType || ''
-          let serviceCat: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other' = 'other'
+          let serviceCat: 'mehndi' | 'makeup' | 'nail-art' | 'decor' | 'other' = 'other'
           if (type.includes('mehndi') || type.includes('henna')) serviceCat = 'mehndi'
-          else if (type.includes('photo') || type.includes('shoot')) serviceCat = 'photography'
-          else if (type.includes('makeup') || type.includes('beauty')) serviceCat = 'makeup'
-          else if (type.includes('decor') || type.includes('planner')) serviceCat = 'decor'
+          else if (type.includes('nail')) serviceCat = 'nail-art'
+          else if (type.includes('makeup')) serviceCat = 'makeup'
+          else if (type.includes('decor') || type.includes('event')) serviceCat = 'decor'
 
           try {
             await payload.create({

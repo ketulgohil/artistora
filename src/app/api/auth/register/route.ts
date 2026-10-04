@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
       }
       const validArtistTypes = [
         'mehndi-artists',
-        'photographers',
         'makeup-artists',
         'nail-artists',
         'decor-event-planners',

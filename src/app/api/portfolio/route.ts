@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
  * GET /api/portfolio
  * Returns unified portfolio items from approved artists and curated portfolio-items collection.
  * Query parameters:
- *  - serviceCategory: 'mehndi' | 'photography' | 'makeup' | 'decor' | 'other'
+ *  - serviceCategory: 'mehndi' | 'makeup' | 'nail-art' | 'decor' | 'other' (media tagging supports 'photography')
  *  - categorySlug: string
  *  - limit: number
  */
