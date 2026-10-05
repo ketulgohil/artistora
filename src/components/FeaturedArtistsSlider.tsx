@@ -138,10 +138,7 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
                 : ''
 
           return (
-            <div
-              key={artist.id}
-              className="w-full shrink-0 snap-center sm:w-[280px] lg:w-[290px]"
-            >
+            <div key={artist.id} className="w-full shrink-0 snap-center sm:w-[280px] lg:w-[290px]">
               <Link
                 href={`/artists/${artist.slug || artist.id}`}
                 className="group relative flex h-full flex-col items-center overflow-hidden rounded-3xl border border-line bg-white p-6! shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
