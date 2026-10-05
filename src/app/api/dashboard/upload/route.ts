@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient, authenticateRequest } from '@/lib/payload'
+import { getClientIp, rateLimitAsync, RATE_LIMITS } from '@/lib/rate-limit'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+// Keep below common serverless request-body limits (multipart overhead included).
+const MAX_FILE_SIZE = 4 * 1024 * 1024
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
   'image/jpg',
@@ -56,9 +58,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File | null
-    const alt = formData.get('alt') as string | null
+    const limiter = await rateLimitAsync(
+      `${authResult.user.id}:${getClientIp(request)}`,
+      RATE_LIMITS.upload,
+      'dashboardUpload',
+    )
+    if (!limiter.allowed) {
+      return NextResponse.json(
+        { error: 'Upload limit reached. Please wait before uploading more images.' },
+        { status: 429 },
+      )
+    }
+
+    let formData: FormData
+    try {
+      formData = await request.formData()
+    } catch {
+      return NextResponse.json({ error: 'Upload could not be read. Please try a smaller image.' }, { status: 400 })
+    }
+    const fileEntry = formData.get('file')
+    const file = fileEntry && typeof fileEntry !== 'string' ? fileEntry : null
+    const altEntry = formData.get('alt')
+    const alt = typeof altEntry === 'string' ? altEntry.slice(0, 500) : null
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -72,9 +93,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (file.size === 0) {
+      return NextResponse.json({ error: 'The selected file is empty.' }, { status: 400 })
+    }
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB` },
+        { error: `Image is too large. Maximum upload size is ${MAX_FILE_SIZE / 1024 / 1024}MB. Please choose a smaller image.` },
         { status: 400 },
       )
     }
@@ -84,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     if (!hasValidImageSignature(buffer, rawMimeType)) {
       return NextResponse.json(
-        { error: 'File contents do not match the declared image type' },
+        { error: 'This image could not be read. Please choose a JPG, PNG, WebP, GIF, or AVIF image.' },
         { status: 400 },
       )
     }
@@ -105,7 +129,7 @@ export async function POST(request: NextRequest) {
       file: {
         data: buffer,
         mimetype: finalMimeType,
-        name: file.name,
+        name: file.name.replace(/[\\/\0]/g, '_').slice(0, 200) || 'portfolio-image.jpg',
         size: file.size,
       },
       overrideAccess: true,

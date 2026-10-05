@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient, authenticateRequest } from '@/lib/payload'
 
-// GET /api/dashboard/bookings — Fetch bookings for the logged-in artist
+// GET /api/dashboard/bookings — Fetch bookings for the logged-in artist with pagination
 export async function GET(request: NextRequest) {
   try {
     const payload = await getPayloadClient()
@@ -32,6 +32,13 @@ export async function GET(request: NextRequest) {
 
     const artistId = artist?.id
 
+    const url = new URL(request.url)
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1)
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50),
+    )
+
     const bookings = await payload.find({
       collection: 'bookings',
       where: artistId
@@ -43,7 +50,8 @@ export async function GET(request: NextRequest) {
           }
         : {},
       sort: '-createdAt',
-      limit: 100,
+      page,
+      limit,
       depth: 2,
     })
 
@@ -65,6 +73,9 @@ export async function GET(request: NextRequest) {
         quote: b.quote,
         assignedArtists: b.assignedArtists,
       })),
+      total: bookings.totalDocs,
+      page: bookings.page,
+      totalPages: bookings.totalPages,
     })
   } catch (error) {
     console.error('Dashboard bookings fetch error:', error)

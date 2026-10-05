@@ -9,29 +9,52 @@
  * 3. EXIF orientation and format normalization.
  */
 
-export async function prepareImageForUpload(file: File): Promise<File> {
-  // If file is already small (under 1.5MB) and is a standard web format, return as is
-  const isHeic =
-    file.type.includes('heic') || file.type.includes('heif') || /\.(heic|heif)$/i.test(file.name)
+const MAX_UPLOAD_BYTES = 3.5 * 1024 * 1024
+const BROWSER_IMAGE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/avif',
+])
 
-  if (file.size <= 1.5 * 1024 * 1024 && !isHeic && file.type.startsWith('image/')) {
+export async function prepareImageForUpload(file: File): Promise<File> {
+  const isHeic =
+    /hei[cf]/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)
+
+  if (
+    file.size <= MAX_UPLOAD_BYTES &&
+    !isHeic &&
+    BROWSER_IMAGE_TYPES.has(file.type.toLowerCase())
+  ) {
     return file
   }
 
   // Non-browser fallback
   if (typeof window === 'undefined' || typeof document === 'undefined') {
+    if (isHeic) {
+      throw new Error('This HEIC/HEIF photo could not be opened. Please export it as JPG or PNG and try again.')
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error('This image is too large to upload. Please resize it and try again.')
+    }
     return file
   }
 
   try {
-    return await new Promise<File>((resolve) => {
+    return await new Promise<File>((resolve, reject) => {
       const img = document.createElement('img')
       const objectUrl = URL.createObjectURL(file)
 
       img.onload = () => {
         URL.revokeObjectURL(objectUrl)
 
-        const maxDimension = 2048 // 2K resolution — ultra-sharp for high DPI displays
+        if (!img.naturalWidth || !img.naturalHeight) {
+          reject(new Error('This image could not be decoded. Please choose another image.'))
+          return
+        }
+
+        const maxDimension = 1920
         let { width, height } = img
 
         if (width > maxDimension || height > maxDimension) {
@@ -50,7 +73,7 @@ export async function prepareImageForUpload(file: File): Promise<File> {
         const ctx = canvas.getContext('2d')
 
         if (!ctx) {
-          resolve(file)
+          reject(new Error('Your browser could not prepare this image. Please try another browser.'))
           return
         }
 
@@ -58,12 +81,22 @@ export async function prepareImageForUpload(file: File): Promise<File> {
         ctx.imageSmoothingQuality = 'high'
         ctx.drawImage(img, 0, 0, width, height)
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              resolve(file)
-              return
-            }
+        const encode = (quality: number) =>
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Your browser could not compress this image. Please try another image.'))
+                return
+              }
+              if (blob.size > MAX_UPLOAD_BYTES && quality > 0.5) {
+                encode(Math.max(0.5, quality - 0.1))
+                return
+              }
+              if (blob.size > MAX_UPLOAD_BYTES) {
+                reject(new Error('This image is still too large after compression. Please choose a smaller image.'))
+                return
+              }
+
             const cleanName = file.name
               .replace(/\.(heic|heif|png|webp|gif|jpg|jpeg)$/i, '')
               .concat('.jpg')
@@ -73,20 +106,28 @@ export async function prepareImageForUpload(file: File): Promise<File> {
               lastModified: Date.now(),
             })
             resolve(optimizedFile)
-          },
-          'image/jpeg',
-          0.88,
-        )
+            },
+            'image/jpeg',
+            quality,
+          )
+
+        encode(0.82)
       }
 
       img.onerror = () => {
         URL.revokeObjectURL(objectUrl)
-        resolve(file)
+        reject(
+          new Error(
+            isHeic
+              ? 'This HEIC/HEIF photo is not supported by your browser. Please export it as JPG or PNG and try again.'
+              : 'This image could not be opened. Please choose a JPG, PNG, or WebP image.',
+          ),
+        )
       }
 
       img.src = objectUrl
     })
-  } catch {
-    return file
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Could not prepare this image for upload.')
   }
 }

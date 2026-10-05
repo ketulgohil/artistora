@@ -647,72 +647,94 @@ export default function DashboardPage() {
     const currentCount = artist.portfolioImages?.length ?? 0
     if (currentCount >= maxItems) {
       setPortfolioError(`Portfolio limit reached (${maxItems} images). Delete some to add more.`)
+      if (portfolioInputRef.current) portfolioInputRef.current.value = ''
       return
     }
 
     const allowed = maxItems - currentCount
     const toUpload = Array.from(files).slice(0, allowed)
-    if (toUpload.length < files.length) {
-      setPortfolioError(`Only ${toUpload.length} image(s) can be added (limit: ${maxItems}).`)
-    } else {
-      setPortfolioError('')
-    }
+    const limitNotice = toUpload.length < files.length
+      ? `Only ${toUpload.length} image(s) can be added (limit: ${maxItems}). `
+      : ''
 
     setUploading(true)
+    setPortfolioError(limitNotice)
     try {
-      const newImages = []
+      const newImages: Array<{ image: number; caption: string }> = []
+      const failures: string[] = []
 
       for (let i = 0; i < toUpload.length; i++) {
         const rawFile = toUpload[i]
-        const file = await prepareImageForUpload(rawFile)
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('alt', `${form.displayName} portfolio ${i + 1}`)
+        try {
+          const file = await prepareImageForUpload(rawFile)
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('alt', `${form.displayName} portfolio ${i + 1}`)
 
-        const uploadRes = await fetch('/api/dashboard/upload', {
-          method: 'POST',
+          const uploadRes = await fetch('/api/dashboard/upload', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          })
+
+          if (!uploadRes.ok) {
+            const errData = await uploadRes.json().catch(() => ({}))
+            throw new Error(errData.error || 'Upload failed')
+          }
+          const media = await uploadRes.json()
+          if (!media.doc?.id) throw new Error('Upload finished, but the image record was missing.')
+          newImages.push({ image: media.doc.id, caption: '' })
+        } catch (error: any) {
+          failures.push(`${rawFile.name}: ${error.message || 'Upload failed'}`)
+        }
+      }
+
+      if (newImages.length > 0) {
+        const existingMapped = (artist.portfolioImages || [])
+          .map((item: any) => ({
+            image: typeof item.image === 'object' && item.image !== null ? item.image.id : item.image,
+            caption: item.caption || '',
+          }))
+          .filter((item: any) => Boolean(item.image))
+
+        const patchRes = await fetch('/api/dashboard/profile', {
+          method: 'PATCH',
           credentials: 'include',
-          body: formData,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ portfolioImages: [...existingMapped, ...newImages] }),
         })
 
-        if (!uploadRes.ok) {
-          const errData = await uploadRes.json().catch(() => ({}))
-          throw new Error(errData.error || `Upload failed for ${file.name}`)
+        if (!patchRes.ok) {
+          const data = await patchRes.json().catch(() => ({}))
+          throw new Error(data.error || 'Images uploaded but could not be linked to your portfolio. Refresh and try again.')
         }
-        const media = await uploadRes.json()
-        newImages.push({ image: media.doc.id, caption: '' })
+
+        const updated = await patchRes.json()
+        if (updated.doc) setArtist(updated.doc)
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
       }
 
-      const existingMapped = (artist.portfolioImages || [])
-        .map((item: any) => ({
-          image: typeof item.image === 'object' && item.image !== null ? item.image.id : item.image,
-          caption: item.caption || '',
-        }))
-        .filter((item: any) => Boolean(item.image))
-
-      const updatedPortfolio = [...existingMapped, ...newImages]
-
-      const patchRes = await fetch('/api/dashboard/profile', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ portfolioImages: updatedPortfolio }),
-      })
-
-      if (!patchRes.ok) {
-        const data = await patchRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to update portfolio')
+      if (failures.length > 0) {
+        // Some files may have uploaded before another failed. Reload server state so
+        // the UI keeps every successfully attached image visible.
+        const profileRes = await fetch('/api/dashboard/profile', { credentials: 'include' })
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          if (profileData.artist) setArtist(profileData.artist)
+        }
+        setPortfolioError(`${limitNotice}${newImages.length} of ${toUpload.length} image(s) uploaded. ${failures.join(' ')}`)
+      } else if (limitNotice) {
+        setPortfolioError(limitNotice.trim())
       }
-
-      const updated = await patchRes.json()
-      if (updated.doc) {
-        setArtist(updated.doc)
-      }
-
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
     } catch (err: any) {
-      setError(err.message)
+      // Uploads may already exist even if the final profile update failed.
+      const profileRes = await fetch('/api/dashboard/profile', { credentials: 'include' }).catch(() => null)
+      if (profileRes?.ok) {
+        const profileData = await profileRes.json().catch(() => ({}))
+        if (profileData.artist) setArtist(profileData.artist)
+      }
+      setPortfolioError(err.message || 'Portfolio upload failed. Please try again.')
     } finally {
       setUploading(false)
       if (portfolioInputRef.current) portfolioInputRef.current.value = ''
@@ -2226,7 +2248,7 @@ export default function DashboardPage() {
                     <input
                       ref={portfolioInputRef}
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/heif"
                       multiple
                       className="hidden"
                       onChange={handlePortfolioUpload}

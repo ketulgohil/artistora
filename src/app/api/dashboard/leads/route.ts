@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient, authenticateRequest } from '@/lib/payload'
 
-// GET /api/dashboard/leads — Fetch matched leads for the logged-in artist
+// GET /api/dashboard/leads — Fetch matched leads for the logged-in artist with pagination
 export async function GET(request: NextRequest) {
   try {
     const payload = await getPayloadClient()
@@ -32,6 +32,13 @@ export async function GET(request: NextRequest) {
 
     const artistId = artist?.id
 
+    const url = new URL(request.url)
+    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1)
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50),
+    )
+
     // Fetch leads where artist is in matchedArtists
     const leads = await payload.find({
       collection: 'leads',
@@ -41,20 +48,23 @@ export async function GET(request: NextRequest) {
           }
         : {},
       sort: '-createdAt',
-      limit: 50,
+      page,
+      limit,
       depth: 1,
     })
 
-    // Fetch quotes submitted by this artist for these leads
-    const quotes = artistId
-      ? await payload.find({
-          collection: 'quotes',
-          where: {
-            artist: { equals: artistId },
-          },
-          limit: 100,
-        })
-      : { docs: [] }
+    // Fetch quotes submitted by this artist for these paginated leads
+    const leadIds = leads.docs.map((l: any) => l.id)
+    const quotes =
+      artistId && leadIds.length > 0
+        ? await payload.find({
+            collection: 'quotes',
+            where: {
+              and: [{ artist: { equals: artistId } }, { lead: { in: leadIds } }],
+            },
+            limit: leadIds.length,
+          })
+        : { docs: [] }
 
     const quoteByLeadId = new Map<number, any>()
     for (const q of quotes.docs) {
@@ -78,8 +88,12 @@ export async function GET(request: NextRequest) {
           status: l.status,
           createdAt: l.createdAt,
           // Privacy protection: only reveal customer contact details after artist selection
-          customerName: ['artist_selected', 'booking_pending', 'booked'].includes(l.status) ? l.customerName : 'Customer',
-          customerPhone: ['artist_selected', 'booking_pending', 'booked'].includes(l.status) ? l.customerPhone : undefined,
+          customerName: ['artist_selected', 'booking_pending', 'booked'].includes(l.status)
+            ? l.customerName
+            : 'Customer',
+          customerPhone: ['artist_selected', 'booking_pending', 'booked'].includes(l.status)
+            ? l.customerPhone
+            : undefined,
           myQuote: myQuote
             ? {
                 id: myQuote.id,
@@ -91,6 +105,9 @@ export async function GET(request: NextRequest) {
             : null,
         }
       }),
+      total: leads.totalDocs,
+      page: leads.page,
+      totalPages: leads.totalPages,
     })
   } catch (error) {
     console.error('Dashboard leads fetch error:', error)
