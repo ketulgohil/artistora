@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import SectionHeading from '@/components/SectionHeading'
 import ArtistPlaceholder from '@/components/ArtistPlaceholder'
+import FeaturedArtistsSlider from '@/components/FeaturedArtistsSlider'
 import { mediaFileUrl } from '@/lib/media-url'
 import { withDefaultSeo } from '@/lib/seo'
 import {
@@ -202,7 +203,7 @@ export default async function HomePage() {
     getServices() as Promise<Service[]>,
     getTestimonials() as Promise<Testimonial[]>,
     getFAQs() as Promise<Faq[]>,
-    getFeaturedArtists(4),
+    getFeaturedArtists(24),
   ])
 
   const bookingUrl = '/get-quote'
@@ -524,108 +525,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Featured Artists ── */}
+      {/* ── Featured Artists Carousel Slider ── */}
       {featuredArtists.length > 0 && (
-        <section className={`${SECTION} bg-white/60`}>
+        <section className={`${SECTION} bg-white/60 overflow-hidden`}>
           <div className={CONTAINER}>
-            <SectionHeading title="Featured Artists" subtitle="Top Rated" />
-            <div className="grid gap-6! sm:grid-cols-2 lg:grid-cols-4">
-              {featuredArtists.map((artist: any) => {
-                const typeLabels: Record<string, string> = {
-                  'mehndi-artists': 'Mehndi Artist',
-                  'makeup-artists': 'Makeup Artist',
-                  'nail-artists': 'Nail Artist',
-                  'decor-event-planners': 'Decor & Events',
-                }
-                const artistTypeLabel = typeLabels[artist.artistType] || ''
-                return (
-                  <Link
-                    key={artist.id}
-                    href={`/artists/${artist.slug}`}
-                    className="group relative overflow-hidden rounded-3xl border border-line bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
-                  >
-                    <div className="flex flex-col items-center p-6!">
-                      <div className="relative mb-4!">
-                        {artist.profilePhoto?.filename ? (
-                          <Image
-                            src={mediaFileUrl(artist.profilePhoto.filename)}
-                            alt={artist.displayName}
-                            width={80}
-                            height={80}
-                            className="h-16! w-16! rounded-full object-contain ring-2 ring-brand/15"
-                            sizes="64px"
-                          />
-                        ) : (
-                          <ArtistPlaceholder
-                            name={artist.displayName}
-                            size="sm"
-                            className="ring-2 ring-brand/15"
-                          />
-                        )}
-                        {artist.verified && (
-                          <span className="absolute -bottom-1 -right-1 inline-flex h-5! w-5! items-center justify-center rounded-full bg-green text-white">
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M20 6 9 17l-5-5" />
-                            </svg>
-                          </span>
-                        )}
-                      </div>
-                      {artistTypeLabel && (
-                        <span className="mb-1! rounded-full bg-brand/10 px-3! py-0.5! text-[0.65rem] font-semibold tracking-wide text-brand">
-                          {artistTypeLabel}
-                        </span>
-                      )}
-                      <h3 className="font-display text-center text-[1.05rem]! font-semibold text-ink group-hover:text-brand transition-colors">
-                        {artist.displayName}
-                      </h3>
-                      <p className="mt-1! text-sm text-ink-muted">{artist.area || artist.city}</p>
-                      {artist.rating > 0 && (
-                        <div className="mt-2.5! flex items-center gap-1.5!">
-                          <div className="flex items-center gap-0.5!">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                              <svg
-                                key={i}
-                                className={`h-3.5 w-3.5 ${i <= Math.round(artist.rating) ? 'text-gold' : 'text-line'}`}
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                          </div>
-                          <span className="text-xs text-ink-muted">
-                            {artist.rating?.toFixed(1)} ({artist.reviewCount || 0})
-                          </span>
-                        </div>
-                      )}
-                      {artist.startingPrice > 0 && (
-                        <p className="mt-2.5! text-sm font-semibold text-brand-deep">
-                          Starting from ₹{artist.startingPrice.toLocaleString('en-IN')}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-            <div className="mt-10! text-center">
-              <Link
-                className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
-                href="/artists"
-              >
-                View All Artists
-              </Link>
-            </div>
+            <FeaturedArtistsSlider artists={featuredArtists} />
           </div>
         </section>
       )}
