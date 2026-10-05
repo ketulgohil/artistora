@@ -21,6 +21,7 @@
     "outreach:whatsapp": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/send-whatsapp-outreach.ts",
     "outreach:all": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/run-omnichannel-outreach.ts",
     "outreach:preview": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/run-omnichannel-outreach.ts --preview",
+    "outreach:welcome": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/send-registered-artist-welcome.ts",
     "outreach:history": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/show-outreach-history.ts",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "scrape:instagram": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" tsx scripts/scrape-instagram-artists.ts",
