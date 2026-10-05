@@ -203,7 +203,7 @@ export default async function HomePage() {
     getServices() as Promise<Service[]>,
     getTestimonials() as Promise<Testimonial[]>,
     getFAQs() as Promise<Faq[]>,
-    getFeaturedArtists(24),
+    getFeaturedArtists(12),
   ])
 
   const bookingUrl = '/get-quote'

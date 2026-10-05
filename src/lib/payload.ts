@@ -482,14 +482,18 @@ export async function getArtists(city?: string, limit = 50) {
   return docs
 }
 
-export async function getFeaturedArtists(limit = 24) {
+export async function getFeaturedArtists(limit = 12) {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'artists',
     where: {
-      approvalStatus: { equals: 'approved' },
+      and: [
+        // Indexability policy: approved only (verified = trust badge, not gate)
+        { approvalStatus: { equals: 'approved' } },
+        { isFeatured: { equals: true } },
+      ],
     },
-    sort: '-isFeatured,-verified,-rating,-reviewCount,order',
+    sort: '-rating,-reviewCount,order',
     depth: 1,
     limit,
     select: {
