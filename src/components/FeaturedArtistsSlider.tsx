@@ -225,9 +225,10 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
         })}
       </div>
 
-      {/* ── Mobile Scroll Dots Indicator ── */}
-      {artists.length > 3 && (
-        <div className="mt-4! flex justify-center gap-1.5! sm:hidden">
+      {/* ── Bottom Controls & Action Cluster: Dots on left, View All + [ ← ] [ → ] on right ── */}
+      <div className="mt-8! flex flex-col sm:flex-row items-center justify-between gap-4!">
+        {/* Scroll Dots Indicator */}
+        <div className="flex items-center gap-1.5!">
           {artists.slice(0, Math.min(8, artists.length)).map((_, idx) => (
             <span
               key={idx}
@@ -237,50 +238,56 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
             />
           ))}
         </div>
-      )}
 
-      {/* ── Bottom Controls & Action Cluster: [ ← ] [ View All Artists ] [ → ] ── */}
-      <div className="mt-8! flex items-center justify-center gap-3! sm:gap-4!">
-        <button
-          onClick={() => scrollBy('left')}
-          disabled={!canScrollLeft}
-          aria-label="Previous artists"
-          className="inline-flex h-12! w-12! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:text-brand hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 disabled:hover:border-line disabled:hover:bg-white disabled:hover:text-ink active:scale-95"
-        >
-          <svg
-            className="h-5! w-5!"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2.5"
+        {/* Right Action Cluster: View All + [ ← ] [ → ] */}
+        <div className="flex items-center gap-3! sm:gap-4!">
+          <Link
+            className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
+            href="/artists"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-          </svg>
-        </button>
+            View All Artists
+          </Link>
 
-        <Link
-          className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
-          href="/artists"
-        >
-          View All Artists
-        </Link>
+          <div className="flex items-center gap-2!">
+            <button
+              onClick={() => scrollBy('left')}
+              disabled={!canScrollLeft}
+              aria-label="Previous artists"
+              className="inline-flex h-12! w-12! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:text-brand hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 disabled:hover:border-line disabled:hover:bg-white disabled:hover:text-ink active:scale-95"
+            >
+              <svg
+                className="h-5! w-5!"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 19.5L8.25 12l7.5-7.5"
+                />
+              </svg>
+            </button>
 
-        <button
-          onClick={() => scrollBy('right')}
-          disabled={!canScrollRight}
-          aria-label="Next artists"
-          className="inline-flex h-12! w-12! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:text-brand hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 disabled:hover:border-line disabled:hover:bg-white disabled:hover:text-ink active:scale-95"
-        >
-          <svg
-            className="h-5! w-5!"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-          </svg>
-        </button>
+            <button
+              onClick={() => scrollBy('right')}
+              disabled={!canScrollRight}
+              aria-label="Next artists"
+              className="inline-flex h-12! w-12! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:text-brand hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 disabled:hover:border-line disabled:hover:bg-white disabled:hover:text-ink active:scale-95"
+            >
+              <svg
+                className="h-5! w-5!"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
