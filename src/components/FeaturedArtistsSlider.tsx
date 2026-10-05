@@ -46,7 +46,7 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
 
     const cardWidth = el.firstElementChild
       ? (el.firstElementChild as HTMLElement).offsetWidth + 24
-      : 280
+      : el.clientWidth
     const currentIndex = Math.min(
       artists.length - 1,
       Math.max(0, Math.round(scrollLeft / cardWidth)),
@@ -71,8 +71,8 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
     if (!el) return
     const cardWidth = el.firstElementChild
       ? (el.firstElementChild as HTMLElement).offsetWidth + 24
-      : 280
-    const scrollAmount = direction === 'left' ? -cardWidth * 2 : cardWidth * 2
+      : el.clientWidth
+    const scrollAmount = direction === 'left' ? -cardWidth : cardWidth
     el.scrollBy({ left: scrollAmount, behavior: 'smooth' })
   }
 
@@ -140,7 +140,7 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
           return (
             <div
               key={artist.id}
-              className="w-[260px] shrink-0 snap-start sm:w-[280px] lg:w-[290px]"
+              className="w-full shrink-0 snap-center sm:w-[280px] lg:w-[290px]"
             >
               <Link
                 href={`/artists/${artist.slug || artist.id}`}
