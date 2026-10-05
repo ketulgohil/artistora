@@ -229,21 +229,21 @@ function generateDynamicInstagramMessage(artist: TargetArtist): string {
   }
 
   const intros = [
-    `We run Artistora, a verified marketplace for wedding & celebration artists in Ahmedabad.`,
-    `We're building Artistora — Ahmedabad's dedicated platform connecting brides and families with top local artists.`,
-    `We're from Artistora, Ahmedabad's platform helping clients book verified wedding artists directly.`,
+    `We run Artistora (artistora.com) — Ahmedabad's dedicated marketplace where brides and clients discover and book verified local artists directly.`,
+    `We're building Artistora — a curated platform connecting Ahmedabad brides and event planners directly with top local artists & studios.`,
+    `We're from Artistora, Ahmedabad's verified artist community where creators showcase their work and get direct client bookings.`,
   ]
 
   const valueProps = [
-    `We are onboarding select Ahmedabad wedding artists for upcoming season client bookings with 0% commission on your gigs.`,
-    `You get direct client quote requests and high-intent bridal inquiries without paying listing fees or commissions.`,
-    `We'd love to feature your portfolio for clients looking for verified artists in Ahmedabad — listing and client leads are 100% free.`,
+    `We are onboarding select Ahmedabad nail artists for upcoming wedding season bookings with 100% direct client contact and 0% commission.`,
+    `You get your own dedicated profile page where you can upload your portfolio photos, showcase your pricing packages, and receive direct inquiries.`,
+    `We feature verified local creators so clients in Ahmedabad can browse your original designs and reach out to you directly.`,
   ]
 
   const ctas = [
-    `✨ We'd love to list your portfolio for free (0% commission).\n👉 Reply "YES" or share your WhatsApp number, and we'll set it up for you!\n🔗 Or tap @artistoraofficial and check the link in our bio to register.`,
-    `✨ We are onboarding select verified artists for upcoming client inquiries (zero commission).\n👉 Reply here or drop your WhatsApp number to claim your free spot!\n🔗 Tap @artistoraofficial to visit our page & bio link.`,
-    `✨ We'd love to feature your work for clients looking for verified artists in Ahmedabad.\n👉 Reply "YES" and our team will create your live profile page!\n🔗 Or check the registration link in our bio @artistoraofficial.`,
+    `🎨 Create your free artist profile in 2 mins, upload your nail designs, and start receiving direct inquiries:\n👉 https://www.artistora.com/register?role=artist&type=nail-artists\n🔗 Or visit @artistoraofficial and tap the registration link in our bio!`,
+    `✨ Create your free creator profile, showcase your portfolio & bridal packages, and get discovered by local clients with 0% commission:\n👉 https://www.artistora.com/register?role=artist&type=nail-artists\n🔗 Or check the bio link at @artistoraofficial!`,
+    `💅 We'd love to feature your nail art portfolio on Artistora — create your free profile and start getting direct client leads:\n👉 https://www.artistora.com/register?role=artist&type=nail-artists\n🔗 Or tap @artistoraofficial to get started via our bio link!`,
   ]
 
   return `${pickRandom(greetings)} ${pickRandom(compliments)}\n\n${pickRandom(intros)} ${pickRandom(valueProps)}\n\n${pickRandom(ctas)}`
@@ -806,7 +806,8 @@ async function main() {
     targetList = (result.docs || [])
       .filter((doc: any) => {
         if (!doc.instagramHandle) return false
-        const combined = `${doc.name || ''} ${doc.businessName || ''} ${doc.serviceDisplay || ''} ${doc.specializations || ''} ${doc.instagramHandle || ''}`.toLowerCase()
+        const combined =
+          `${doc.name || ''} ${doc.businessName || ''} ${doc.serviceDisplay || ''} ${doc.specializations || ''} ${doc.instagramHandle || ''}`.toLowerCase()
         return combined.includes(targetCategory)
       })
       .map((doc: any) => ({
