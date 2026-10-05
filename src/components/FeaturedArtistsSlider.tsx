@@ -35,6 +35,7 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   const checkScroll = useCallback(() => {
     const el = scrollRef.current
@@ -75,58 +76,41 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
     el.scrollBy({ left: scrollAmount, behavior: 'smooth' })
   }
 
+  // ── Autoscroll Timer (Every 3.5 seconds with loop back to start) ──
+  useEffect(() => {
+    if (isPaused || artists.length <= 1) return
+
+    const interval = setInterval(() => {
+      const el = scrollRef.current
+      if (!el) return
+
+      const cardWidth = el.firstElementChild
+        ? (el.firstElementChild as HTMLElement).offsetWidth + 24
+        : 280
+      const { scrollLeft, scrollWidth, clientWidth } = el
+
+      // If at end, loop smoothly back to start
+      if (scrollLeft >= scrollWidth - clientWidth - 20) {
+        el.scrollTo({ left: 0, behavior: 'smooth' })
+      } else {
+        el.scrollBy({ left: cardWidth, behavior: 'smooth' })
+      }
+    }, 3500)
+
+    return () => clearInterval(interval)
+  }, [isPaused, artists.length])
+
   if (!artists || artists.length === 0) return null
 
   return (
-    <div className="relative">
-      {/* ── Carousel Header / Controls ── */}
-      <div className="mb-8! flex items-center justify-between">
-        <p className="text-sm font-medium text-ink-muted">
-          Showing <strong className="text-ink">{artists.length}</strong> top verified artists
-        </p>
-
-        {/* Prev / Next Arrow Controls */}
-        <div className="flex items-center gap-2!">
-          <button
-            onClick={() => scrollBy('left')}
-            disabled={!canScrollLeft}
-            aria-label="Previous artists"
-            className="inline-flex h-10! w-10! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-xs transition-all hover:border-brand hover:bg-brand/5 hover:text-brand disabled:cursor-not-allowed disabled:opacity-35 active:scale-95"
-          >
-            <svg
-              className="h-4! w-4!"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5L8.25 12l7.5-7.5"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={() => scrollBy('right')}
-            disabled={!canScrollRight}
-            aria-label="Next artists"
-            className="inline-flex h-10! w-10! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-xs transition-all hover:border-brand hover:bg-brand/5 hover:text-brand disabled:cursor-not-allowed disabled:opacity-35 active:scale-95"
-          >
-            <svg
-              className="h-4! w-4!"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* ── Horizontal Snap Slider with Exact Previous Card Box Design ── */}
+    <div
+      className="relative"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
+      {/* ── Horizontal Snap Slider with Original Card Box Design ── */}
       <div
         ref={scrollRef}
         className="flex gap-6! overflow-x-auto pb-4! pt-2! scroll-smooth snap-x snap-mandatory scrollbar-none focus:outline-hidden"
@@ -180,7 +164,7 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
                     />
                   )}
                   {artist.verified && (
-                    <span className="absolute -bottom-1 -right-1 inline-flex h-5! w-5! items-center justify-center rounded-full bg-green text-white">
+                    <span className="absolute -bottom-1 -right-1 inline-flex h-5! w-5! items-center justify-center rounded-full bg-green text-white shadow-xs">
                       <svg
                         width="12"
                         height="12"
@@ -255,14 +239,48 @@ export default function FeaturedArtistsSlider({ artists }: { artists: ArtistSlid
         </div>
       )}
 
-      {/* ── Bottom Action Button ── */}
-      <div className="mt-10! text-center">
+      {/* ── Bottom Controls & Action Cluster: [ ← ] [ View All Artists ] [ → ] ── */}
+      <div className="mt-8! flex items-center justify-center gap-3! sm:gap-4!">
+        <button
+          onClick={() => scrollBy('left')}
+          disabled={!canScrollLeft}
+          aria-label="Previous artists"
+          className="inline-flex h-12! w-12! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:text-brand hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 disabled:hover:border-line disabled:hover:bg-white disabled:hover:text-ink active:scale-95"
+        >
+          <svg
+            className="h-5! w-5!"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+
         <Link
-          className="inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
+          className="inline-flex min-h-12! cursor-pointer items-center justify-center rounded-full bg-brand-deep px-8! py-3! text-sm font-semibold text-white shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink hover:shadow-lift"
           href="/artists"
         >
           View All Artists
         </Link>
+
+        <button
+          onClick={() => scrollBy('right')}
+          disabled={!canScrollRight}
+          aria-label="Next artists"
+          className="inline-flex h-12! w-12! cursor-pointer items-center justify-center rounded-full border border-line bg-white text-ink shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:text-brand hover:shadow-lift disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 disabled:hover:border-line disabled:hover:bg-white disabled:hover:text-ink active:scale-95"
+        >
+          <svg
+            className="h-5! w-5!"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </button>
       </div>
     </div>
   )
