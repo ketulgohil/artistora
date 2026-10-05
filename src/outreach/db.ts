@@ -79,12 +79,24 @@ export async function getUncontactedInstagramArtists(options?: {
     WHERE da.instagram_handle IS NOT NULL
       AND TRIM(da.instagram_handle) != ''
       AND da.outreach_status != 'contacted'
+      AND da.outreach_status != 'registered'
       AND NOT EXISTS (
         SELECT 1
         FROM outreach_messages om
         WHERE om.artist_id = da.id
           AND om.channel = 'instagram_dm'
           AND om.status = 'sent'
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM artists a
+        WHERE LOWER(TRIM(COALESCE(a.slug, ''))) = LOWER(TRIM(REPLACE(da.instagram_handle, '@', '')))
+           OR (
+             a.phone IS NOT NULL
+             AND da.phone IS NOT NULL
+             AND LENGTH(RIGHT(REGEXP_REPLACE(da.phone, '[^\d]', '', 'g'), 10)) = 10
+             AND RIGHT(REGEXP_REPLACE(a.phone, '[^\d]', '', 'g'), 10) = RIGHT(REGEXP_REPLACE(da.phone, '[^\d]', '', 'g'), 10)
+           )
       )
     ORDER BY da.id ASC
     LIMIT $1
@@ -309,12 +321,22 @@ export async function getUncontactedWhatsAppArtists(options?: {
     WHERE (da.phone IS NOT NULL OR da.whatsapp_number IS NOT NULL)
       AND TRIM(COALESCE(da.whatsapp_number, da.phone)) != ''
       AND da.outreach_status != 'contacted'
+      AND da.outreach_status != 'registered'
       AND NOT EXISTS (
         SELECT 1
         FROM outreach_messages om
         WHERE om.artist_id = da.id
           AND om.channel = 'whatsapp'
           AND om.status = 'sent'
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM artists a
+        WHERE (
+          (a.phone IS NOT NULL AND RIGHT(REGEXP_REPLACE(a.phone, '[^\d]', '', 'g'), 10) = RIGHT(REGEXP_REPLACE(COALESCE(da.whatsapp_number, da.phone, ''), '[^\d]', '', 'g'), 10))
+          OR (a.whatsapp_number IS NOT NULL AND RIGHT(REGEXP_REPLACE(a.whatsapp_number, '[^\d]', '', 'g'), 10) = RIGHT(REGEXP_REPLACE(COALESCE(da.whatsapp_number, da.phone, ''), '[^\d]', '', 'g'), 10))
+        )
+        AND LENGTH(RIGHT(REGEXP_REPLACE(COALESCE(da.whatsapp_number, da.phone, ''), '[^\d]', '', 'g'), 10)) = 10
       )
     ORDER BY da.id ASC
     LIMIT $1

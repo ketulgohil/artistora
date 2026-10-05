@@ -456,6 +456,7 @@ async function getAlreadyContactedData(payload: any): Promise<ContactedHistory> 
       where: {
         or: [
           { outreachStatus: { equals: 'contacted' } },
+          { outreachStatus: { equals: 'registered' } },
           { lastContactedAt: { exists: true } },
           { outreachAttempts: { greater_than: 0 } },
         ],
@@ -472,6 +473,23 @@ async function getAlreadyContactedData(payload: any): Promise<ContactedHistory> 
           phones.add(norm)
           if (doc.lastContactedAt) lastContactDates.set(norm, doc.lastContactedAt)
         }
+      }
+    }
+
+    // 3. STRICT EXCLUSION: Skip all already registered artists on Artistora
+    const registeredArtists = await payload.find({
+      collection: 'artists',
+      limit: 5000,
+    })
+
+    for (const reg of registeredArtists.docs) {
+      if (reg.phone) {
+        const norm = validateAndNormalizePhone(String(reg.phone))
+        if (norm) phones.add(norm)
+      }
+      if (reg.whatsappNumber) {
+        const norm = validateAndNormalizePhone(String(reg.whatsappNumber))
+        if (norm) phones.add(norm)
       }
     }
   } catch (err: any) {
