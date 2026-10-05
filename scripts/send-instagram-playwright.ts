@@ -787,21 +787,35 @@ async function main() {
   const result = await payload.find({
     collection: 'discovered-artists',
     where: {
-      and: [{ source: { equals: 'instagram' } }, { outreachStatus: { equals: 'new' } }],
+      outreachStatus: { not_equals: 'contacted' },
     },
-    limit: 100,
+    limit: 500,
   })
 
-  let targetList: TargetArtist[] = (result.docs || []).map((doc: any) => ({
-    id: doc.id,
-    handle: doc.instagramHandle || doc.name,
-    name: doc.name,
-    sourceId: doc.sourceId,
-    category: doc.services?.[0]?.name || doc.specializations || 'makeup',
-  }))
+  let targetList: TargetArtist[] = (result.docs || [])
+    .filter((doc: any) => Boolean(doc.instagramHandle))
+    .map((doc: any) => ({
+      id: doc.id,
+      handle: doc.instagramHandle,
+      name: doc.name,
+      sourceId: doc.sourceId,
+      category: doc.services?.[0]?.name || doc.specializations || 'nail',
+    }))
 
   if (targetCategory) {
-    targetList = targetList.filter((a) => (a.category || '').toLowerCase().includes(targetCategory))
+    targetList = (result.docs || [])
+      .filter((doc: any) => {
+        if (!doc.instagramHandle) return false
+        const combined = `${doc.name || ''} ${doc.businessName || ''} ${doc.serviceDisplay || ''} ${doc.specializations || ''} ${doc.instagramHandle || ''}`.toLowerCase()
+        return combined.includes(targetCategory)
+      })
+      .map((doc: any) => ({
+        id: doc.id,
+        handle: doc.instagramHandle,
+        name: doc.name,
+        sourceId: doc.sourceId,
+        category: targetCategory,
+      }))
   }
 
   if (targetList.length === 0) {
