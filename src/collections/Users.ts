@@ -21,6 +21,7 @@ export const Users: CollectionConfig = {
     group: 'Admin',
   },
   access: {
+    admin: ({ req }) => req.user?.role === 'admin',
     read: ({ req }) => {
       if (req.user?.role === 'admin') return true
       if (req.user) {
