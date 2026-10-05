@@ -479,7 +479,7 @@ export async function getOmnichannelOutreachStats(): Promise<OmnichannelStats> {
       contacted: igContacted,
       uncontacted: Math.max(0, igEligible - igContacted),
       sentLast24Hours: row.igSent24h || 0,
-      dailyCap: 20,
+      dailyCap: 35,
     },
   }
 }

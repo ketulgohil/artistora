@@ -47,7 +47,7 @@ dotenv.config()
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 
 const PROFILE_DIR = path.resolve(process.cwd(), '.instagram-browser-profile')
-const DAILY_DM_LIMIT = 20
+const DAILY_DM_LIMIT = 35
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 function getJitterDelay(minSeconds = 45, maxSeconds = 75): number {
