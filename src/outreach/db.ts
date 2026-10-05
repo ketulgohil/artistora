@@ -450,7 +450,7 @@ export async function getOmnichannelOutreachStats(): Promise<OmnichannelStats> {
       contacted: waContacted,
       uncontacted: Math.max(0, waEligible - waContacted),
       sentLast24Hours: row.waSent24h || 0,
-      dailyCap: 15,
+      dailyCap: 50,
     },
     instagram: {
       totalEligible: igEligible,

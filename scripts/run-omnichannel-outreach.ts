@@ -4,7 +4,7 @@
  * to 10 artists from every category (Mehndi, Decor, Nail, Makeup) with strict anti-ban safeguards.
  *
  * Anti-Ban & Account Safety Protections:
- *   - WhatsApp Daily Safe Cap: Max 15 outbound cold messages per 24 hours
+ *   - WhatsApp Daily Safe Cap: Max 50 outbound cold messages per 24 hours
  *   - Instagram Daily Safe Cap: Max 20 outbound DMs per 24 hours
  *   - Human Jitter Delays: 45s - 85s between consecutive dispatches
  *   - Micro-Cooldown Breaks: 3-minute rest every 3-4 messages

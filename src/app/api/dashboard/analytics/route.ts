@@ -68,17 +68,11 @@ export async function GET(request: NextRequest) {
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
 
     // ── Execute all aggregation queries concurrently in the database engine ──
-    const [
-      bookingsStatusRes,
-      revenueRes,
-      eventTypesRes,
-      funnelRes,
-      reviewsRes,
-      avgResponseRes,
-    ] = await Promise.all([
-      // 1. Bookings by status & total revenue from completed bookings
-      queryDb(
-        `SELECT
+    const [bookingsStatusRes, revenueRes, eventTypesRes, funnelRes, reviewsRes, avgResponseRes] =
+      await Promise.all([
+        // 1. Bookings by status & total revenue from completed bookings
+        queryDb(
+          `SELECT
            b.status,
            COUNT(*)::int AS count,
            COALESCE(SUM(COALESCE(b.total_amount, b.artist_amount, 0)), 0)::numeric AS revenue
@@ -87,12 +81,12 @@ export async function GET(request: NextRequest) {
            SELECT ba._parent_id FROM bookings_assigned_artists ba WHERE ba.artist_id = $1
          ))
          GROUP BY b.status`,
-        [artistId],
-      ),
+          [artistId],
+        ),
 
-      // 2. Revenue & completed booking counts by month for the last 6 months (single query)
-      queryDb(
-        `SELECT
+        // 2. Revenue & completed booking counts by month for the last 6 months (single query)
+        queryDb(
+          `SELECT
            TO_CHAR(DATE_TRUNC('month', b.event_date), 'YYYY-MM') AS month_key,
            COUNT(*)::int AS bookings_count,
            COALESCE(SUM(COALESCE(b.total_amount, b.artist_amount, 0)), 0)::numeric AS revenue
@@ -104,12 +98,12 @@ export async function GET(request: NextRequest) {
            ))
          GROUP BY DATE_TRUNC('month', b.event_date)
          ORDER BY DATE_TRUNC('month', b.event_date) ASC`,
-        [startDate, endDate, artistId],
-      ),
+          [startDate, endDate, artistId],
+        ),
 
-      // 3. Event type breakdown
-      queryDb(
-        `SELECT
+        // 3. Event type breakdown
+        queryDb(
+          `SELECT
            COALESCE(b.event_type::text, 'other') AS name,
            COUNT(*)::int AS value
          FROM bookings b
@@ -118,12 +112,12 @@ export async function GET(request: NextRequest) {
          ))
          GROUP BY b.event_type
          ORDER BY value DESC`,
-        [artistId],
-      ),
+          [artistId],
+        ),
 
-      // 4. Conversion funnel (leads, quotes, accepted quotes)
-      queryDb(
-        `SELECT
+        // 4. Conversion funnel (leads, quotes, accepted quotes)
+        queryDb(
+          `SELECT
            (
              SELECT COUNT(*)::int
              FROM leads_rels lr
@@ -139,23 +133,23 @@ export async function GET(request: NextRequest) {
              FROM quotes q
              WHERE q.status = 'accepted' AND ($1::int IS NULL OR q.artist_id = $1)
            ) AS accepted_quotes`,
-        [artistId],
-      ),
+          [artistId],
+        ),
 
-      // 5. Rating distribution (1 to 5 stars)
-      queryDb(
-        `SELECT
+        // 5. Rating distribution (1 to 5 stars)
+        queryDb(
+          `SELECT
            ROUND(r.rating)::int AS rating_val,
            COUNT(*)::int AS count
          FROM reviews r
          WHERE ($1::int IS NULL OR r.artist_id = $1)
          GROUP BY ROUND(r.rating)`,
-        [artistId],
-      ),
+          [artistId],
+        ),
 
-      // 6. Average response time in hours (quotes submitted after lead creation)
-      queryDb(
-        `SELECT
+        // 6. Average response time in hours (quotes submitted after lead creation)
+        queryDb(
+          `SELECT
            COALESCE(
              AVG(EXTRACT(EPOCH FROM (q.created_at - l.created_at)) / 3600.0),
              0
@@ -164,9 +158,9 @@ export async function GET(request: NextRequest) {
          JOIN leads l ON q.lead_id = l.id
          WHERE ($1::int IS NULL OR q.artist_id = $1)
            AND q.created_at > l.created_at`,
-        [artistId],
-      ),
-    ])
+          [artistId],
+        ),
+      ])
 
     // ── Process Bookings by Status & Earnings ──
     const bookingsByStatus = {

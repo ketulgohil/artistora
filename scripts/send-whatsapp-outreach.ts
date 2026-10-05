@@ -584,10 +584,10 @@ async function getUncontactedArtists(
 }
 
 // WhatsApp Safety Limits & Anti-Ban Protections
-const DAILY_WHATSAPP_CAP = 15 // Meta safe threshold for cold outbound messages per 24h
-const JITTER_MIN_SECONDS = 90 // Min 1.5 minutes between consecutive messages
-const JITTER_MAX_SECONDS = 160 // Max 2.5+ minutes between consecutive messages
-const MICRO_BATCH_SIZE = 3 // Take a 3-minute pause every 3 messages
+const DAILY_WHATSAPP_CAP = 50 // Daily safety limit for cold outbound messages per 24h
+const JITTER_MIN_SECONDS = 60 // Min 1 minute between consecutive messages
+const JITTER_MAX_SECONDS = 120 // Max 2 minutes between consecutive messages
+const MICRO_BATCH_SIZE = 4 // Take a 3-minute pause every 4 messages
 const MICRO_BATCH_PAUSE_MS = 180000 // 3-minute micro-break
 
 function pickRandom<T>(arr: T[]): T {
