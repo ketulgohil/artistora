@@ -529,6 +529,7 @@ export default async function HomePage() {
       {featuredArtists.length > 0 && (
         <section className={`${SECTION} bg-white/60 overflow-hidden`}>
           <div className={CONTAINER}>
+            <SectionHeading title="Featured Artists" subtitle="Top Rated" />
             <FeaturedArtistsSlider artists={featuredArtists} />
           </div>
         </section>
