@@ -161,9 +161,7 @@ export function BulkUploadView() {
 
         if (res.ok && data?.success) {
           successCount++
-          setFiles((prev) =>
-            prev.map((f) => (f.id === item.id ? { ...f, status: 'success' } : f)),
-          )
+          setFiles((prev) => prev.map((f) => (f.id === item.id ? { ...f, status: 'success' } : f)))
         } else {
           failedCount++
           const errorMsg =
@@ -171,18 +169,14 @@ export function BulkUploadView() {
             data?.error ||
             (res.status === 413 ? 'Image too large for mobile upload' : 'Upload failed')
           setFiles((prev) =>
-            prev.map((f) =>
-              f.id === item.id ? { ...f, status: 'error', error: errorMsg } : f,
-            ),
+            prev.map((f) => (f.id === item.id ? { ...f, status: 'error', error: errorMsg } : f)),
           )
         }
       } catch (err: any) {
         failedCount++
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === item.id
-              ? { ...f, status: 'error', error: err.message || 'Network error' }
-              : f,
+            f.id === item.id ? { ...f, status: 'error', error: err.message || 'Network error' } : f,
           ),
         )
       }
@@ -251,7 +245,8 @@ export function BulkUploadView() {
               ⚡ Bulk Image &amp; Portfolio Upload
             </h1>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--theme-elevation-500)' }}>
-              Upload multiple images simultaneously. Automatically compresses mobile photos and links them to an artist&apos;s portfolio.
+              Upload multiple images simultaneously. Automatically compresses mobile photos and
+              links them to an artist&apos;s portfolio.
             </p>
           </div>
           <Link
@@ -476,9 +471,7 @@ export function BulkUploadView() {
             color: 'var(--theme-elevation-800)',
           }}
         >
-          {isDragging
-            ? 'Drop your images here'
-            : 'Tap here or Drag & Drop Multiple Photos'}
+          {isDragging ? 'Drop your images here' : 'Tap here or Drag & Drop Multiple Photos'}
         </h3>
         <p style={{ fontSize: '12px', color: 'var(--theme-elevation-500)', margin: 0 }}>
           Select multiple photos at once. JPEG, PNG, WebP, GIF, AVIF, HEIC supported.
@@ -592,7 +585,9 @@ export function BulkUploadView() {
                   gap: '6px',
                 }}
               >
-                {isUploading ? `Uploading (${uploadProgress.current}/${uploadProgress.total})...` : `Upload All ${files.length} Photos 🚀`}
+                {isUploading
+                  ? `Uploading (${uploadProgress.current}/${uploadProgress.total})...`
+                  : `Upload All ${files.length} Photos 🚀`}
               </button>
             </div>
           </div>

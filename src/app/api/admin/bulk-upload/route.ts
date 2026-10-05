@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
     const singleFile = formData.get('file') as File | null
     const rawFiles =
       multiFiles && multiFiles.length > 0 ? multiFiles : singleFile ? [singleFile] : []
-    const files = rawFiles.filter(
-      (f): f is File => Boolean(f && typeof f !== 'string' && f.size > 0),
+    const files = rawFiles.filter((f): f is File =>
+      Boolean(f && typeof f !== 'string' && f.size > 0),
     )
 
     const artistIdRaw = formData.get('artistId') as string | null
@@ -90,7 +90,10 @@ export async function POST(request: NextRequest) {
     const categorySlug = formData.get('category') as string | null
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: 'No valid image files provided for upload' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'No valid image files provided for upload' },
+        { status: 400 },
+      )
     }
 
     const artistId = artistIdRaw && !isNaN(Number(artistIdRaw)) ? Number(artistIdRaw) : null
@@ -143,7 +146,10 @@ export async function POST(request: NextRequest) {
       const rawMime = (file.type || '').toLowerCase().split(';')[0].trim()
 
       if (!ALLOWED_MIME_TYPES.includes(rawMime)) {
-        errors.push({ filename: file.name, error: `Unsupported MIME type: ${file.type || 'unknown'}` })
+        errors.push({
+          filename: file.name,
+          error: `Unsupported MIME type: ${file.type || 'unknown'}`,
+        })
         continue
       }
 
@@ -164,7 +170,8 @@ export async function POST(request: NextRequest) {
       }
 
       const finalMime = MIME_TYPE_MAP[rawMime] || rawMime
-      const sanitizedName = file.name.replace(/[\\/\0]/g, '_').slice(0, 200) || 'portfolio-image.jpg'
+      const sanitizedName =
+        file.name.replace(/[\\/\0]/g, '_').slice(0, 200) || 'portfolio-image.jpg'
 
       try {
         const docAlt = targetArtist
