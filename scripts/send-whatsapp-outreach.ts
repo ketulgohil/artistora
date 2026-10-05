@@ -626,8 +626,40 @@ function buildMessage(artist: OutreachTarget): string {
   const shortName = artist.cleanName || cleanArtistName(artist.name)
 
   const cat = artist.category
-  const isMehndi = cat === 'mehndi'
   const isNail = cat === 'nail' || cat === 'nail-artists'
+
+  if (isNail) {
+    const greeting = pickRandom([
+      `🙏 Namaste ${shortName},`,
+      `🙏 Namaste ${shortName} Team,`,
+      `Hello ${shortName} ji,`,
+    ])
+
+    return `${greeting}
+
+Hum *Artistora* (artistora.com) — Ahmedabad ka exclusive Artist & Event Marketplace launch kar rahe hain, jaha clients directly verified artists se connect karte hain.
+
+🎨 *Who Can Join & List Free:*
+• Nail Artists & Studios (Bridal Extensions, Gel & Acrylic Art)
+• Mehndi Artists (Bridal, Arabic, Traditional)
+• Makeup & Hair Artists (Bridal & Party Glam)
+• Decorators & Event Planners
+
+🚀 *Aapke liye Benefits:*
+• Free Dedicated Profile & Portfolio Page
+• Direct Customer Calls & WhatsApp Bookings
+• 0% Commission / No Middlemen Charges
+• High-Intent Wedding & Festive Inquiries in Ahmedabad
+
+👉 *List Your Profile Free:* https://www.artistora.com/register?role=artist&type=nail-artists
+
+Profile listing ya setup karne me agar aapko koi bhi guidance chahiye, to aap hume yaha message kar sakte hain — we are happy to guide you! 👍
+
+Warm regards,
+*Artistora | Ahmedabad*`
+  }
+
+  const isMehndi = cat === 'mehndi'
   const isMakeup = cat === 'makeup'
   const isDecor = cat === 'decor'
 
@@ -649,14 +681,6 @@ function buildMessage(artist: OutreachTarget): string {
       `Aapka bridal mehndi & henna artwork Ahmedabad me kafi popular aur aesthetic hai! 🌿`,
       `Aapke Ahmedabad wedding mehndi designs hume bahut unique aur detailed lage! ✨`,
       `Aapka intricate mehndi portfolio aur client reviews Ahmedabad me bahut badhiya hain! 👍`,
-    ]
-  } else if (isNail) {
-    serviceLabel = 'Nail Art & Extensions'
-    compliments = [
-      `Aapka bridal nail art, extensions aur creative nail styling Ahmedabad me sach me bahut aesthetic aur clean hai! 💅✨`,
-      `Aapka nail studio work aur bridal nail extension portfolio Ahmedabad me kafi stylish aur trendy hai! 💅`,
-      `Aapke bridal nail designs aur gel art finishes sach me bahut professional aur elegant hain! ✨`,
-      `Aapka nail artistry work Ahmedabad me bahut creative aur graceful hai! 👍`,
     ]
   } else if (isMakeup) {
     serviceLabel = 'Bridal Makeup & Makeover'
