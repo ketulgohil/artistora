@@ -11,7 +11,7 @@ export const Media: CollectionConfig = {
     create: ({ req }) => !!req.user,
     update: ({ req }) => {
       if (req.user?.role === 'admin') return true
-      return { uploadedBy: { equals: req.user?.id } }
+      return Boolean(req.user)
     },
     delete: ({ req }) => {
       if (req.user?.role === 'admin') return true

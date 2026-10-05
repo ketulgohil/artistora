@@ -32,8 +32,8 @@ export const PortfolioItems: CollectionConfig = {
       label: 'Service Category',
       options: [
         { label: 'Mehndi', value: 'mehndi' },
-        { label: 'Photography', value: 'photography' },
         { label: 'Makeup', value: 'makeup' },
+        { label: 'Nail Art', value: 'nail-art' },
         { label: 'Decor & Planning', value: 'decor' },
         { label: 'Other', value: 'other' },
       ],
