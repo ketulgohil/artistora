@@ -58,32 +58,44 @@ export const metadata = {
 
 const organizationSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
-  '@id': 'https://www.artistora.com/#organization',
-  name: 'Artistora',
-  url: 'https://www.artistora.com',
-  logo: {
-    '@type': 'ImageObject',
-    '@id': 'https://www.artistora.com/#logo',
-    url: 'https://www.artistora.com/artistora/logo-full-white.png',
-    caption: 'Artistora',
-  },
-  description:
-    'Verified artist marketplace in Ahmedabad — mehndi, makeup, nail art, decor, and event planning.',
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'Ahmedabad',
-    addressRegion: 'Gujarat',
-    postalCode: '380015',
-    addressCountry: 'IN',
-  },
-  contactPoint: {
-    '@type': 'ContactPoint',
-    telephone: '+917405387720',
-    contactType: 'customer service',
-    availableLanguage: ['English', 'Hindi', 'Gujarati'],
-  },
-  sameAs: ['https://www.instagram.com/artistoraofficial'],
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://www.artistora.com/#organization',
+      name: 'Artistora',
+      url: 'https://www.artistora.com',
+      logo: {
+        '@type': 'ImageObject',
+        '@id': 'https://www.artistora.com/#logo',
+        url: 'https://www.artistora.com/artistora/logo-full-white.png',
+        caption: 'Artistora',
+      },
+      description:
+        'Verified artist marketplace in Ahmedabad — mehndi, makeup, nail art, decor, and event planning.',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Ahmedabad',
+        addressRegion: 'Gujarat',
+        postalCode: '380015',
+        addressCountry: 'IN',
+      },
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+917405387720',
+        contactType: 'customer service',
+        availableLanguage: ['English', 'Hindi', 'Gujarati'],
+      },
+      sameAs: ['https://www.instagram.com/artistoraofficial'],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://www.artistora.com/#website',
+      url: 'https://www.artistora.com',
+      name: 'Artistora',
+      inLanguage: 'en-IN',
+      publisher: { '@id': 'https://www.artistora.com/#organization' },
+    },
+  ],
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

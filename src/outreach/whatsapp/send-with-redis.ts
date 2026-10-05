@@ -8,7 +8,12 @@
  * Survives process restarts — no QR scan needed (until session expires).
  */
 
-import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys'
+import makeWASocket, {
+  useMultiFileAuthState,
+  DisconnectReason,
+  Browsers,
+  makeCacheableSignalKeyStore,
+} from '@whiskeysockets/baileys'
 import pino from 'pino'
 import qrcode from 'qrcode-terminal'
 import * as path from 'path'
@@ -42,7 +47,7 @@ async function main() {
     process.exit(1)
   }
 
-  const jid = `${cleanPhone}@s.whatsapp.net`
+  const jid = `${cleanPhone.replace('+', '')}@s.whatsapp.net`
   console.log(`[WhatsApp] Target: ${cleanPhone} (${jid})`)
 
   // Step 1: Restore auth state from Redis
@@ -57,10 +62,17 @@ async function main() {
 
   // Step 2: Initialize Baileys auth state & socket
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR)
+  const logger = pino({ level: 'silent' })
 
   const sock = makeWASocket({
-    auth: state,
-    logger: pino({ level: 'silent' }),
+    auth: {
+      creds: state.creds,
+      keys: makeCacheableSignalKeyStore(state.keys, logger),
+    },
+    logger,
+    browser: Browsers.macOS('Desktop'),
+    syncFullHistory: false,
+    generateHighQualityLinkPreview: false,
     printQRInTerminal: false,
     defaultQueryTimeoutMs: 30000,
   })

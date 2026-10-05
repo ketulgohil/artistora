@@ -12,6 +12,11 @@ export async function GET(request: NextRequest) {
 
     const user = result.user as any
 
+    // Decouple admin session: treat admin as a guest on frontend so admin panel login does not alter the public marketplace experience
+    if (user?.role === 'admin') {
+      return NextResponse.json({ user: null, artistProfile: null }, { status: 200 })
+    }
+
     // If artist, find their profile
     let artistProfile = null
     if (user?.role === 'artist') {
@@ -26,7 +31,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      artistProfile: artistProfile ? { id: artistProfile.id, slug: (artistProfile as any).slug, displayName: (artistProfile as any).displayName } : null,
+      artistProfile: artistProfile
+        ? {
+            id: artistProfile.id,
+            slug: (artistProfile as any).slug,
+            displayName: (artistProfile as any).displayName,
+          }
+        : null,
     })
   } catch (error) {
     return NextResponse.json({ user: null }, { status: 401 })

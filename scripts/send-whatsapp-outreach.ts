@@ -660,6 +660,37 @@ Warm regards,
   }
 
   const isMehndi = cat === 'mehndi'
+
+  if (isMehndi) {
+    const greeting = pickRandom([
+      `🙏 Namaste ${shortName},`,
+      `🙏 Namaste ${shortName} Team,`,
+      `Hello ${shortName} ji,`,
+    ])
+
+    return `${greeting}
+
+Hum *Artistora* (artistora.com) — Ahmedabad ka exclusive Artist & Event Marketplace launch kar rahe hain, jaha clients directly verified artists se connect karte hain.
+
+🎨 *Who Can Join & List Free:*
+• Mehndi Artists (Bridal, Arabic, Traditional, Figurative)
+• Makeup & Hair Artists (Bridal & Party Glam)
+• Nail Artists & Studios (Bridal Extensions, Gel Art)
+• Decorators & Event Planners
+
+🚀 *Aapke liye Benefits:*
+• Free Dedicated Profile & Portfolio Page
+• Direct Customer Calls & WhatsApp Bookings
+• 0% Commission / No Middlemen Charges
+• High-Intent Wedding & Festive Inquiries in Ahmedabad
+
+👉 *List Your Profile Free:* https://www.artistora.com/register?role=artist&type=mehndi-artists
+
+Profile listing ya setup karne me agar aapko koi bhi guidance chahiye, to aap hume yaha message kar sakte hain — we are happy to guide you! 👍
+
+Warm regards,
+*Artistora | Ahmedabad*`
+  }
   const isMakeup = cat === 'makeup'
   const isDecor = cat === 'decor'
 

@@ -5,28 +5,43 @@
  *
  * Safety & Rate Limits:
  *   - Daily Safety Cap: Max 15-20 DMs per 24 hours
- *   - Human Delay Jitter: 45s - 85s between consecutive DMs
- *   - Human Typing Simulation: 25ms - 65ms per character
- *   - Spintax Variations: Randomized sentence structures so no two DMs are identical
+ *   - Human Delay Jitter: 45s - 75s between consecutive DMs
+ *   - Cooldown Micro-Break: 3 minutes after every 4 DMs
+ *   - Human Typing Simulation: 15ms - 40ms per character with Shift+Enter newlines
+ *   - Spintax Variations: Randomized sentence structures per category so no two DMs are identical
  *   - Persistent Profile: Zero session logouts / TLS mismatches
  *
  * Usage:
- *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts
- *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --limit 10 --category makeup
+ *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --category mehndi --limit 10
+ *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --category nail --limit 10
+ *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --category makeup --limit 10
+ *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --category decor --limit 10
+ *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --preview --category mehndi --limit 10
  *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --test @target_handle
  *   NODE_OPTIONS="--no-deprecation --import=tsx/esm" npx tsx scripts/send-instagram-playwright.ts --headless
- *
- * Importers/Callers: Executed standalone via CLI.
- * Affected APIs: Playwright Chromium, Payload CMS Local API.
- * Schemas: `discovered_artists`, `outreach_messages`.
- * User instruction: "okay create a playwrite."
  */
 
 import { chromium, type Page } from '@playwright/test'
 import * as path from 'path'
 import * as fs from 'fs'
 import dotenv from 'dotenv'
-import { getPayloadClient } from '../src/lib/payload'
+import {
+  getUncontactedInstagramArtists,
+  getArtistByHandle,
+  getSentDMsCountLast24Hours,
+  logInstagramOutreachMessage,
+  markArtistContacted,
+  getInstagramOutreachStats,
+  closeDbPool,
+  type InstagramArtistRecord,
+} from '../src/outreach/db'
+import {
+  detectCategory,
+  cleanArtistNameForGreeting,
+  generateDynamicInstagramMessage,
+  type OutreachCategory,
+  type TargetArtistInfo,
+} from '../src/outreach/instagram/messaging'
 
 dotenv.config()
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
@@ -35,241 +50,17 @@ const PROFILE_DIR = path.resolve(process.cwd(), '.instagram-browser-profile')
 const DAILY_DM_LIMIT = 20
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-function getJitterDelay(minSeconds = 45, maxSeconds = 85): number {
+function getJitterDelay(minSeconds = 45, maxSeconds = 75): number {
   const seconds = Math.floor(Math.random() * (maxSeconds - minSeconds + 1)) + minSeconds
   return seconds * 1000
 }
 
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
-
-interface TargetArtist {
-  id?: number | string
-  handle: string
-  name?: string
-  sourceId?: string
-  category?: 'mehndi' | 'makeup' | 'decor' | 'general' | string
-}
-
-/**
- * Precision Category Classifier.
- * Analyzes bio, business badge, full name, and handle with strict priority ordering.
- */
-export function detectArtistCategory(
-  bio = '',
-  fullName = '',
-  handle = '',
-  badge = '',
-): { category: 'mehndi' | 'decor' | 'makeup' | 'nail' | 'general'; label: string } {
-  const combined = `${badge} ${bio} ${fullName} ${handle}`.toLowerCase()
-
-  // 1. Mehndi / Henna (highest specificity)
-  if (
-    combined.includes('mehndi') ||
-    combined.includes('mehendi') ||
-    combined.includes('henna') ||
-    combined.includes('heena')
-  ) {
-    return { category: 'mehndi', label: 'Mehndi Artists' }
-  }
-
-  // 2. Decor & Event Planners (must be checked BEFORE makeup to avoid "bridal decor" mismatch)
-  if (
-    combined.includes('decor') ||
-    combined.includes('planner') ||
-    combined.includes('planning') ||
-    combined.includes('event') ||
-    combined.includes('mandap') ||
-    combined.includes('stage') ||
-    combined.includes('florist') ||
-    combined.includes('balloon') ||
-    combined.includes('management')
-  ) {
-    return { category: 'decor', label: 'Decor & Event Planners' }
-  }
-
-  // 3. Nail Artists & Studios
-  if (
-    combined.includes('nail') ||
-    combined.includes('acrylic') ||
-    combined.includes('gel extension') ||
-    combined.includes('press on') ||
-    combined.includes('manicure')
-  ) {
-    return { category: 'nail', label: 'Nail Artists' }
-  }
-
-  // 4. Makeup & Hair Artists
-  if (
-    combined.includes('makeup') ||
-    combined.includes('make up') ||
-    combined.includes('mua') ||
-    combined.includes('makeover') ||
-    combined.includes('beauty') ||
-    combined.includes('hairstyl') ||
-    combined.includes('hair artist') ||
-    combined.includes('salon') ||
-    combined.includes('cosmetic')
-  ) {
-    return { category: 'makeup', label: 'Makeup Artists' }
-  }
-
-  return { category: 'general', label: 'Wedding Artists & Vendors' }
-}
-
-/**
- * Cleans and formats an artist's name for natural greetings.
- * Rejects stats ("53 posts", "10k followers"), strips business keywords and emojis,
- * and extracts the real personal or studio name.
- */
-export function cleanArtistNameForGreeting(rawName: string = '', handle: string = ''): string {
-  let name = (rawName || '').trim()
-
-  // Strict blacklist: reject stats, numbers, or UI action words
-  if (
-    !name ||
-    /\b\d+[\d,.]*\s*(posts?|followers?|following)\b/i.test(name) ||
-    /^(posts?|followers?|following|follow|following|message|contact|edit profile|share)$/i.test(
-      name,
-    ) ||
-    /^\d+[\d,.]*$/.test(name)
-  ) {
-    name = ''
-  }
-
-  // If name is empty, fall back to handle
-  if (!name) {
-    name = handle.replace(/^@/, '').replace(/[_.]/g, ' ').trim()
-  }
-
-  // Strip pipe, bullet, dash, colon, and parenthetical suffixes
-  name = name.split(/[|•\-–—:,()]/)[0].trim()
-
-  // Remove common city, role, and business keywords
-  name = name
-    .replace(
-      /\b(in\s+ahmedabad|ahmedabad|gujarat|india|artist|art|studio|salon|makeover|makeup|mehandi|mehndi|henna|events?|planners?|classes|academy|official|creations?)\b/gi,
-      '',
-    )
-    .trim()
-
-  // Strip emojis and non-alphanumeric special characters
-  name = name
-    .replace(/[^\w\s'&]/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-  // If empty after stripping, derive from handle
-  if (!name || name.length < 2) {
-    const handleParts = handle.replace(/^@/, '').split(/[_.]/).filter(Boolean)
-    const firstWord = handleParts[0] || 'Artist'
-    name = firstWord.charAt(0).toUpperCase() + firstWord.slice(1)
-  }
-
-  // Capitalize words and take at most 2 words
-  const words = name
-    .split(' ')
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .slice(0, 2)
-    .join(' ')
-
-  return words || 'Artist'
-}
-
-/**
- * Dynamic Spintax Message Generator.
- * Generates category-accurate, personalized message variations for every artist to prevent spam detection.
- */
-function generateDynamicInstagramMessage(artist: TargetArtist): string {
-  const cleanName = cleanArtistNameForGreeting(artist.name, artist.handle)
-
-  const detected = detectArtistCategory('', artist.name || '', artist.handle, artist.category || '')
-  const cat = detected.category
-
-  const greetings = [
-    `Hey ${cleanName}! 👋`,
-    `Hello ${cleanName}! ✨`,
-    `Kem cho ${cleanName}! 🙏`,
-    `Hi ${cleanName}! 👋`,
-  ]
-
-  let compliments: string[] = []
-
-  if (cat === 'mehndi') {
-    compliments = [
-      `Loved your intricate bridal mehndi work and patterns on your feed.`,
-      `Your mehndi designs and bridal patterns in Ahmedabad are really stunning!`,
-      `Was checking out your recent bridal mehndi work in Ahmedabad — beautiful craftsmanship!`,
-    ]
-  } else if (cat === 'decor') {
-    compliments = [
-      `Loved your wedding decor setups, mandap concepts, and event management work in Ahmedabad!`,
-      `Your wedding themes, stage decor, and event planning work look truly magnificent!`,
-      `Was admiring your event planning and wedding decor projects across Ahmedabad venues!`,
-    ]
-  } else if (cat === 'makeup') {
-    compliments = [
-      `Loved your recent bridal makeover and styling looks in Ahmedabad!`,
-      `Your bridal makeup portfolio and finishes look absolutely amazing!`,
-      `Was admiring your bridal makeup work across Ahmedabad weddings — stunning styling!`,
-    ]
-  } else if (cat === 'nail') {
-    compliments = [
-      `Loved your creative nail art designs and bridal extensions on your feed!`,
-      `Your nail styling, gel extensions, and art finishes in Ahmedabad look stunning!`,
-      `Was checking out your nail art and extension portfolio in Ahmedabad — gorgeous work!`,
-    ]
-  } else {
-    compliments = [
-      `Loved your recent wedding work and event portfolio in Ahmedabad!`,
-      `Your wedding work and creativity in Ahmedabad look really wonderful!`,
-    ]
-  }
-
-  const intros = [
-    `We run Artistora (artistora.com) — Ahmedabad's dedicated marketplace where brides and clients discover and book verified local artists directly.`,
-    `We're building Artistora — a curated platform connecting Ahmedabad brides and event planners directly with top local artists & studios.`,
-    `We're from Artistora, Ahmedabad's verified artist community where creators showcase their work and get direct client bookings.`,
-  ]
-
-  const valueProps = [
-    `We are onboarding select Ahmedabad nail artists for upcoming wedding season bookings with 100% direct client contact and 0% commission.`,
-    `You get your own dedicated profile page where you can upload your portfolio photos, showcase your pricing packages, and receive direct inquiries.`,
-    `We feature verified local creators so clients in Ahmedabad can browse your original designs and reach out to you directly.`,
-  ]
-
-  const ctas = [
-    `🎨 Create your free artist profile in 2 mins, upload your nail designs, and start receiving direct inquiries:\n👉 https://www.artistora.com/register?role=artist&type=nail-artists\n🔗 Or visit @artistoraofficial and tap the registration link in our bio!`,
-    `✨ Create your free creator profile, showcase your portfolio & bridal packages, and get discovered by local clients with 0% commission:\n👉 https://www.artistora.com/register?role=artist&type=nail-artists\n🔗 Or check the bio link at @artistoraofficial!`,
-    `💅 We'd love to feature your nail art portfolio on Artistora — create your free profile and start getting direct client leads:\n👉 https://www.artistora.com/register?role=artist&type=nail-artists\n🔗 Or tap @artistoraofficial to get started via our bio link!`,
-  ]
-
-  return `${pickRandom(greetings)} ${pickRandom(compliments)}\n\n${pickRandom(intros)} ${pickRandom(valueProps)}\n\n${pickRandom(ctas)}`
-}
-
-/**
- * Checks how many Instagram DMs have been sent in the last 24 hours.
- */
-async function getSentCountLast24Hours(payload: any): Promise<number> {
-  try {
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const recent = await payload.find({
-      collection: 'outreach-messages',
-      where: {
-        and: [
-          { channel: { equals: 'instagram' } },
-          { status: { equals: 'sent' } },
-          { createdAt: { greater_than_equal: yesterday } },
-        ],
-      },
-      limit: 100,
-    })
-    return recent.docs.length
-  } catch {
-    return 0
-  }
+interface ProfileInspection {
+  fullName: string
+  bio: string
+  category: OutreachCategory
+  categoryLabel: string
+  isFollowing: boolean
 }
 
 /**
@@ -283,7 +74,7 @@ async function dismissPopups(page: Page) {
     for (const btn of popupButtons) {
       if (await btn.isVisible().catch(() => false)) {
         await btn.click().catch(() => {})
-        await page.waitForTimeout(600)
+        await page.waitForTimeout(500)
       }
     }
   } catch {}
@@ -327,14 +118,6 @@ async function findMessageBox(page: Page, timeoutMs = 15000) {
   return null
 }
 
-interface ProfileInspection {
-  fullName: string
-  bio: string
-  category: 'mehndi' | 'decor' | 'makeup' | 'nail' | 'general'
-  categoryLabel: string
-  isFollowing: boolean
-}
-
 /**
  * Navigates to the user's profile, extracts live metadata to verify their real category & name,
  * and follows them if not already following.
@@ -354,20 +137,18 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
     await page.waitForTimeout(2000)
     await dismissPopups(page)
 
-    // 1. Extract Profile Header Name
+    // 1. Extract Profile Header Display Name
     try {
       const extracted = await page.evaluate((h) => {
         const header = document.querySelector('header')
         if (!header) return null
 
-        // Priority A: Header H1 display name
         const h1 = header.querySelector('h1')
         if (h1 && h1.innerText?.trim()) {
           const t = h1.innerText.trim()
           if (!/\b(posts?|followers?|following)\b/i.test(t)) return t
         }
 
-        // Priority B: Display name spans (excluding stats, action buttons, and pure numbers)
         const candidateSpans = Array.from(
           header.querySelectorAll('section span[dir="auto"], section div[dir="auto"], header h2'),
         )
@@ -401,11 +182,11 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
       }
     } catch {}
 
-    // 3. Extract Category Badge if rendered
+    // 3. Extract Category Badge if present
     try {
       const badgeEl = page
         .locator(
-          'header div[class*="x1fhsubz"], header section div:has-text("Planner"), header section div:has-text("Artist")',
+          'header div[class*="x1fhsubz"], header section div:has-text("Planner"), header section div:has-text("Artist"), header section div:has-text("Studio")',
         )
         .first()
       if (await badgeEl.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -440,10 +221,10 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
       }
     } catch {}
   } catch (err: any) {
-    console.warn(`   ⚠️ Profile inspection notice: ${err.message}`)
+    console.warn(`   ⚠️ Profile inspection note: ${err.message}`)
   }
 
-  const detected = detectArtistCategory(bio, fullName, cleanHandle, badge)
+  const detected = detectCategory(bio, fullName, cleanHandle, badge)
   console.log(`   🏷️ Live Verification: @${cleanHandle} → "${detected.label}" (Name: ${fullName})`)
 
   return {
@@ -457,14 +238,10 @@ async function followAndInspectArtist(page: Page, handle: string): Promise<Profi
 
 /**
  * Sends a Direct Message to a specific Instagram handle using the browser session.
- * 1. Follows and inspects the artist profile to dynamically verify their exact profession and name.
- * 2. Generates a category-accurate personalized message.
- * 3. Opens the full-screen Direct composer (`/direct/new/`) and selects recipient.
- * 4. Types and dispatches message with delivery confirmation.
  */
 async function sendBrowserDM(
   page: Page,
-  artist: TargetArtist,
+  artist: TargetArtistInfo,
 ): Promise<{ success: boolean; error?: string; messageSent?: string; verifiedCategory?: string }> {
   const cleanHandle = artist.handle.replace(/^@/, '').trim().toLowerCase()
 
@@ -474,14 +251,14 @@ async function sendBrowserDM(
     await page.waitForTimeout(1000)
 
     // 2. Build verified target and message
-    const verifiedArtist: TargetArtist = {
+    const verifiedArtist: TargetArtistInfo = {
       ...artist,
       name: profileInfo.fullName || artist.name || cleanHandle,
       category: profileInfo.category,
     }
     const message = generateDynamicInstagramMessage(verifiedArtist)
 
-    // 3. Open clean, full-screen Direct composer directly (bypasses all floating dock widgets)
+    // 3. Open Direct composer directly
     console.log(`   🌐 Opening Direct Message composer for @${cleanHandle}...`)
     await page.goto('https://www.instagram.com/direct/new/', {
       waitUntil: 'domcontentloaded',
@@ -532,8 +309,8 @@ async function sendBrowserDM(
 
     await dismissPopups(page)
 
-    // 6. Locate the message textbox in the clean chat thread
-    console.log('   🔍 Detecting message input box in full-screen thread...')
+    // 6. Locate the message textbox in chat thread
+    console.log('   🔍 Detecting message input box in chat thread...')
     const textBoxLocator = await findMessageBox(page, 15000)
 
     if (!textBoxLocator) {
@@ -565,12 +342,12 @@ async function sendBrowserDM(
 
     await page.waitForTimeout(800)
 
-    // 7. Dispatch message and verify real delivery
+    // 7. Dispatch message and verify delivery
     console.log('   📤 Dispatching direct message...')
     let isDelivered = false
 
     for (let attempt = 1; attempt <= 4; attempt++) {
-      // Step A: Click visible Send button (text "Send" or send SVG arrow)
+      // Step A: Click visible Send button
       const sendButton = page
         .locator(
           'div[role="button"]:has-text("Send"), button:has-text("Send"), span:has-text("Send"), svg[aria-label="Send"], div.x1i10hfl[role="button"]:has-text("Send")',
@@ -584,7 +361,7 @@ async function sendBrowserDM(
         await page.waitForTimeout(1200)
       }
 
-      // Step B: If Send button wasn't clicked, focus textbox and press Enter
+      // Step B: Focus textbox and press Enter
       if (!clickedSend) {
         await textBoxLocator.focus().catch(() => {})
         await page.keyboard.press('Enter')
@@ -636,6 +413,8 @@ async function sendBrowserDM(
 }
 
 async function main() {
+  const startTime = Date.now()
+
   console.log('================================================================')
   console.log('📸 Artistora — Instagram Playwright Automated DM Outreach')
   console.log('================================================================\n')
@@ -644,16 +423,121 @@ async function main() {
   const isTest = args.includes('--test')
   const testHandle = isTest ? args[args.indexOf('--test') + 1] : null
   const isHeadless = args.includes('--headless')
+  const isPreview = args.includes('--preview') || args.includes('--dry-run')
 
   const limitIdx = args.indexOf('--limit')
-  const batchLimit = limitIdx !== -1 ? parseInt(args[limitIdx + 1], 10) || 15 : 15
+  const batchLimit = limitIdx !== -1 ? parseInt(args[limitIdx + 1], 10) || 10 : 10
 
   const catIdx = args.indexOf('--category')
-  const targetCategory = catIdx !== -1 ? args[catIdx + 1].toLowerCase() : null
+  const targetCategory =
+    catIdx !== -1 ? (args[catIdx + 1]?.toLowerCase() as OutreachCategory) : null
+
+  // 1. Fetch Global Statistics
+  const stats = await getInstagramOutreachStats()
+  console.log(`📊 24-Hour Instagram DM Activity: ${stats.sentLast24Hours}/${DAILY_DM_LIMIT} sent`)
+  console.log(`   • Total With Instagram: ${stats.totalWithInstagram}`)
+  console.log(`   • Contacted:            ${stats.contactedCount}`)
+  console.log(`   • Uncontacted:          ${stats.uncontactedCount}\n`)
+
+  // 2. Fetch Uncontacted Target Artists directly from DB
+  const rawArtists = await getUncontactedInstagramArtists({ limit: 1000 })
+
+  // Deduplicate by Instagram handle
+  const seenHandles = new Set<string>()
+  const uniqueArtists: InstagramArtistRecord[] = []
+
+  for (const a of rawArtists) {
+    const normHandle = (a.instagramHandle || '').replace(/^@/, '').trim().toLowerCase()
+    if (!normHandle || seenHandles.has(normHandle)) continue
+    seenHandles.add(normHandle)
+    uniqueArtists.push(a)
+  }
+
+  // Categorize targets
+  const categorizedTargets = uniqueArtists.map((artist) => {
+    const catInfo = detectCategory(
+      '',
+      artist.name,
+      artist.instagramHandle,
+      `${artist.serviceDisplay || ''} ${artist.specializations || ''}`,
+    )
+    return {
+      id: artist.id,
+      handle: artist.instagramHandle,
+      name: artist.name,
+      businessName: artist.businessName,
+      category: catInfo.category,
+      categoryLabel: catInfo.label,
+      specializations: artist.specializations,
+      serviceDisplay: artist.serviceDisplay,
+      registrationUrl: catInfo.registrationUrl,
+    }
+  })
+
+  // Filter by category if requested
+  let targetList = categorizedTargets
+  if (targetCategory) {
+    targetList = categorizedTargets.filter((a) => a.category === targetCategory)
+  }
+
+  // --- PREVIEW / DRY-RUN MODE ---
+  if (isPreview) {
+    console.log('🔎 PREVIEW MODE ENABLED (Dry-run — no browser launch, no DB writes)')
+    console.log('================================================================')
+    console.log(
+      `📋 Queued Targets: ${Math.min(targetList.length, batchLimit)} Artists ${targetCategory ? `(Category: ${targetCategory.toUpperCase()})` : '(All Categories)'}`,
+    )
+    console.log('================================================================\n')
+
+    const previewList = targetList.slice(0, batchLimit)
+    if (previewList.length === 0) {
+      console.log(`ℹ️ No uncontacted artists found for category "${targetCategory}".\n`)
+    } else {
+      previewList.forEach((artist, idx) => {
+        const cleanName = cleanArtistNameForGreeting(artist.name || '', artist.handle)
+        const cleanHandle = artist.handle.replace(/^@/, '')
+        const msg = generateDynamicInstagramMessage(artist)
+
+        console.log(`[${idx + 1}/${previewList.length}] 🎯 ID: ${artist.id}`)
+        console.log(`   👤 Greeting Name: "${cleanName}"`)
+        console.log(`   🏷️ Raw Name:      "${artist.name}"`)
+        console.log(`   📸 Handle:        @${cleanHandle}`)
+        console.log(`   📂 Category:      ${artist.categoryLabel}`)
+        console.log(`   🔗 Profile:       https://www.instagram.com/${cleanHandle}/`)
+        console.log('\n   💬 Generated Spintax Message:')
+        console.log(
+          msg
+            .split('\n')
+            .map((l) => `      ${l}`)
+            .join('\n'),
+        )
+        console.log('\n' + '-'.repeat(64) + '\n')
+      })
+    }
+
+    console.log(
+      `⚡ Preview generated in ${Date.now() - startTime}ms across ${targetList.length} candidate artists.\n`,
+    )
+    await closeDbPool()
+    process.exit(0)
+  }
+
+  // 3. Safety Check: 24-hour rate limit
+  if (stats.sentLast24Hours >= DAILY_DM_LIMIT) {
+    console.log(
+      `🛑 SAFETY PAUSE: Daily Instagram DM cap of ${DAILY_DM_LIMIT} reached in the last 24 hours.`,
+    )
+    console.log(`   Outreach paused to protect account health. Resuming tomorrow.\n`)
+    await closeDbPool()
+    process.exit(0)
+  }
+
+  const remainingQuota = Math.min(batchLimit, DAILY_DM_LIMIT - stats.sentLast24Hours)
+  console.log(`🎯 Safe batch quota for this run: ${remainingQuota} DMs\n`)
 
   fs.mkdirSync(PROFILE_DIR, { recursive: true })
 
-  // 1. Launch Playwright persistent context
+  // 4. Launch Playwright persistent browser
   console.log(`🚀 Launching Chrome browser (Mode: ${isHeadless ? 'Headless' : 'Visible UI'})...`)
   console.log(`📁 Profile directory: ${PROFILE_DIR}\n`)
 
@@ -677,57 +561,48 @@ async function main() {
   if (!isHeadless) {
     await page.bringToFront().catch(() => {})
   }
+
   await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(3000)
   await dismissPopups(page)
 
   // Verify authentication state
   const isAuth = await page.$(
-    'a[href*="/direct/inbox/"], svg[aria-label="Direct"], svg[aria-label="Home"]',
+    'a[href*="/direct/inbox/"], svg[aria-label="Direct"], svg[aria-label="Home"], svg[aria-label="Messages"]',
   )
   if (!isAuth) {
     console.error('❌ Browser is NOT authenticated on Instagram.')
     console.error('👉 Please run first: npm run instagram:login\n')
     await context.close()
+    await closeDbPool()
     process.exit(1)
   }
 
   console.log('✅ Browser session verified — authenticated on Instagram.\n')
-  const payload = await getPayloadClient()
 
-  // 2. Handle single test message
+  // 5. Handle Single Test Send
   if (isTest && testHandle) {
     const cleanTestHandle = testHandle.replace(/^@/, '').trim().toLowerCase()
     console.log(`🧪 Running single test DM to @${cleanTestHandle}...`)
 
-    // Check if artist exists in database
-    let dbArtistDoc: any = null
-    try {
-      const match = await payload.find({
-        collection: 'discovered-artists',
-        where: {
-          or: [
-            { instagramHandle: { equals: cleanTestHandle } },
-            { name: { equals: cleanTestHandle } },
-            { slug: { equals: `ig-${cleanTestHandle}` } },
-          ],
-        },
-        limit: 1,
-      })
-      if (match.docs.length > 0) {
-        dbArtistDoc = match.docs[0]
-      }
-    } catch {}
+    const dbArtist = await getArtistByHandle(cleanTestHandle)
+    const testCatInfo = detectCategory(
+      '',
+      dbArtist?.name || cleanTestHandle,
+      cleanTestHandle,
+      `${dbArtist?.serviceDisplay || ''} ${dbArtist?.specializations || ''}`,
+    )
 
-    const testArtist: TargetArtist = {
-      id: dbArtistDoc?.id,
+    const testArtist: TargetArtistInfo = {
+      id: dbArtist?.id,
       handle: cleanTestHandle,
-      name: dbArtistDoc?.name || cleanTestHandle,
-      category: dbArtistDoc?.services?.[0]?.name || dbArtistDoc?.specializations || 'wedding',
+      name: dbArtist?.name || cleanTestHandle,
+      category: testCatInfo.category,
+      specializations: dbArtist?.specializations,
+      serviceDisplay: dbArtist?.serviceDisplay,
     }
 
     const messageBody = generateDynamicInstagramMessage(testArtist)
-
     console.log('\n--- Message Preview ---')
     console.log(messageBody)
     console.log('-----------------------\n')
@@ -735,185 +610,84 @@ async function main() {
     const result = await sendBrowserDM(page, testArtist)
     if (result.success) {
       console.log(`\n🎉 Test message successfully sent to @${cleanTestHandle}!`)
-      console.log(`   🏷️ Category confirmed: ${result.verifiedCategory || 'Wedding Artist'}`)
+      console.log(`   🏷️ Category confirmed: ${result.verifiedCategory || testCatInfo.label}`)
 
-      if (dbArtistDoc?.id) {
+      if (dbArtist?.id) {
         try {
-          await payload.create({
-            collection: 'outreach-messages',
-            data: {
-              artist: dbArtistDoc.id,
-              channel: 'instagram_dm',
-              campaignName: 'ahmedabad-wedding-artists-v1',
-              body: result.messageSent || messageBody,
-              status: 'sent',
-              sentAt: new Date().toISOString(),
-            } as any,
+          await logInstagramOutreachMessage({
+            artistId: dbArtist.id,
+            body: result.messageSent || messageBody,
+            status: 'sent',
           })
-          await payload.update({
-            collection: 'discovered-artists',
-            id: dbArtistDoc.id,
-            data: { outreachStatus: 'contacted' } as any,
-          })
+          await markArtistContacted(dbArtist.id)
           console.log(`💾 Updated database: marked @${cleanTestHandle} as 'contacted'`)
-        } catch {}
+        } catch (dbErr: any) {
+          console.warn(`⚠️ Could not log to database: ${dbErr.message}`)
+        }
       }
     } else {
       console.error(`\n❌ Failed to send test message: ${result.error}`)
     }
+
     await page.waitForTimeout(3000)
     await context.close()
+    await closeDbPool()
     process.exit(0)
   }
 
-  // 3. Safety Check: 24-hour rate limit
-  const sentLast24h = await getSentCountLast24Hours(payload)
-  console.log(`📊 24-Hour Instagram DM Activity: ${sentLast24h}/${DAILY_DM_LIMIT} sent`)
-
-  if (sentLast24h >= DAILY_DM_LIMIT) {
-    console.log(
-      `\n🛑 SAFETY PAUSE: Daily Instagram DM cap of ${DAILY_DM_LIMIT} reached in the last 24 hours.`,
-    )
-    console.log(`   Batch paused to protect your account health. Resuming tomorrow.\n`)
-    await context.close()
-    process.exit(0)
-  }
-
-  const remainingQuota = Math.min(batchLimit, DAILY_DM_LIMIT - sentLast24h)
-  console.log(`🎯 Safe batch quota for this run: ${remainingQuota} DMs\n`)
-
-  // 4. Fetch target uncontacted artists from PostgreSQL `discovered_artists`
-  console.log('🔍 Fetching uncontacted Ahmedabad artists from database...')
-  const result = await payload.find({
-    collection: 'discovered-artists',
-    where: {
-      outreachStatus: { not_equals: 'contacted' },
-    },
-    limit: 500,
-  })
-
-  let targetList: TargetArtist[] = (result.docs || [])
-    .filter((doc: any) => Boolean(doc.instagramHandle))
-    .map((doc: any) => ({
-      id: doc.id,
-      handle: doc.instagramHandle,
-      name: doc.name,
-      sourceId: doc.sourceId,
-      category: doc.services?.[0]?.name || doc.specializations || 'nail',
-    }))
-
-  if (targetCategory) {
-    targetList = (result.docs || [])
-      .filter((doc: any) => {
-        if (!doc.instagramHandle) return false
-        const combined =
-          `${doc.name || ''} ${doc.businessName || ''} ${doc.serviceDisplay || ''} ${doc.specializations || ''} ${doc.instagramHandle || ''}`.toLowerCase()
-        return combined.includes(targetCategory)
-      })
-      .map((doc: any) => ({
-        id: doc.id,
-        handle: doc.instagramHandle,
-        name: doc.name,
-        sourceId: doc.sourceId,
-        category: targetCategory,
-      }))
-  }
-
-  if (targetList.length === 0) {
-    console.log('ℹ️ No uncontacted Instagram artists found in database.')
+  // 6. Execute Batch Outreach
+  const finalTargets = targetList.slice(0, remainingQuota)
+  if (finalTargets.length === 0) {
+    console.log('ℹ️ No uncontacted Instagram artists found in database matching criteria.')
     console.log('👉 Run `npm run scrape:instagram` to discover fresh Ahmedabad artists first.\n')
     await context.close()
+    await closeDbPool()
     process.exit(0)
   }
 
   console.log(
-    `📋 Found ${targetList.length} artists in database. Dispatching to first ${Math.min(targetList.length, remainingQuota)} artists...\n`,
+    `📋 Dispatching batch to ${finalTargets.length} artists ${targetCategory ? `(Category: ${targetCategory.toUpperCase()})` : ''}...\n`,
   )
 
   let sentCount = 0
   let skippedCount = 0
-  const seenHandlesThisRun = new Set<string>()
 
-  for (let i = 0; i < Math.min(targetList.length, remainingQuota); i++) {
-    const artist = targetList[i]
+  for (let i = 0; i < finalTargets.length; i++) {
+    const artist = finalTargets[i]
     const cleanHandle = artist.handle.replace(/^@/, '').trim().toLowerCase()
 
-    if (seenHandlesThisRun.has(cleanHandle)) {
-      console.log(`   ⏩ Skipping duplicate handle @${cleanHandle} in current batch.`)
-      skippedCount++
-      continue
-    }
-    seenHandlesThisRun.add(cleanHandle)
-
     console.log(
-      `\n[${i + 1}/${remainingQuota}] 🎯 Target: @${cleanHandle} (${artist.name || 'Artist'})`,
+      `\n[${i + 1}/${finalTargets.length}] 🎯 Target: @${cleanHandle} (${artist.name || 'Artist'}) [${artist.categoryLabel}]`,
     )
-
-    // Deduplication check
-    try {
-      const existing = await payload.find({
-        collection: 'outreach-messages',
-        where: {
-          and: [
-            { channel: { equals: 'instagram_dm' } },
-            { artist: { equals: artist.id } },
-            { status: { equals: 'sent' } },
-          ],
-        },
-        limit: 1,
-      })
-
-      if (existing.docs.length > 0) {
-        console.log(`   ⏩ Skipping @${cleanHandle} — already contacted.`)
-        skippedCount++
-        continue
-      }
-    } catch {}
 
     const dmResult = await sendBrowserDM(page, artist)
 
     if (dmResult.success) {
       sentCount++
       console.log(`   ✅ [${sentCount}] Successfully delivered DM to @${cleanHandle}`)
-      console.log(`   🏷️ Category confirmed: ${dmResult.verifiedCategory || 'Wedding Artist'}`)
+      console.log(`   🏷️ Category confirmed: ${dmResult.verifiedCategory || artist.categoryLabel}`)
 
       // Log in PostgreSQL outreach_messages
       if (artist.id) {
         try {
-          await payload.create({
-            collection: 'outreach-messages',
-            data: {
-              artist: artist.id,
-              channel: 'instagram_dm',
-              campaignName: 'ahmedabad-wedding-artists-v1',
-              body: dmResult.messageSent || generateDynamicInstagramMessage(artist),
-              status: 'sent',
-              sentAt: new Date().toISOString(),
-            } as any,
+          await logInstagramOutreachMessage({
+            artistId: artist.id,
+            body: dmResult.messageSent || generateDynamicInstagramMessage(artist),
+            status: 'sent',
           })
+          await markArtistContacted(artist.id)
           console.log(`   💾 Saved outreach record in database for @${cleanHandle}`)
         } catch (logErr: any) {
           console.warn(`   ⚠️ Could not log outreach record: ${logErr.message}`)
         }
       }
 
-      // Update discovered_artists status
-      if (artist.id) {
-        try {
-          await payload.update({
-            collection: 'discovered-artists',
-            id: artist.id,
-            data: { outreachStatus: 'contacted' } as any,
-          })
-        } catch {}
-      }
-
       // Cool-down break every 4 DMs
-      if (sentCount % 4 === 0 && i < remainingQuota - 1) {
+      if (sentCount % 4 === 0 && i < finalTargets.length - 1) {
         console.log('\n☕ Taking a 3-minute human cooldown break...')
         await sleep(180000)
-      } else if (i < remainingQuota - 1) {
-        const delayMs = getJitterDelay(45, 85)
+      } else if (i < finalTargets.length - 1) {
+        const delayMs = getJitterDelay(45, 75)
         console.log(
           `⏳ Human jitter delay: waiting ${Math.round(delayMs / 1000)}s before next artist...`,
         )
@@ -922,12 +696,13 @@ async function main() {
     } else {
       console.warn(`   ❌ Failed to send DM to @${cleanHandle}: ${dmResult.error}`)
 
-      if (artist.id && dmResult.error?.includes('private')) {
+      if (artist.id) {
         try {
-          await payload.update({
-            collection: 'discovered-artists',
-            id: artist.id,
-            data: { outreachStatus: 'contacted' } as any,
+          await logInstagramOutreachMessage({
+            artistId: artist.id,
+            body: generateDynamicInstagramMessage(artist),
+            status: 'failed',
+            errorMessage: dmResult.error,
           })
         } catch {}
       }
@@ -938,17 +713,19 @@ async function main() {
 
   console.log('\n================================================================')
   console.log(`🎉 Batch Run Completed!`)
-  console.log(`   Total Targeted: ${Math.min(targetList.length, remainingQuota)}`)
+  console.log(`   Total Targeted:    ${finalTargets.length}`)
   console.log(`   Successfully Sent: ${sentCount}`)
-  console.log(`   Skipped: ${skippedCount}`)
+  console.log(`   Skipped / Failed:  ${skippedCount}`)
   console.log('================================================================\n')
 
   await page.waitForTimeout(3000)
   await context.close()
+  await closeDbPool()
   process.exit(0)
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   console.error('Fatal error in browser outreach runner:', err)
+  await closeDbPool()
   process.exit(1)
 })

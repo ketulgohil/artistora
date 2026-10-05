@@ -427,12 +427,15 @@ export default async function AreaPage({ params }: AreaPageProps) {
                   areaServed: {
                     '@id': `https://www.artistora.com/areas/${slug}#place`,
                   },
-                  ...(typeof artist.rating === 'number' && artist.rating > 0
+                  ...(typeof artist.rating === 'number' &&
+                  artist.rating > 0 &&
+                  typeof artist.reviewCount === 'number' &&
+                  artist.reviewCount > 0
                     ? {
                         aggregateRating: {
                           '@type': 'AggregateRating',
                           ratingValue: artist.rating.toFixed(1),
-                          reviewCount: String(Math.max(1, artist.reviewCount || 1)),
+                          reviewCount: String(artist.reviewCount),
                           bestRating: '5',
                           worstRating: '1',
                         },

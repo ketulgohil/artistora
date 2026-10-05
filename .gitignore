@@ -46,6 +46,9 @@ src/app/(payload)/admin/importMap.js
 
 # AI tools
 .gemini/
+.claude/
+.superpowers/
+docs/superpowers/
 
 # supabase local temp
 supabase/.temp/

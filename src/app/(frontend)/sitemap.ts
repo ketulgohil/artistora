@@ -4,10 +4,26 @@ import { getPayloadClient, isArtistIndexable } from '@/lib/payload'
 const BASE_URL = 'https://www.artistora.com'
 
 const areaSlugs = [
-  'satellite', 'vastrapur', 'bopal', 'prahlad-nagar', 'thaltej',
-  'gota', 'south-bopal', 'science-city', 'shela', 'nikol',
-  'vastral', 'maninagar', 'naroda', 'chandkheda', 'motera',
-  'sola', 'ghodasar', 'isanpur', 'memco', 'daskroi',
+  'satellite',
+  'vastrapur',
+  'bopal',
+  'prahlad-nagar',
+  'thaltej',
+  'gota',
+  'south-bopal',
+  'science-city',
+  'shela',
+  'nikol',
+  'vastral',
+  'maninagar',
+  'naroda',
+  'chandkheda',
+  'motera',
+  'sola',
+  'ghodasar',
+  'isanpur',
+  'memco',
+  'daskroi',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -41,26 +57,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic artist profile pages — quality-gated before sitemap inclusion.
   // Policy: approvalStatus = 'approved' AND passes isArtistIndexable()
   // (display name, city, service, bio, portfolio image, contact, quote path).
-  const { docs: artists } = await payload.find({
-    collection: 'artists',
-    where: {
-      approvalStatus: { equals: 'approved' },
-    },
-    select: {
-      slug: true,
-      updatedAt: true,
-      displayName: true,
-      city: true,
-      artistType: true,
-      bio: true,
-      portfolioImages: true,
-      phone: true,
-      whatsappNumber: true,
-      approvalStatus: true,
-    },
-    depth: 1,
-    limit: 500,
-  })
+  const artists = []
+  let page = 1
+  let hasNextPage = true
+
+  // Keep fetching until every approved profile has been considered. A single
+  // request capped at 500 would silently omit the rest as the marketplace grows.
+  while (hasNextPage) {
+    const result = await payload.find({
+      collection: 'artists',
+      where: {
+        approvalStatus: { equals: 'approved' },
+      },
+      select: {
+        slug: true,
+        updatedAt: true,
+        displayName: true,
+        city: true,
+        artistType: true,
+        bio: true,
+        portfolioImages: true,
+        phone: true,
+        whatsappNumber: true,
+        approvalStatus: true,
+      },
+      depth: 1,
+      limit: 500,
+      page,
+    })
+
+    artists.push(...result.docs)
+    hasNextPage = result.hasNextPage
+    page += 1
+  }
 
   const artistPages: MetadataRoute.Sitemap = artists
     .filter((a) => a.slug && isArtistIndexable(a))
