@@ -624,11 +624,6 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                       className="aspect-square w-full max-w-[340px]"
                     />
                   )}
-                  {artist.verified && (
-                    <div className="absolute top-4! right-4! z-10">
-                      <VerifiedBadge />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -643,7 +638,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 <h1 className="font-display text-[2.2rem]! leading-[1.15] font-semibold text-ink md:text-[2.8rem]!">
                   {artist.displayName}
                 </h1>
-                {artist.verified && <VerifiedBadge className="hidden sm:inline-flex" />}
+                {artist.verified && <VerifiedBadge />}
               </div>
 
               {/* Rating */}
