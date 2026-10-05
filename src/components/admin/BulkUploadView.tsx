@@ -51,7 +51,7 @@ export function BulkUploadView() {
     async function loadData() {
       try {
         const [artistsRes, catRes] = await Promise.all([
-          fetch('/api/artists?limit=100&depth=0', { credentials: 'include' }),
+          fetch('/api/artists?limit=150&depth=0', { credentials: 'include' }),
           fetch('/api/portfolio-categories?limit=50&depth=0', { credentials: 'include' }),
         ])
 
@@ -117,64 +117,70 @@ export function BulkUploadView() {
     setResultMessage(null)
     setUploadProgress({ current: 0, total: pendingFiles.length })
 
-    // Upload in batches of 5 for optimal performance and reliable progress updates
-    const batchSize = 5
     let successCount = 0
     let failedCount = 0
 
-    for (let i = 0; i < pendingFiles.length; i += batchSize) {
-      const batch = pendingFiles.slice(i, i + batchSize)
-      const formData = new FormData()
+    // Upload 1 image at a time to prevent mobile memory spikes and HTTP 413 payload limits
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const item = pendingFiles[i]
 
-      for (const item of batch) {
-        const optimized = await prepareImageForUpload(item.file)
-        formData.append('files', optimized)
-      }
-
-      if (selectedArtistId) {
-        formData.append('artistId', selectedArtistId)
-      }
-      if (selectedCategory) {
-        formData.append('category', selectedCategory)
-      }
-      if (altText) {
-        formData.append('alt', altText)
-      }
-
-      // Mark batch as uploading
+      // Mark current item as uploading
       setFiles((prev) =>
-        prev.map((f) => (batch.some((b) => b.id === f.id) ? { ...f, status: 'uploading' } : f)),
+        prev.map((f) => (f.id === item.id ? { ...f, status: 'uploading', error: undefined } : f)),
       )
 
       try {
+        const optimized = await prepareImageForUpload(item.file)
+        const formData = new FormData()
+        formData.append('files', optimized)
+
+        if (selectedArtistId) {
+          formData.append('artistId', selectedArtistId)
+        }
+        if (selectedCategory) {
+          formData.append('category', selectedCategory)
+        }
+        if (altText) {
+          formData.append('alt', altText)
+        }
+
         const res = await fetch('/api/admin/bulk-upload', {
           method: 'POST',
           credentials: 'include',
           body: formData,
         })
 
-        const data = await res.json()
+        let data: any = null
+        const contentType = res.headers.get('content-type') || ''
+        if (contentType.includes('application/json')) {
+          data = await res.json().catch(() => null)
+        } else {
+          const text = await res.text().catch(() => '')
+          data = { error: text || `HTTP ${res.status}: ${res.statusText}` }
+        }
 
-        if (res.ok && data.success) {
-          successCount += data.uploadedCount || batch.length
+        if (res.ok && data?.success) {
+          successCount++
           setFiles((prev) =>
-            prev.map((f) => (batch.some((b) => b.id === f.id) ? { ...f, status: 'success' } : f)),
+            prev.map((f) => (f.id === item.id ? { ...f, status: 'success' } : f)),
           )
         } else {
-          failedCount += batch.length
+          failedCount++
+          const errorMsg =
+            data?.errors?.[0]?.error ||
+            data?.error ||
+            (res.status === 413 ? 'Image too large for mobile upload' : 'Upload failed')
           setFiles((prev) =>
             prev.map((f) =>
-              batch.some((b) => b.id === f.id)
-                ? { ...f, status: 'error', error: data.error || 'Upload failed' }
-                : f,
+              f.id === item.id ? { ...f, status: 'error', error: errorMsg } : f,
             ),
           )
         }
       } catch (err: any) {
-        failedCount += batch.length
+        failedCount++
         setFiles((prev) =>
           prev.map((f) =>
-            batch.some((b) => b.id === f.id)
+            f.id === item.id
               ? { ...f, status: 'error', error: err.message || 'Network error' }
               : f,
           ),
@@ -182,7 +188,7 @@ export function BulkUploadView() {
       }
 
       setUploadProgress({
-        current: Math.min(i + batchSize, pendingFiles.length),
+        current: i + 1,
         total: pendingFiles.length,
       })
     }
@@ -208,37 +214,50 @@ export function BulkUploadView() {
 
   return (
     <div
-      style={{ padding: '32px 40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'inherit' }}
+      style={{
+        padding: '24px 20px',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        fontFamily: 'inherit',
+        boxSizing: 'border-box',
+      }}
     >
       {/* Header */}
       <div
         style={{
-          marginBottom: '28px',
+          marginBottom: '24px',
           borderBottom: '1px solid var(--theme-elevation-150)',
-          paddingBottom: '20px',
+          paddingBottom: '16px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
           <div>
             <h1
               style={{
-                fontSize: '28px',
+                fontSize: '24px',
                 fontWeight: 700,
-                margin: '0 0 8px 0',
+                margin: '0 0 6px 0',
                 color: 'var(--theme-elevation-800)',
               }}
             >
               ⚡ Bulk Image &amp; Portfolio Upload
             </h1>
-            <p style={{ margin: 0, fontSize: '14px', color: 'var(--theme-elevation-500)' }}>
-              Upload multiple images simultaneously. Optionally assign all uploaded images directly
-              to an artist&apos;s portfolio.
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--theme-elevation-500)' }}>
+              Upload multiple images simultaneously. Automatically compresses mobile photos and links them to an artist&apos;s portfolio.
             </p>
           </div>
           <Link
             href="/admin/collections/media"
             style={{
-              padding: '8px 16px',
+              padding: '8px 14px',
               borderRadius: '6px',
               border: '1px solid var(--theme-elevation-250)',
               backgroundColor: 'var(--theme-elevation-100)',
@@ -257,18 +276,20 @@ export function BulkUploadView() {
       {resultMessage && (
         <div
           style={{
-            padding: '16px 20px',
+            padding: '14px 18px',
             borderRadius: '8px',
-            marginBottom: '24px',
+            marginBottom: '20px',
             backgroundColor: resultMessage.type === 'success' ? '#d4edda' : '#f8d7da',
             color: resultMessage.type === 'success' ? '#155724' : '#721c24',
             border: `1px solid ${resultMessage.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
             display: 'flex',
+            flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: '8px',
           }}
         >
-          <span style={{ fontWeight: 500 }}>{resultMessage.text}</span>
+          <span style={{ fontWeight: 500, fontSize: '14px' }}>{resultMessage.text}</span>
           {resultMessage.type === 'success' && selectedArtist && (
             <Link
               href={`/admin/collections/artists/${selectedArtist.id}`}
@@ -276,7 +297,7 @@ export function BulkUploadView() {
                 color: '#155724',
                 fontWeight: 700,
                 textDecoration: 'underline',
-                marginLeft: '16px',
+                fontSize: '13px',
               }}
             >
               Open {selectedArtist.displayName} Profile →
@@ -289,11 +310,11 @@ export function BulkUploadView() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '20px',
-          marginBottom: '28px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: '16px',
+          marginBottom: '24px',
           backgroundColor: 'var(--theme-elevation-50)',
-          padding: '24px',
+          padding: '20px',
           borderRadius: '12px',
           border: '1px solid var(--theme-elevation-150)',
         }}
@@ -324,6 +345,7 @@ export function BulkUploadView() {
               color: 'var(--theme-elevation-800)',
               fontSize: '14px',
               outline: 'none',
+              boxSizing: 'border-box',
             }}
           >
             <option value="">-- General Media Upload (No Artist Binding) --</option>
@@ -364,6 +386,7 @@ export function BulkUploadView() {
               color: 'var(--theme-elevation-800)',
               fontSize: '14px',
               outline: 'none',
+              boxSizing: 'border-box',
             }}
           >
             <option value="">-- Auto-detect from Artist Service Type --</option>
@@ -428,38 +451,37 @@ export function BulkUploadView() {
           border: `2px dashed ${isDragging ? '#2563eb' : 'var(--theme-elevation-300)'}`,
           backgroundColor: isDragging ? 'rgba(37, 99, 235, 0.05)' : 'var(--theme-elevation-50)',
           borderRadius: '16px',
-          padding: '48px 24px',
+          padding: '36px 20px',
           textAlign: 'center',
           cursor: isUploading ? 'not-allowed' : 'pointer',
           transition: 'all 0.2s ease',
-          marginBottom: '28px',
+          marginBottom: '24px',
         }}
       >
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/avif"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/avif,image/heic,image/heif"
           multiple
           onChange={(e) => handleFileSelect(e.target.files)}
           disabled={isUploading}
           style={{ display: 'none' }}
         />
-        <div style={{ fontSize: '42px', marginBottom: '12px' }}>📁</div>
+        <div style={{ fontSize: '38px', marginBottom: '10px' }}>📁</div>
         <h3
           style={{
-            fontSize: '18px',
+            fontSize: '17px',
             fontWeight: 600,
-            margin: '0 0 8px 0',
+            margin: '0 0 6px 0',
             color: 'var(--theme-elevation-800)',
           }}
         >
           {isDragging
             ? 'Drop your images here'
-            : 'Drag & Drop Multiple Images Here or Click to Browse'}
+            : 'Tap here or Drag & Drop Multiple Photos'}
         </h3>
-        <p style={{ fontSize: '13px', color: 'var(--theme-elevation-500)', margin: 0 }}>
-          Select 10, 20, 50+ photos at once. Supports JPEG, JPG, PNG, WEBP, GIF, AVIF (up to 15MB
-          each).
+        <p style={{ fontSize: '12px', color: 'var(--theme-elevation-500)', margin: 0 }}>
+          Select multiple photos at once. JPEG, PNG, WebP, GIF, AVIF, HEIC supported.
         </p>
       </div>
 
@@ -467,9 +489,9 @@ export function BulkUploadView() {
       {isUploading && (
         <div
           style={{
-            marginBottom: '28px',
+            marginBottom: '24px',
             backgroundColor: 'var(--theme-elevation-50)',
-            padding: '20px',
+            padding: '16px',
             borderRadius: '12px',
           }}
         >
@@ -478,11 +500,11 @@ export function BulkUploadView() {
               display: 'flex',
               justifyContent: 'space-between',
               marginBottom: '8px',
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 600,
             }}
           >
-            <span>Uploading images...</span>
+            <span>Uploading &amp; optimizing photos...</span>
             <span>
               {uploadProgress.current} of {uploadProgress.total} completed
             </span>
@@ -513,14 +535,16 @@ export function BulkUploadView() {
           <div
             style={{
               display: 'flex',
+              flexWrap: 'wrap',
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: '16px',
+              gap: '12px',
             }}
           >
             <h3
               style={{
-                fontSize: '16px',
+                fontSize: '15px',
                 fontWeight: 600,
                 margin: 0,
                 color: 'var(--theme-elevation-800)',
@@ -528,13 +552,13 @@ export function BulkUploadView() {
             >
               Selected Images ({files.length})
             </h3>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 type="button"
                 onClick={clearAllFiles}
                 disabled={isUploading}
                 style={{
-                  padding: '8px 16px',
+                  padding: '8px 14px',
                   borderRadius: '6px',
                   border: '1px solid var(--theme-elevation-250)',
                   backgroundColor: 'transparent',
@@ -551,7 +575,7 @@ export function BulkUploadView() {
                 onClick={handleUpload}
                 disabled={isUploading || files.every((f) => f.status === 'success')}
                 style={{
-                  padding: '10px 24px',
+                  padding: '10px 20px',
                   borderRadius: '8px',
                   border: 'none',
                   backgroundColor: '#2563eb',
@@ -560,15 +584,15 @@ export function BulkUploadView() {
                     isUploading || files.every((f) => f.status === 'success')
                       ? 'not-allowed'
                       : 'pointer',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: 600,
                   opacity: isUploading || files.every((f) => f.status === 'success') ? 0.6 : 1,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '6px',
                 }}
               >
-                {isUploading ? 'Uploading Batch...' : `Upload All ${files.length} Images 🚀`}
+                {isUploading ? `Uploading (${uploadProgress.current}/${uploadProgress.total})...` : `Upload All ${files.length} Photos 🚀`}
               </button>
             </div>
           </div>
@@ -576,8 +600,8 @@ export function BulkUploadView() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-              gap: '16px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+              gap: '12px',
             }}
           >
             {files.map((item) => (
@@ -613,12 +637,12 @@ export function BulkUploadView() {
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: 'white',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 600,
                     }}
                   >
@@ -634,12 +658,12 @@ export function BulkUploadView() {
                       backgroundColor: '#10b981',
                       color: 'white',
                       borderRadius: '50%',
-                      width: '24px',
-                      height: '24px',
+                      width: '22px',
+                      height: '22px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 700,
                     }}
                   >
@@ -651,14 +675,14 @@ export function BulkUploadView() {
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                      backgroundColor: 'rgba(239, 68, 68, 0.85)',
                       color: 'white',
-                      padding: '8px',
+                      padding: '6px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       textAlign: 'center',
-                      fontSize: '11px',
+                      fontSize: '10px',
                     }}
                   >
                     {item.error || 'Failed'}
@@ -682,8 +706,8 @@ export function BulkUploadView() {
                       color: 'white',
                       border: 'none',
                       borderRadius: '50%',
-                      width: '24px',
-                      height: '24px',
+                      width: '22px',
+                      height: '22px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -704,8 +728,8 @@ export function BulkUploadView() {
                     right: 0,
                     backgroundColor: 'rgba(0,0,0,0.6)',
                     color: 'white',
-                    padding: '4px 6px',
-                    fontSize: '10px',
+                    padding: '3px 5px',
+                    fontSize: '9px',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',

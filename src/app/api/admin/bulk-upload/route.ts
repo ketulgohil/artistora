@@ -51,8 +51,8 @@ const MIME_TYPE_MAP: Record<string, string> = {
 
 /**
  * POST /api/admin/bulk-upload
- * Bulk media upload endpoint for admin panel.
- * Accepts multiple image files and optionally attaches them as portfolio items to an artist.
+ * Robust bulk media upload endpoint for admin panel.
+ * Accepts multiple image files (or single file) and attaches them as portfolio items to an artist.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -67,14 +67,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin role required for bulk upload' }, { status: 403 })
     }
 
-    const formData = await request.formData()
-    const files = formData.getAll('files') as File[]
+    let formData: FormData
+    try {
+      formData = await request.formData()
+    } catch {
+      return NextResponse.json(
+        { error: 'Upload payload could not be parsed. Please try uploading smaller images.' },
+        { status: 400 },
+      )
+    }
+
+    const multiFiles = formData.getAll('files') as File[]
+    const singleFile = formData.get('file') as File | null
+    const rawFiles =
+      multiFiles && multiFiles.length > 0 ? multiFiles : singleFile ? [singleFile] : []
+    const files = rawFiles.filter(
+      (f): f is File => Boolean(f && typeof f !== 'string' && f.size > 0),
+    )
+
     const artistIdRaw = formData.get('artistId') as string | null
-    const baseAlt = (formData.get('alt') as string | null) || 'Bulk media upload'
+    const baseAlt = (formData.get('alt') as string | null) || 'Portfolio upload'
     const categorySlug = formData.get('category') as string | null
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: 'No files provided for upload' }, { status: 400 })
+      return NextResponse.json({ error: 'No valid image files provided for upload' }, { status: 400 })
     }
 
     const artistId = artistIdRaw && !isNaN(Number(artistIdRaw)) ? Number(artistIdRaw) : null
@@ -127,7 +143,7 @@ export async function POST(request: NextRequest) {
       const rawMime = (file.type || '').toLowerCase().split(';')[0].trim()
 
       if (!ALLOWED_MIME_TYPES.includes(rawMime)) {
-        errors.push({ filename: file.name, error: `Unsupported MIME type: ${file.type}` })
+        errors.push({ filename: file.name, error: `Unsupported MIME type: ${file.type || 'unknown'}` })
         continue
       }
 
@@ -148,11 +164,12 @@ export async function POST(request: NextRequest) {
       }
 
       const finalMime = MIME_TYPE_MAP[rawMime] || rawMime
+      const sanitizedName = file.name.replace(/[\\/\0]/g, '_').slice(0, 200) || 'portfolio-image.jpg'
 
       try {
         const docAlt = targetArtist
           ? `${targetArtist.displayName} portfolio sample ${i + 1}`
-          : `${baseAlt} - ${file.name}`
+          : `${baseAlt} - ${sanitizedName}`
 
         const mediaDoc = await payload.create({
           collection: 'media',
@@ -163,7 +180,7 @@ export async function POST(request: NextRequest) {
           file: {
             data: buffer,
             mimetype: finalMime,
-            name: file.name,
+            name: sanitizedName,
             size: file.size,
           },
           overrideAccess: true,
@@ -239,7 +256,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      success: true,
+      success: uploadedDocs.length > 0,
       uploadedCount: uploadedDocs.length,
       failedCount: errors.length,
       uploaded: uploadedDocs,
